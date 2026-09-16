@@ -116,5 +116,5 @@ Audit architectural implementation against compliance baselines:
 ---
 
 ## 5. Subdirectories & Progressive Resources
-- [references/soc2_iso_controls.md](file:///home/prosubodh/projects/mvp/.agents/skills/compliance-audit/references/soc2_iso_controls.md): Detailed mapping of SOC 2 Trust Services Criteria and ISO 27001 Annex A controls.
-- [references/owasp_top10_controls.md](file:///home/prosubodh/projects/mvp/.agents/skills/compliance-audit/references/owasp_top10_controls.md): OWASP Top 10 verification checklist and remediation patterns.
+- [references/soc2_iso_controls.md](./references/soc2_iso_controls.md): Detailed mapping of SOC 2 Trust Services Criteria and ISO 27001 Annex A controls.
+- [references/owasp_top10_controls.md](./references/owasp_top10_controls.md): OWASP Top 10 verification checklist and remediation patterns.

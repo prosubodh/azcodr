@@ -107,5 +107,5 @@ Scenario: [Failure path]
 ---
 
 ## 5. Subdirectories & Progressive Resources
-- [references/invest_checklist.md](file:///home/prosubodh/projects/mvp/.agents/skills/product-analyst/references/invest_checklist.md): Quick reference checklist for validating user story readiness.
-- [references/gherkin_patterns.md](file:///home/prosubodh/projects/mvp/.agents/skills/product-analyst/references/gherkin_patterns.md): Reusable Gherkin scenario patterns for REST APIs and UI interactions.
+- [references/invest_checklist.md](./references/invest_checklist.md): Quick reference checklist for validating user story readiness.
+- [references/gherkin_patterns.md](./references/gherkin_patterns.md): Reusable Gherkin scenario patterns for REST APIs and UI interactions.

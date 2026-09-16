@@ -6,7 +6,7 @@
 
 ## 1. Architecture & Global Directives
 - **DO:** Standardize exclusively on 100% open-source tools, packages, and frameworks.
-- **DO:** Confine all file modifications, dependencies, and assumptions strictly to this workspace (`/home/prosubodh/projects/mvp`).
+- **DO:** Confine all file modifications, dependencies, and assumptions strictly to this workspace (`./`).
 - **DO:** Maintain all rule files strictly atomic (Single Responsibility Principle, zero conjunction naming).
 - **DONT:** Never import, execute, or assume global user packages or tools from external sibling projects.
 - **DONT:** Never let root `AGENTS.md` exceed 120 lines; offload deep domain manuals into `docs/rules/`.

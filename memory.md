@@ -1,15 +1,15 @@
 # Workspace Memory, Architecture Decisions & Knowledge Hub
 
-> **Core Purpose:** Authoritative persistent memory ledger for `/home/prosubodh/projects/mvp`, maintaining Lightweight Architectural Decision Records (ADRs), system topologies, issue logs, and institutional lessons.
+> **Core Purpose:** Authoritative persistent memory ledger for the workspace repository (`./`), maintaining Lightweight Architectural Decision Records (ADRs), system topologies, issue logs, and institutional lessons.
 
 ---
 
 ## 1. Quick Navigation & Knowledge Repositories
 
-- 🗺️ **[System Knowledge Graph](file:///home/prosubodh/projects/mvp/docs/knowledge/knowledge_graph.md)**: Architectural subsystems, Mermaid topologies, entity relationships, and fast-lookup matrices.
-- 📋 **[Consolidated DO's & DONT's](file:///home/prosubodh/projects/mvp/docs/knowledge/dos_and_donts.md)**: High-impact rules, anti-patterns to avoid, and coding invariants.
-- 🐛 **[Coding Issue Log](file:///home/prosubodh/projects/mvp/docs/knowledge/issue_log.md)**: Defect post-mortems, root causes, and synthesized preventing rules.
-- 💡 **[Institutional Lessons Learned](file:///home/prosubodh/projects/mvp/docs/knowledge/lessons_learned.md)**: Strategic engineering takeaways and optimization insights.
+- 🗺️ **[System Knowledge Graph](./docs/knowledge/knowledge_graph.md)**: Architectural subsystems, Mermaid topologies, entity relationships, and fast-lookup matrices.
+- 📋 **[Consolidated DO's & DONT's](./docs/knowledge/dos_and_donts.md)**: High-impact rules, anti-patterns to avoid, and coding invariants.
+- 🐛 **[Coding Issue Log](./docs/knowledge/issue_log.md)**: Defect post-mortems, root causes, and synthesized preventing rules.
+- 💡 **[Institutional Lessons Learned](./docs/knowledge/lessons_learned.md)**: Strategic engineering takeaways and optimization insights.
 
 ---
 

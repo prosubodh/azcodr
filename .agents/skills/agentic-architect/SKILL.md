@@ -111,8 +111,8 @@ Before finalizing any agent configuration update, verify:
 ---
 
 ## 5. Subdirectories & Progressive Resources
-- [references/skill_architecture_inquiry.md](file:///home/prosubodh/projects/mvp/.agents/skills/agentic-architect/references/skill_architecture_inquiry.md): The interactive 7-branch relentless questioning guide for skills.
-- [references/agents_md_template.md](file:///home/prosubodh/projects/mvp/.agents/skills/agentic-architect/references/agents_md_template.md): Boilerplate template for lean root and nested `AGENTS.md` files.
-- [references/skill_template.md](file:///home/prosubodh/projects/mvp/.agents/skills/agentic-architect/references/skill_template.md): Boilerplate template for authoring production-grade `SKILL.md` files.
-- [references/refinement_workflow.md](file:///home/prosubodh/projects/mvp/.agents/skills/agentic-architect/references/refinement_workflow.md): Step-by-step guide for capturing AI draft diffs against human edits to update skills.
-- [scripts/validate_agentic_configs.sh](file:///home/prosubodh/projects/mvp/.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh): Deterministic Bash script validating front matter, line ceilings, link health, and symlink parity.
+- [references/skill_architecture_inquiry.md](./references/skill_architecture_inquiry.md): The interactive 7-branch relentless questioning guide for skills.
+- [references/agents_md_template.md](./references/agents_md_template.md): Boilerplate template for lean root and nested `AGENTS.md` files.
+- [references/skill_template.md](./references/skill_template.md): Boilerplate template for authoring production-grade `SKILL.md` files.
+- [references/refinement_workflow.md](./references/refinement_workflow.md): Step-by-step guide for capturing AI draft diffs against human edits to update skills.
+- [scripts/validate_agentic_configs.sh](./scripts/validate_agentic_configs.sh): Deterministic Bash script validating front matter, line ceilings, link health, and symlink parity.

@@ -44,9 +44,9 @@ Read these specialized rule files on demand when performing relevant tasks:
 
 | Domain | Rule Reference File | When to Consult |
 |---|---|---|
-| **Testing** | [docs/rules/test_driven_development.md](file:///home/prosubodh/projects/mvp/docs/rules/test_driven_development.md) | Writing acceptance/unit tests, coverage checks. |
-| **Multi-Tenancy** | [docs/rules/multitenancy_isolation.md](file:///home/prosubodh/projects/mvp/docs/rules/multitenancy_isolation.md) | Tenant context resolution, PostgreSQL RLS. |
-| **Database** | [docs/rules/database_transactions.md](file:///home/prosubodh/projects/mvp/docs/rules/database_transactions.md) | ACID transactions, outbox pattern, atomicity. |
+| **Testing** | [docs/rules/test_driven_development.md](../../../../docs/rules/test_driven_development.md) | Writing acceptance/unit tests, coverage checks. |
+| **Multi-Tenancy** | [docs/rules/multitenancy_isolation.md](../../../../docs/rules/multitenancy_isolation.md) | Tenant context resolution, PostgreSQL RLS. |
+| **Database** | [docs/rules/database_transactions.md](../../../../docs/rules/database_transactions.md) | ACID transactions, outbox pattern, atomicity. |
 
 ---
 

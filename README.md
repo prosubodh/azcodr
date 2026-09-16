@@ -48,7 +48,7 @@
 
 ## ⚡ Agentic Harness Parity & Deterministic Validation
 
-To prevent configuration divergence across different AI agents, IDE harnesses, and CLI tools, [`AGENTS.md`](file:///home/prosubodh/projects/mvp/AGENTS.md), [`CLAUDE.md`](file:///home/prosubodh/projects/mvp/CLAUDE.md), and [`agents.md`](file:///home/prosubodh/projects/mvp/agents.md) remain identical via filesystem symbolic links.
+To prevent configuration divergence across different AI agents, IDE harnesses, and CLI tools, [`AGENTS.md`](./AGENTS.md), [`CLAUDE.md`](./CLAUDE.md), and [`agents.md`](./agents.md) remain identical via filesystem symbolic links.
 
 ### Deterministic Architecture Validation
 Run the built-in validation script to enforce front matter standards, line ceilings (root $\le$ 120 lines), link health, and atomic rule compliance:
@@ -63,63 +63,63 @@ bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh
 
 | Domain | Rule Reference | Core Mandate |
 |---|---|---|
-| **Testing** | [`test_driven_development.md`](file:///home/prosubodh/projects/mvp/docs/rules/test_driven_development.md) | Outside-In TDD (London School) double loop and mock ownership. |
-| **Test Isolation** | [`test_isolation.md`](file:///home/prosubodh/projects/mvp/docs/rules/test_isolation.md) | 100.00% full-stack coverage and transactional database rollback. |
-| **Clean Code** | [`clean_code.md`](file:///home/prosubodh/projects/mvp/docs/rules/clean_code.md) | Small functions (< 30 lines), CQS, SLAP, DRY, and DbC. |
-| **Design Patterns** | [`design_patterns.md`](file:///home/prosubodh/projects/mvp/docs/rules/design_patterns.md) | Adapter, Factory, Facade, Strategy, and Result `<T, E>` pattern. |
-| **GoF Catalog** | [`gof_design_patterns_reference.md`](file:///home/prosubodh/projects/mvp/docs/rules/gof_design_patterns_reference.md) | Production TypeScript implementations of all 23 Gang of Four patterns. |
-| **TypeScript** | [`typescript.md`](file:///home/prosubodh/projects/mvp/docs/rules/typescript.md) | Strict compiler flags, nominal branded types, and no `any`. |
-| **ADRs** | [`architecture_decision_records.md`](file:///home/prosubodh/projects/mvp/docs/rules/architecture_decision_records.md) | Lightweight Architectural Decision Records format in `memory.md`. |
-| **Authentication** | [`authentication.md`](file:///home/prosubodh/projects/mvp/docs/rules/authentication.md) | In-memory access tokens, refresh token rotation (RTR), and WebAuthn. |
-| **Authorization** | [`authorization.md`](file:///home/prosubodh/projects/mvp/docs/rules/authorization.md) | CASL ABAC/RBAC permissions, OPA Rego policy engines, and route guards. |
-| **Multi-Tenancy** | [`multitenancy_isolation.md`](file:///home/prosubodh/projects/mvp/docs/rules/multitenancy_isolation.md) | Context resolution, PostgreSQL RLS dual-layer isolation, and lifecycle. |
-| **REST APIs** | [`rest_api_conventions.md`](file:///home/prosubodh/projects/mvp/docs/rules/rest_api_conventions.md) | Standard HTTP status codes, enumeration masking, and subresources. |
-| **Advanced APIs** | [`advanced_api_patterns.md`](file:///home/prosubodh/projects/mvp/docs/rules/advanced_api_patterns.md) | Allowed Actions (`_actions`), Idempotency keys, and cursor pagination. |
-| **API Versioning** | [`api_versioning.md`](file:///home/prosubodh/projects/mvp/docs/rules/api_versioning.md) | URI versioning (`/v1/`), RFC 8594 Sunset headers, and 90-day window. |
-| **Dynamic Schemas** | [`tenant_dynamic_schemas.md`](file:///home/prosubodh/projects/mvp/docs/rules/tenant_dynamic_schemas.md) | Hybrid core + JSONB, `ajv` JSON Schema validation, and meta-schemas. |
-| **Pluggable Logic** | [`tenant_pluggable_logic.md`](file:///home/prosubodh/projects/mvp/docs/rules/tenant_pluggable_logic.md) | Strategy registries, `json-rules-engine`, XState, and QuickJS sandboxing. |
-| **Server-Driven UI** | [`server_driven_ui.md`](file:///home/prosubodh/projects/mvp/docs/rules/server_driven_ui.md) | Dynamic UI schemas, component registries, and CSS custom property theming. |
-| **Transactions** | [`database_transactions.md`](file:///home/prosubodh/projects/mvp/docs/rules/database_transactions.md) | ACID atomicity, isolation levels, timeouts, and Transactional Outbox. |
-| **Migrations** | [`database_migrations.md`](file:///home/prosubodh/projects/mvp/docs/rules/database_migrations.md) | Versioned migrations, 5-phase expand-contract, and concurrent indexes. |
-| **Data Integrity** | [`database_integrity.md`](file:///home/prosubodh/projects/mvp/docs/rules/database_integrity.md) | Foreign keys, domain CHECK constraints, and partial unique indexes. |
-| **DB Operations** | [`database_operations.md`](file:///home/prosubodh/projects/mvp/docs/rules/database_operations.md) | Continuous PITR (pgBackRest), autovacuum tuning, and `pg_repack`. |
-| **DB Performance** | [`database_performance.md`](file:///home/prosubodh/projects/mvp/docs/rules/database_performance.md) | Eliminating N+1 queries, DataLoader batching, and composite indexes. |
-| **Caching** | [`caching.md`](file:///home/prosubodh/projects/mvp/docs/rules/caching.md) | Redis Cache-Aside, key namespacing, jittered TTLs, and HTTP ETags. |
-| **App Security** | [`application_security.md`](file:///home/prosubodh/projects/mvp/docs/rules/application_security.md) | OWASP Top 10 defenses, Argon2id, AES-256-GCM, and Redis rate limiting. |
-| **Compliance** | [`compliance.md`](file:///home/prosubodh/projects/mvp/docs/rules/compliance.md) | SOC 2 Type II controls, ISO/IEC 27001 ISMS, and GDPR data erasure. |
-| **DevSecOps** | [`devsecops.md`](file:///home/prosubodh/projects/mvp/docs/rules/devsecops.md) | Secretlint pre-commit gating, CycloneDX SBOMs, and Trivy CVE scans. |
-| **Error Handling** | [`error_handling.md`](file:///home/prosubodh/projects/mvp/docs/rules/error_handling.md) | Fail-fast Zod env validation, Pino request tracing, and error envelopes. |
-| **Feature Flags** | [`feature_flags.md`](file:///home/prosubodh/projects/mvp/docs/rules/feature_flags.md) | OpenFeature standard, Flipt/Unleash backends, and kill switches. |
-| **CI** | [`continuous_integration.md`](file:///home/prosubodh/projects/mvp/docs/rules/continuous_integration.md) | Shift-left automated pipelines, trunk-based development, and caching. |
-| **CD** | [`continuous_deployment.md`](file:///home/prosubodh/projects/mvp/docs/rules/continuous_deployment.md) | Zero-downtime rollouts, Cosign container signing, and distroless bases. |
-| **Infrastructure** | [`container_infrastructure.md`](file:///home/prosubodh/projects/mvp/docs/rules/container_infrastructure.md) | Unified Nginx gateway, Docker healthchecks, and non-root users. |
-| **Email** | [`transactional_email.md`](file:///home/prosubodh/projects/mvp/docs/rules/transactional_email.md) | Typed React Email templates, safe interpolation, and Mailpit tests. |
-| **Accessibility** | [`accessibility.md`](file:///home/prosubodh/projects/mvp/docs/rules/accessibility.md) | WCAG 2.2 AA compliance, Radix UI modals, and ARIA live regions. |
-| **Navigation** | [`ui_navigation.md`](file:///home/prosubodh/projects/mvp/docs/rules/ui_navigation.md) | Bidirectional URL search param synchronization and deep linking. |
-| **Requirements** | [`requirements_engineering.md`](file:///home/prosubodh/projects/mvp/docs/rules/requirements_engineering.md) | INVEST user stories, executable Gherkin criteria, and edge matrices. |
-| **DDD** | [`domain_driven_design.md`](file:///home/prosubodh/projects/mvp/docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Value Objects, and Aggregates. |
-| **Cloud-Native** | [`cloud_native.md`](file:///home/prosubodh/projects/mvp/docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), and graceful shutdown. |
-| **Agentic Config** | [`agentic_configuration.md`](file:///home/prosubodh/projects/mvp/docs/rules/agentic_configuration.md) | Progressive disclosure, 7 skill inquiry branches, and refinement loops. |
-| **Project Mgmt** | [`project_management.md`](file:///home/prosubodh/projects/mvp/docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), task states, and Definition of Done. |
-| **Domain Models** | [`domain_expertise.md`](file:///home/prosubodh/projects/mvp/docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, and living vocabulary. |
-| **Isolation** | [`workspace_isolation.md`](file:///home/prosubodh/projects/mvp/docs/rules/workspace_isolation.md) | Strict workspace sovereignty and zero global context interference. |
-| **Learning** | [`continuous_learning.md`](file:///home/prosubodh/projects/mvp/docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's, and dynamic rule ingestion. |
+| **Testing** | [`test_driven_development.md`](./docs/rules/test_driven_development.md) | Outside-In TDD (London School) double loop and mock ownership. |
+| **Test Isolation** | [`test_isolation.md`](./docs/rules/test_isolation.md) | 100.00% full-stack coverage and transactional database rollback. |
+| **Clean Code** | [`clean_code.md`](./docs/rules/clean_code.md) | Small functions (< 30 lines), CQS, SLAP, DRY, and DbC. |
+| **Design Patterns** | [`design_patterns.md`](./docs/rules/design_patterns.md) | Adapter, Factory, Facade, Strategy, and Result `<T, E>` pattern. |
+| **GoF Catalog** | [`gof_design_patterns_reference.md`](./docs/rules/gof_design_patterns_reference.md) | Production TypeScript implementations of all 23 Gang of Four patterns. |
+| **TypeScript** | [`typescript.md`](./docs/rules/typescript.md) | Strict compiler flags, nominal branded types, and no `any`. |
+| **ADRs** | [`architecture_decision_records.md`](./docs/rules/architecture_decision_records.md) | Lightweight Architectural Decision Records format in `memory.md`. |
+| **Authentication** | [`authentication.md`](./docs/rules/authentication.md) | In-memory access tokens, refresh token rotation (RTR), and WebAuthn. |
+| **Authorization** | [`authorization.md`](./docs/rules/authorization.md) | CASL ABAC/RBAC permissions, OPA Rego policy engines, and route guards. |
+| **Multi-Tenancy** | [`multitenancy_isolation.md`](./docs/rules/multitenancy_isolation.md) | Context resolution, PostgreSQL RLS dual-layer isolation, and lifecycle. |
+| **REST APIs** | [`rest_api_conventions.md`](./docs/rules/rest_api_conventions.md) | Standard HTTP status codes, enumeration masking, and subresources. |
+| **Advanced APIs** | [`advanced_api_patterns.md`](./docs/rules/advanced_api_patterns.md) | Allowed Actions (`_actions`), Idempotency keys, and cursor pagination. |
+| **API Versioning** | [`api_versioning.md`](./docs/rules/api_versioning.md) | URI versioning (`/v1/`), RFC 8594 Sunset headers, and 90-day window. |
+| **Dynamic Schemas** | [`tenant_dynamic_schemas.md`](./docs/rules/tenant_dynamic_schemas.md) | Hybrid core + JSONB, `ajv` JSON Schema validation, and meta-schemas. |
+| **Pluggable Logic** | [`tenant_pluggable_logic.md`](./docs/rules/tenant_pluggable_logic.md) | Strategy registries, `json-rules-engine`, XState, and QuickJS sandboxing. |
+| **Server-Driven UI** | [`server_driven_ui.md`](./docs/rules/server_driven_ui.md) | Dynamic UI schemas, component registries, and CSS custom property theming. |
+| **Transactions** | [`database_transactions.md`](./docs/rules/database_transactions.md) | ACID atomicity, isolation levels, timeouts, and Transactional Outbox. |
+| **Migrations** | [`database_migrations.md`](./docs/rules/database_migrations.md) | Versioned migrations, 5-phase expand-contract, and concurrent indexes. |
+| **Data Integrity** | [`database_integrity.md`](./docs/rules/database_integrity.md) | Foreign keys, domain CHECK constraints, and partial unique indexes. |
+| **DB Operations** | [`database_operations.md`](./docs/rules/database_operations.md) | Continuous PITR (pgBackRest), autovacuum tuning, and `pg_repack`. |
+| **DB Performance** | [`database_performance.md`](./docs/rules/database_performance.md) | Eliminating N+1 queries, DataLoader batching, and composite indexes. |
+| **Caching** | [`caching.md`](./docs/rules/caching.md) | Redis Cache-Aside, key namespacing, jittered TTLs, and HTTP ETags. |
+| **App Security** | [`application_security.md`](./docs/rules/application_security.md) | OWASP Top 10 defenses, Argon2id, AES-256-GCM, and Redis rate limiting. |
+| **Compliance** | [`compliance.md`](./docs/rules/compliance.md) | SOC 2 Type II controls, ISO/IEC 27001 ISMS, and GDPR data erasure. |
+| **DevSecOps** | [`devsecops.md`](./docs/rules/devsecops.md) | Secretlint pre-commit gating, CycloneDX SBOMs, and Trivy CVE scans. |
+| **Error Handling** | [`error_handling.md`](./docs/rules/error_handling.md) | Fail-fast Zod env validation, Pino request tracing, and error envelopes. |
+| **Feature Flags** | [`feature_flags.md`](./docs/rules/feature_flags.md) | OpenFeature standard, Flipt/Unleash backends, and kill switches. |
+| **CI** | [`continuous_integration.md`](./docs/rules/continuous_integration.md) | Shift-left automated pipelines, trunk-based development, and caching. |
+| **CD** | [`continuous_deployment.md`](./docs/rules/continuous_deployment.md) | Zero-downtime rollouts, Cosign container signing, and distroless bases. |
+| **Infrastructure** | [`container_infrastructure.md`](./docs/rules/container_infrastructure.md) | Unified Nginx gateway, Docker healthchecks, and non-root users. |
+| **Email** | [`transactional_email.md`](./docs/rules/transactional_email.md) | Typed React Email templates, safe interpolation, and Mailpit tests. |
+| **Accessibility** | [`accessibility.md`](./docs/rules/accessibility.md) | WCAG 2.2 AA compliance, Radix UI modals, and ARIA live regions. |
+| **Navigation** | [`ui_navigation.md`](./docs/rules/ui_navigation.md) | Bidirectional URL search param synchronization and deep linking. |
+| **Requirements** | [`requirements_engineering.md`](./docs/rules/requirements_engineering.md) | INVEST user stories, executable Gherkin criteria, and edge matrices. |
+| **DDD** | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Value Objects, and Aggregates. |
+| **Cloud-Native** | [`cloud_native.md`](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), and graceful shutdown. |
+| **Agentic Config** | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) | Progressive disclosure, 7 skill inquiry branches, and refinement loops. |
+| **Project Mgmt** | [`project_management.md`](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), task states, and Definition of Done. |
+| **Domain Models** | [`domain_expertise.md`](./docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, and living vocabulary. |
+| **Isolation** | [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty and zero global context interference. |
+| **Learning** | [`continuous_learning.md`](./docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's, and dynamic rule ingestion. |
 
 ---
 
 ## 🛠️ Specialized Skills Catalog (`.agents/skills/`)
 
-- [`agentic-architect`](file:///home/prosubodh/projects/mvp/.agents/skills/agentic-architect/SKILL.md): Authoring, auditing, and modularizing agent configurations and skills.
-- [`product-analyst`](file:///home/prosubodh/projects/mvp/.agents/skills/product-analyst/SKILL.md): Translating requirements into INVEST user stories and Gherkin acceptance criteria.
-- [`compliance-audit`](file:///home/prosubodh/projects/mvp/.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
-- [`clean-code-refactor`](file:///home/prosubodh/projects/mvp/.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and modern design patterns.
+- [`agentic-architect`](.agents/skills/agentic-architect/SKILL.md): Authoring, auditing, and modularizing agent configurations and skills.
+- [`product-analyst`](.agents/skills/product-analyst/SKILL.md): Translating requirements into INVEST user stories and Gherkin acceptance criteria.
+- [`compliance-audit`](.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
+- [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and modern design patterns.
 
 ---
 
 ## 🏛️ Workspace Memory & Knowledge Hub
 
-- 🗺️ **[System Knowledge Graph](file:///home/prosubodh/projects/mvp/docs/knowledge/knowledge_graph.md)**: Visual subsystem topologies and entity-relationship models.
-- 📋 **[Consolidated DO's & DONT's](file:///home/prosubodh/projects/mvp/docs/knowledge/dos_and_donts.md)**: High-impact engineering invariants and anti-patterns to avoid.
-- 🐛 **[Coding Issue Log](file:///home/prosubodh/projects/mvp/docs/knowledge/issue_log.md)**: Defect post-mortems and preventative rules.
-- 💡 **[Institutional Lessons Learned](file:///home/prosubodh/projects/mvp/docs/knowledge/lessons_learned.md)**: Strategic engineering insights.
-- 📜 **[Lightweight ADR Ledger](file:///home/prosubodh/projects/mvp/memory.md)**: Formal Architectural Decision Records.
+- 🗺️ **[System Knowledge Graph](./docs/knowledge/knowledge_graph.md)**: Visual subsystem topologies and entity-relationship models.
+- 📋 **[Consolidated DO's & DONT's](./docs/knowledge/dos_and_donts.md)**: High-impact engineering invariants and anti-patterns to avoid.
+- 🐛 **[Coding Issue Log](./docs/knowledge/issue_log.md)**: Defect post-mortems and preventative rules.
+- 💡 **[Institutional Lessons Learned](./docs/knowledge/lessons_learned.md)**: Strategic engineering insights.
+- 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records.

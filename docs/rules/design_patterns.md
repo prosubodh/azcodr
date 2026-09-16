@@ -31,4 +31,4 @@ export const err = <E>(error: E): Result<never, E> => ({ success: false, error }
 
 ## 3. GoF 23 Patterns Catalog
 
-For production TypeScript implementations of all 23 Gang of Four patterns, consult [docs/rules/gof_design_patterns_reference.md](file:///home/prosubodh/projects/mvp/docs/rules/gof_design_patterns_reference.md).
+For production TypeScript implementations of all 23 Gang of Four patterns, consult [docs/rules/gof_design_patterns_reference.md](./gof_design_patterns_reference.md).

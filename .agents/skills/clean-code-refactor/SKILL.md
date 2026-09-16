@@ -87,5 +87,5 @@ Target concrete flaws:
 ---
 
 ## 5. Subdirectories & Progressive Resources
-- [references/clean_code_smells.md](file:///home/prosubodh/projects/mvp/.agents/skills/clean-code-refactor/references/clean_code_smells.md): Catalog of code smells and their refactoring cures.
-- [references/design_patterns_ts.md](file:///home/prosubodh/projects/mvp/.agents/skills/clean-code-refactor/references/design_patterns_ts.md): Production TypeScript implementations of Adapter, Strategy, and Result patterns.
+- [references/clean_code_smells.md](./references/clean_code_smells.md): Catalog of code smells and their refactoring cures.
+- [references/design_patterns_ts.md](./references/design_patterns_ts.md): Production TypeScript implementations of Adapter, Strategy, and Result patterns.
