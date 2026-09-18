@@ -171,6 +171,31 @@
     - Verified live proxy and REST endpoints with curl and `./scripts/smoke_test.sh`.
     - Verified full monorepo build with `pnpm build` (0 errors).
 
+### [2026-09-18] Process Post-Mortem: Decoupling Bootstrapping from Domain Analysis & API SemVer Specification
+- **User Directives:**
+  1. "api versioning needs semver. what triggers version update?? need research. also swagger docs needs version selector??"
+  2. "one thing i just realized, the whole domain analysis,detailed discussions and features were never proporly discussed. the les build step should have only bootstrapped the project. then domain. lets fix process, this is a major DONT"
+- **Defects Remediated & Process Overhaul:**
+  1. **Premature Domain Modeling Anti-Pattern:** The `/lets-build` skill previously conflated technical skeleton bootstrapping with application domain modeling. The agent fabricated business entities (`Property`, `Unit`, `Lease`, etc.) without conducting proper domain analysis or relentless stakeholder interviews.
+  2. **Process Remedy:**
+     - Updated `.agents/skills/lets-build/SKILL.md`: Bounded `/lets-build` strictly to technical foundation (toolchains, skeletons, build scripts, linter, health probe). Mandated that Phase 5 stops and hands over to `product-analyst`, `relentless-questioner`, and `docs/rules/domain_driven_design.md` before any business domain entities or features are designed.
+     - Added Major DONT to `docs/knowledge/dos_and_donts.md`: "Never invent, assume, or scaffold application domain entities, business logic, or feature pages during project bootstrapping (`/lets-build`)."
+     - Logged `ISSUE-005` in `docs/knowledge/issue_log.md`.
+     - Logged Section 5 in `docs/knowledge/lessons_learned.md`.
+     - Logged `ADR-008` in `memory.md`.
+  3. **API Versioning, SemVer & Swagger Multi-Version Selector:**
+     - Overhauled `docs/rules/api_versioning.md` with an exhaustive SemVer Trigger Matrix:
+       - **MAJOR:** Incompatible breaking changes (removing/renaming routes, modifying field types, adding required request fields, altering status codes, changing auth). Triggers new URI path `/api/v2/` and RFC 8594 Sunset/Deprecation headers on `v1`.
+       - **MINOR:** Backward-compatible additions (new endpoints, optional query/body fields, response field additions under tolerant reader). Retains `/api/v1/` URI.
+       - **PATCH:** Internal bug fixes, performance optimizations, security patches, documentation fixes.
+     - **Interactive Swagger Version Selector:**
+       - Organized specifications into `specs/openapi/v1/openapi.yaml` (v1.0.0 Stable) and `specs/openapi/v2/openapi.yaml` (v2.0.0-draft Preview).
+       - Updated `apps/backend/src/adapters/primary/http/server.ts` to serve `/docs/spec/v1` and `/docs/spec/v2` and configure Swagger UI `urls` array.
+       - Verified that Swagger UI renders a top bar version dropdown selector allowing users to switch between v1.0.0 and v2.0.0-draft specs.
+     - **Verification:**
+       - 100.00% test coverage maintained across backend test suite (64 tests passing).
+       - Outer loop smoke tests verified (`scripts/smoke_test.sh`).
+
 ---
 
 ## 3. Current Status & Next Steps
@@ -188,5 +213,7 @@
 - [x] Complete CRUD operations across all entities implemented (Properties, Units, Tenants, Leases, Payments, Applications).
 - [x] Raw text identifier FK fields completely eliminated and replaced with relational shadcn `<Select>` dropdowns.
 - [x] Domain-level foreign key validation enforced with RFC 7807 error responses.
-- [x] Process post-mortem logged across knowledge base (`ISSUE-004`) and rules.
+- [x] API versioning SemVer trigger matrix researched and codified in `docs/rules/api_versioning.md`.
+- [x] Multi-version OpenAPI specifications and interactive Swagger UI version dropdown selector implemented.
+- [x] Process defect post-mortem logged (`ISSUE-005`, `ADR-008`); `lets-build` strictly decoupled from domain analysis.
 - [x] Agentic rule validation (`validate_agentic_configs.sh` - 100% clean).
