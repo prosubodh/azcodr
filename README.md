@@ -31,14 +31,15 @@
 │       ├── clean-code-refactor/      # Refactoring code smells with GoF & Clean Code
 │       ├── compliance-audit/         # SOC 2, ISO 27001 & OWASP open-source audits
 │       ├── lets-build/               # Architecture interview & project bootstrapper
-│       └── product-analyst/          # INVEST user stories & Gherkin criteria
+│       ├── product-analyst/          # INVEST user stories & Gherkin criteria
+│       └── relentless-questioner/    # Context-aware dynamic interrogation loop
 ├── docs/
 │   ├── knowledge/                    # Institutional knowledge & token economy
 │   │   ├── dos_and_donts.md          # Consolidated DO's and DONT's directory
 │   │   ├── issue_log.md              # Defect post-mortems & preventing rules
 │   │   ├── knowledge_graph.md        # Visual topologies & fast-lookup matrices
 │   │   └── lessons_learned.md        # Strategic architectural takeaways
-│   └── rules/                        # 41 atomic single-responsibility domain rules
+│   └── rules/                        # 42 atomic single-responsibility domain rules
 ├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
 ├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity
 ├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity
@@ -104,6 +105,7 @@ bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh
 | **Agentic Config** | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) | Progressive disclosure, 7 skill inquiry branches, and refinement loops. |
 | **Project Mgmt** | [`project_management.md`](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), task states, and Definition of Done. |
 | **Domain Models** | [`domain_expertise.md`](./docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, and living vocabulary. |
+| **Relentless Questioning** | [`relentless_questioning.md`](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Isolation** | [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty and zero global context interference. |
 | **Learning** | [`continuous_learning.md`](./docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's, and dynamic rule ingestion. |
 
@@ -116,6 +118,7 @@ bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh
 - [`compliance-audit`](.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
 - [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and modern design patterns.
 - [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
+- [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
 
 ---
 
