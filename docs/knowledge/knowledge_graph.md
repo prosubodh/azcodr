@@ -4,52 +4,55 @@
 
 ---
 
-## 1. Architectural Subsystems Knowledge Graph
+## 1. Universal Hexagonal Architectural Subsystems
 
 ```mermaid
 flowchart TD
-  subgraph Client["Client Tier"]
-    UI["Web Frontend (Radix UI / Tailwind)"]
-    SDUI["Server-Driven UI Engine"]
-    State["URL State Sync (useSearchParams)"]
+  subgraph Ingress["Client & Primary Ingress Adapters"]
+    UI["Multi-Platform Client (Web / Mobile / Desktop SDUI)"]
+    Gateway["Ingress Gateway / Envoy (REST / gRPC / SSE)"]
+    BrokerIn["Message Consumer (Kafka / NATS / RabbitMQ)"]
   end
 
-  subgraph Gateway["Network & Edge Tier"]
-    Nginx["Nginx Reverse Proxy Gateway (Port 80)"]
-    RateLimit["Redis Token Bucket Rate Limiter"]
-    WAF["Security Headers & CORS Guard"]
+  subgraph Core["Pure Invariant Domain Core (Hexagonal Ports)"]
+    direction TB
+    TenantContext["Multi-Tenant Context Resolver Port"]
+    AuthPort["Authentication & Identity Port"]
+    AuthzPort["Authorization & Policy Port"]
+    DomainServices["Domain Services & Aggregate Roots"]
+    RulePort["Dynamic Rule Engine Port (CEL / Wasm)"]
+    WorkflowPort["Workflow Orchestration Port (Temporal / BPMN)"]
+    OutboxPort["Transactional Outbox Port"]
+    CachePort["Cache & Distributed Lock Port"]
+    RepoPort["Universal Repository Port"]
   end
 
-  subgraph App["Application Tier (Node 24 / TypeScript)"]
-    Auth["Auth Subsystem (JWT / RTR / WebAuthn)"]
-    CASL["Authorization Engine (CASL / OPA)"]
-    Tenant["Multi-Tenant Context Resolver"]
-    Domain["Domain Services & Aggregates"]
-    XState["Workflow Engine (XState Statecharts)"]
-    Rules["Rule Engine (json-rules-engine)"]
-    Outbox["Transactional Outbox Publisher"]
+  subgraph Egress["Secondary / Egress Polyglot Adapters"]
+    Storage["Relational & NoSQL Storage (Postgres / MySQL / Cockroach / Mongo)"]
+    CacheStore["In-Memory Store (Redis / Valkey / Dragonfly / Memcached)"]
+    BrokerOut["Event Streaming (Kafka / NATS / RabbitMQ / CloudEvents)"]
+    AuthEngines["Policy-as-Code (OPA Rego / OpenFGA ReBAC / Cerbos)"]
+    SMTP["Transactional Email Gateway (SMTP / Providers)"]
   end
 
-  subgraph Storage["Persistence Tier"]
-    Postgres["PostgreSQL 16 (RLS + Partitioning + JSONB)"]
-    Redis["Redis 7 (Cache-Aside + Rate Limiting)"]
-    Mailpit["Mailpit (Local SMTP 1025 / UI 8025)"]
-  end
+  UI --> Gateway
+  Gateway --> TenantContext
+  BrokerIn --> DomainServices
+  TenantContext --> AuthPort
+  AuthPort --> AuthzPort
+  AuthzPort --> DomainServices
+  DomainServices --> RulePort
+  DomainServices --> WorkflowPort
+  DomainServices --> OutboxPort
+  DomainServices --> CachePort
+  DomainServices --> RepoPort
 
-  UI --> Nginx
-  SDUI --> Nginx
-  Nginx --> RateLimit
-  RateLimit --> Tenant
-  Tenant --> Auth
-  Auth --> CASL
-  CASL --> Domain
-  Domain --> XState
-  Domain --> Rules
-  Domain --> Postgres
-  Domain --> Redis
-  Domain --> Outbox
-  Outbox --> Postgres
-  Domain --> Mailpit
+  RepoPort --> Storage
+  OutboxPort --> Storage
+  OutboxPort --> BrokerOut
+  CachePort --> CacheStore
+  AuthzPort --> AuthEngines
+  DomainServices --> SMTP
 ```
 
 ---
@@ -72,7 +75,7 @@ erDiagram
     string name
     string subscription_tier
     string status
-    jsonb theme_tokens
+    json theme_tokens
     timestamptz created_at
   }
 
@@ -89,7 +92,7 @@ erDiagram
     uuid id PK
     uuid tenant_id FK
     string entity_name
-    jsonb json_schema
+    json json_schema
     int version
   }
 
@@ -99,7 +102,7 @@ erDiagram
     string aggregate_type
     string aggregate_id
     string event_type
-    jsonb payload
+    json payload
     string status
     timestamptz created_at
   }
@@ -109,16 +112,22 @@ erDiagram
 
 ## 3. Subsystem Fast Lookup Index
 
-| Capability | Primary Technology | Configuration Location | Governing Rule |
+| Capability | Invariant Contract / Open Standard | Swappable Polyglot Adapters | Governing Rule |
 |---|---|---|---|
-| **Runtime** | Node.js 24 / npm 11 | `package.json`, `.nvmrc` | [`typescript.md`](../rules/typescript.md) |
-| **ORM / Database** | Prisma / PostgreSQL 16 | `prisma/schema.prisma` | [`database_transactions.md`](../rules/database_transactions.md) |
-| **Tenant Isolation** | PostgreSQL Row-Level Security | Prisma Extension | [`multitenancy_isolation.md`](../rules/multitenancy_isolation.md) |
-| **Dynamic Schemas** | JSONB + ajv validation | Dynamic Schema tables | [`tenant_dynamic_schemas.md`](../rules/tenant_dynamic_schemas.md) |
-| **Authentication** | Access Token + Cookie RTR | In-memory + HttpOnly | [`authentication.md`](../rules/authentication.md) |
-| **Authorization** | CASL / OPA Rego | Server Route Guards | [`authorization.md`](../rules/authorization.md) |
-| **Caching** | Redis Cache-Aside | Redis Client wrapper | [`caching.md`](../rules/caching.md) |
-| **Feature Flags** | OpenFeature + Flipt | Provider configuration | [`feature_flags.md`](../rules/feature_flags.md) |
-| **Testing** | Vitest / Playwright / Supertest | `vitest.config.ts` | [`test_driven_development.md`](../rules/test_driven_development.md) |
-| **UI Primitives** | Radix UI + Tailwind | Component Registry | [`accessibility.md`](../rules/accessibility.md) |
-| **Email** | React Email + Mailpit | `@mvp/emails` | [`transactional_email.md`](../rules/transactional_email.md) |
+| **Runtime & Language** | Hexagonal Core (Zero Deps) | Polyglot (Go, Rust, Python, Java, TypeScript) | [`clean_code.md`](../rules/clean_code.md) |
+| **Type Safety** | Sound static types & branded primitives | Rust, TypeScript, Go, Python (type hints) | [`typescript.md`](../rules/typescript.md) |
+| **Persistence / DAL** | Abstract Repository & Unit of Work | Atlas / Flyway migrations; SQL & NoSQL drivers | [`database_transactions.md`](../rules/database_transactions.md) |
+| **Tenant Isolation** | 4 Models (AST Interceptor, Schema, DB, Proxy) | SQL AST parser, RLS, multi-pool router, Envoy | [`multitenancy_isolation.md`](../rules/multitenancy_isolation.md) |
+| **Dynamic Schemas** | JSON Schema Draft 2020-12 | Polyglot validators (`valico`, `gojsonschema`, `ajv`) | [`tenant_dynamic_schemas.md`](../rules/tenant_dynamic_schemas.md) |
+| **Authentication** | OIDC, OAuth 2.1, Passkeys (WebAuthn) | PASETO, JWT with JWKS, SPIFFE/SPIRE mTLS | [`authentication.md`](../rules/authentication.md) |
+| **Authorization** | Policy-as-Code & ReBAC | OPA (Rego/Wasm), OpenFGA (Zanzibar), Cerbos | [`authorization.md`](../rules/authorization.md) |
+| **Pluggable Logic** | Common Expression Language (CEL) / Wasm | `cel-go`, `cel-rust`, Extism (Wasm plugins) | [`tenant_pluggable_logic.md`](../rules/tenant_pluggable_logic.md) |
+| **Workflows** | Durable Orchestration & Statecharts | Temporal.io SDKs, Camunda/Zeebe (BPMN 2.0) | [`tenant_pluggable_logic.md`](../rules/tenant_pluggable_logic.md) |
+| **Caching** | Abstract Cache Port with XFetch | Redis, Valkey, Dragonfly, Memcached, Local LRU | [`caching.md`](../rules/caching.md) |
+| **Feature Flags** | OpenFeature Standard | Flipt, Unleash, LaunchDarkly, GoFeatureFlag | [`feature_flags.md`](../rules/feature_flags.md) |
+| **Testing** | Outside-In TDD, BDD & Consumer Contracts | Cucumber/Gherkin, Pact, Schemathesis | [`test_driven_development.md`](../rules/test_driven_development.md) |
+| **Presentation / SDUI** | Declarative JSON SDUI + DTCG Tokens | Web (React/Vue/Svelte), Mobile (Flutter/Native) | [`server_driven_ui.md`](../rules/server_driven_ui.md) |
+| **Transactional Email** | Declarative Email Specs / MJML | SMTP Gateway, Mailpit (Local), SES/Sendgrid | [`transactional_email.md`](../rules/transactional_email.md) |
+| **Event Streaming** | CNCF CloudEvents v1.0.2 | Kafka, NATS JetStream, RabbitMQ, SQS | [`database_transactions.md`](../rules/database_transactions.md) |
+| **Observability** | OpenTelemetry OTLP standard | OTel Collector, Jaeger, Prometheus, OpenSearch | [`cloud_native.md`](../rules/cloud_native.md) |
+

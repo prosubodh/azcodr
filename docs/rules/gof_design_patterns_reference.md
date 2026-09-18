@@ -1,6 +1,6 @@
-# Gang of Four (GoF) Design Patterns — Enterprise TypeScript Reference
+# Gang of Four (GoF) Design Patterns — Universal Enterprise Reference
 
-> **Core Mandate:** Master catalog of all 23 Gang of Four design patterns implemented in production-grade TypeScript, mapped to real-world domain architectures.
+> **Core Mandate:** Master catalog of all 23 Gang of Four design patterns mapped to real-world domain architectures across OOP and functional polyglot systems.
 
 ---
 
@@ -8,14 +8,14 @@
 
 Creational patterns abstract the instantiation process, making systems independent of how objects are created and composed.
 
-1. **Factory Method**: Define an interface for creating an object, but let subclasses/factory functions decide which class to instantiate.
+1. **Factory Method**: Define an interface for creating an object, but let subclasses or factory functions decide which class to instantiate.
    - *Use Case:* Tenant-specific payment gateway instantiation (`StripeAdapter` vs `PayPalAdapter`).
 2. **Abstract Factory**: Provide an interface for creating families of related or dependent objects without specifying concrete classes.
-   - *Use Case:* Multi-cloud storage factories creating matching `FileUploader`, `FileDownloader`, and `PresignedUrlGenerator` for S3 or MinIO.
+   - *Use Case:* Multi-cloud storage factories creating matching `FileUploader`, `FileDownloader`, and `PresignedUrlGenerator` for S3, GCS, or MinIO.
 3. **Builder**: Separate the construction of a complex object from its representation, allowing the same construction process to create different representations.
    - *Use Case:* Fluent query builders, complex report generators, or test data builders (`OrderBuilder.withItems(...).build()`).
 4. **Prototype**: Specify the kinds of objects to create using a prototypical instance, creating new objects by cloning this prototype.
-   - *Use Case:* Fast cloning of default tenant configuration templates without querying the database.
+   - *Use Case:* Fast cloning of default tenant configuration templates without querying storage.
 5. **Singleton (DI-Scoped)**: Ensure a class has only one instance and provide a global point of access.
    - *Rule:* Avoid global static singletons (causes test coupling). Enforce singleton lifecycle strictly through Dependency Injection (DI) containers.
 
@@ -26,7 +26,7 @@ Creational patterns abstract the instantiation process, making systems independe
 Structural patterns deal with object composition and relationships, ensuring subsystems remain decoupled and flexible.
 
 6. **Adapter (Mandatory)**: Convert the interface of a class into another interface clients expect.
-   - *Use Case:* Wrapping 3rd-party SDKs (Nodemailer, Redis, Stripe) in application-owned interfaces. *Rule: Only mock types you own.*
+   - *Use Case:* Wrapping 3rd-party SDKs, storage drivers, and external network clients in application-owned interfaces. *Rule: Only mock types you own.*
 7. **Bridge**: Decouple an abstraction from its implementation so the two can vary independently.
    - *Use Case:* Decoupling notification abstractions (`UrgentNotification`, `BatchNotification`) from delivery channels (`EmailChannel`, `SlackChannel`).
 8. **Composite**: Compose objects into tree structures to represent part-whole hierarchies.
@@ -38,7 +38,7 @@ Structural patterns deal with object composition and relationships, ensuring sub
 11. **Flyweight**: Use sharing to support large numbers of fine-grained objects efficiently.
     - *Use Case:* In-memory sharing of immutable tenant metadata and shared system role permission definitions.
 12. **Proxy**: Provide a surrogate or placeholder for another object to control access to it.
-    - *Use Case:* Lazy-loading database relations, virtual proxies for large assets, or tenant-scoped PostgreSQL connection proxies.
+    - *Use Case:* Lazy-loading database relations, virtual proxies for large assets, or tenant-scoped connection proxies.
 
 ---
 
@@ -47,9 +47,9 @@ Structural patterns deal with object composition and relationships, ensuring sub
 Behavioral patterns characterize the ways in which classes or objects interact and distribute responsibility.
 
 13. **Chain of Responsibility**: Pass requests along a chain of handlers until a handler processes it or the chain ends.
-    - *Use Case:* Express/Fastify middleware pipelines (Authentication ➔ TenantResolution ➔ RateLimiting ➔ Controller).
+    - *Use Case:* Inbound gateway middleware pipelines (Authentication ➔ TenantResolution ➔ RateLimiting ➔ Controller).
 14. **Command**: Encapsulate a request as an object, thereby letting you parameterize clients with different requests, queue or log requests, and support undo.
-    - *Use Case:* Asynchronous job queues (BullMQ tasks), transactional audit commands, CQRS command handlers.
+    - *Use Case:* Asynchronous job queues, transactional audit commands, CQRS command handlers.
 15. **Interpreter**: Given a language, define a representation for its grammar along with an interpreter that uses the representation to interpret sentences.
     - *Use Case:* Custom search filter parsers (`status:active AND tier:pro`) or rule engine expression evaluation.
 16. **Iterator**: Provide a way to access the elements of an aggregate object sequentially without exposing its underlying representation.

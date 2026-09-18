@@ -1,39 +1,52 @@
 # Caching Strategies & Event-Driven Invalidation
 
-> **Core Mandate:** Enforce Redis Cache-Aside with namespaced keys and jittered TTLs, event-driven cache invalidation, and HTTP conditional caching (ETags / 304).
+> **Core Mandate:** Enforce Cache Port semantics with namespaced keys, jittered TTLs, XFetch stampede defense, event-driven cache invalidation, and HTTP conditional caching (ETags / 304).
 
 ---
 
-## 1. Redis Cache-Aside Pattern
+## 1. Abstract Cache Port & Cache-Aside Pattern
 
-```typescript
-export async function getCachedOrFetch<T>(
-  redis: RedisClient,
-  key: string,
-  ttlSeconds: number,
-  fetcher: () => Promise<T>
-): Promise<T> {
-  const cached = await redis.get(key);
-  if (cached) return JSON.parse(cached) as T;
+Application services interact with caching infrastructure through a swappable **Cache Port**, supporting any backend (Redis, Valkey, Dragonfly, KeyDB, Memcached, or in-memory LRU):
 
-  const fresh = await fetcher();
-  // Add 10% random jitter to prevent cache stampedes
-  const jitter = Math.floor(Math.random() * (ttlSeconds * 0.1));
-  await redis.set(key, JSON.stringify(fresh), 'EX', ttlSeconds + jitter);
-  return fresh;
-}
 ```
+┌────────────────────────────────────────────────────────┐
+│ Cache Port Interface (Agnostic Contract)               │
+├────────────────────────────────────────────────────────┤
+│ get(key): Optional<String>                             │
+│ set(key, value, ttlSeconds): void                      │
+│ delete(key): void                                      │
+│ deletePattern(pattern): void                           │
+│ acquireLock(lockKey, ttlMs): boolean                   │
+└────────────────────────────────────────────────────────┘
+```
+
+### Cache-Aside Implementation & Stampede Defense
+```
+function getCachedOrFetch(cachePort, key, ttlSeconds, fetcher):
+  cachedValue = cachePort.get(key)
+  if cachedValue is present:
+    return deserialize(cachedValue)
+
+  freshValue = fetcher()
+  // Add 10% random jitter to TTL to prevent simultaneous expiration spikes
+  jitter = randomInt(0, floor(ttlSeconds * 0.1))
+  cachePort.set(key, serialize(freshValue), ttlSeconds + jitter)
+  return freshValue
+```
+
+For high-throughput cache regeneration, employ the **XFetch algorithm** (probabilistic early expiration) to asynchronously warm the cache before hard expiry.
 
 ---
 
 ## 2. Key Namespacing & Event-Driven Invalidation
 
-- **Key Format**: `tenant:{tenantId}:{entity}:{entityId}` (e.g. `tenant:123:user:456`).
-- **Event-Driven Invalidation**: Invalidate cache keys immediately upon entity mutation events via domain events or pub/sub rather than waiting for TTL expiration.
+- **Universal Key Hierarchy**: Structure all keys hierarchically:
+  `tenant:{tenantId}:{entity}:{entityId}` (e.g. `tenant:123:order:987`)
+- **Event-Driven Invalidation**: Invalidate affected cache keys immediately upon emitting domain mutation events (`OrderUpdated`, `CustomerDeleted`) rather than waiting for passive TTL expiry.
 
 ---
 
 ## 3. HTTP Conditional Caching (ETags)
 
-- Generate cryptographic `ETag` headers for cacheable GET responses.
-- Return **`304 Not Modified`** without payload when client sends matching `If-None-Match`.
+- Generate strong cryptographic `ETag` hashes (e.g. SHA-256 of representation or resource version) for cacheable `GET` endpoints.
+- Return **`304 Not Modified`** with zero payload body when inbound requests present matching `If-None-Match` headers, preserving bandwidth and client CPU.

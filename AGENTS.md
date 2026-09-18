@@ -3,7 +3,8 @@
 > **Operating Framework & Agent Directives**  
 > **Rule Zero:** Assume nothing. Every action must be grounded in verified evidence from this workspace or direct instructions from the user.  
 > **Open-Source Mandate:** Always utilize 100% open-source tools, frameworks, libraries, and packages across all architectural domains.  
-> **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, and composable with full ACID safety).
+> **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, and composable with full ACID safety).  
+> **Agnostic Mandate:** Decouple domain core from transient technologies, languages, and stacks (Hexagonal Ports & Adapters; zero language bias).
 
 ---
 
@@ -13,10 +14,11 @@
 1. **No External Assumptions:** You have no prior knowledge of external setups, hidden tools, libraries, or unverified conventions outside this workspace.
 2. **Ground Truth Only:** A statement is only true if proven by a workspace file, verified command output, or direct user instruction.
 3. **Unknown Until Verified:** If something is not explicitly written in the workspace or stated by the user, treat it as unknown.
-4. **Strict Open-Source Standards:** Standardize exclusively on open-source solutions (e.g. Semgrep, Trivy, Gitleaks, OpenTelemetry, Pino, Vitest, Playwright, PostgreSQL, Redis, Radix UI).
-5. **Systemic Atomicity:** Every skill, rule, database transaction, and refactoring step must be atomic (Single Responsibility, zero side-effects, full rollback on failure).
-6. **Workspace Sovereignty:** Total containment within the local workspace root (`./`). Zero interference or leakage from global system configs, tools, or external sibling projects.
-7. **Continuous Learning:** Log all defects, DO's/DONT's, and lessons into `docs/knowledge/` and `memory.md`, dynamically updating atomic rules.
+4. **Strict Open Standards:** Standardize on open-source solutions and open specs (Semgrep, Trivy, Gitleaks, OpenTelemetry, OPA, OCI, Wasm, CloudEvents).
+5. **Universal Agnosticism:** Core business rules are technology-, language-, and stack-agnostic; runtimes connect via swappable adapters with zero language bias.
+6. **Systemic Atomicity:** Every skill, rule, database transaction, and refactoring step must be atomic (Single Responsibility, zero side-effects, full rollback).
+7. **Workspace Sovereignty:** Total containment within the local workspace root (`./`). Zero interference from global configs, tools, or sibling projects.
+8. **Continuous Learning:** Log all defects, DO's/DONT's, and lessons into `docs/knowledge/` and `memory.md`, dynamically updating atomic rules.
 
 ### The 5 Core Branch Questions
 Before acting on any decision branch, answer:
@@ -55,34 +57,34 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Test Coverage & Isolation** | [docs/rules/test_isolation.md](./docs/rules/test_isolation.md) | 100.00% full-stack coverage, status codes, transactional DB rollback. |
 | **Clean Code** | [docs/rules/clean_code.md](./docs/rules/clean_code.md) | Naming, small functions, CQS, SLAP, DRY, DbC, zero side-effects. |
 | **Design Patterns** | [docs/rules/design_patterns.md](./docs/rules/design_patterns.md) | Adapter, Factory, Facade, Strategy, and Result `<T, E>` pattern. |
-| **GoF Design Patterns** | [docs/rules/gof_design_patterns_reference.md](./docs/rules/gof_design_patterns_reference.md) | Complete reference of all 23 GoF patterns with TypeScript implementations. |
-| **TypeScript** | [docs/rules/typescript.md](./docs/rules/typescript.md) | Compiler strictness, branded nominal types, no `any`, runtime type narrowing. |
+| **GoF Design Patterns** | [docs/rules/gof_design_patterns_reference.md](./docs/rules/gof_design_patterns_reference.md) | Complete reference of all 23 GoF patterns across OOP and functional paradigms. |
+| **Type Safety** | [docs/rules/typescript.md](./docs/rules/typescript.md) | Compiler strictness, branded nominal types, type safety, static sound invariants. |
 | **ADRs** | [docs/rules/architecture_decision_records.md](./docs/rules/architecture_decision_records.md) | Authoring Lightweight Architectural Decision Records in `memory.md`. |
 | **Authentication** | [docs/rules/authentication.md](./docs/rules/authentication.md) | In-memory access tokens, refresh token rotation (RTR), WebAuthn passkeys. |
-| **Authorization** | [docs/rules/authorization.md](./docs/rules/authorization.md) | CASL ABAC/RBAC permissions, OPA Rego policy engines, server guards. |
-| **Multi-Tenancy Isolation** | [docs/rules/multitenancy_isolation.md](./docs/rules/multitenancy_isolation.md) | Tenant context resolution, PostgreSQL RLS dual-layer isolation, lifecycle. |
+| **Authorization** | [docs/rules/authorization.md](./docs/rules/authorization.md) | CASL, OPA Rego policy engines, OpenFGA ReBAC, server guards. |
+| **Multi-Tenancy Isolation** | [docs/rules/multitenancy_isolation.md](./docs/rules/multitenancy_isolation.md) | Tenant context resolution, 4 universal data isolation models, RLS/interceptor safety. |
 | **REST API Conventions** | [docs/rules/rest_api_conventions.md](./docs/rules/rest_api_conventions.md) | Standard HTTP status codes, enumeration masking, subresource endpoints. |
 | **Advanced API Patterns** | [docs/rules/advanced_api_patterns.md](./docs/rules/advanced_api_patterns.md) | Allowed Actions (`_actions`), Idempotency keys, cursor pagination, OCC. |
 | **API Versioning** | [docs/rules/api_versioning.md](./docs/rules/api_versioning.md) | URI versioning (`/v1/`), RFC 8594 Sunset/Deprecation headers, 90-day window. |
-| **Tenant Dynamic Schemas** | [docs/rules/tenant_dynamic_schemas.md](./docs/rules/tenant_dynamic_schemas.md) | Hybrid core + JSONB, ajv JSON Schema validation, meta-schema virtual entities. |
-| **Tenant Pluggable Logic** | [docs/rules/tenant_pluggable_logic.md](./docs/rules/tenant_pluggable_logic.md) | Strategy registries, json-rules-engine, XState workflows, QuickJS sandbox. |
-| **Server-Driven UI** | [docs/rules/server_driven_ui.md](./docs/rules/server_driven_ui.md) | Metadata-driven UI layout schemas, component registries, dynamic design tokens. |
+| **Tenant Dynamic Schemas** | [docs/rules/tenant_dynamic_schemas.md](./docs/rules/tenant_dynamic_schemas.md) | Hybrid core + JSON/document storage, JSON Schema Draft 2020-12, meta-schemas. |
+| **Tenant Pluggable Logic** | [docs/rules/tenant_pluggable_logic.md](./docs/rules/tenant_pluggable_logic.md) | Common Expression Language (CEL), Wasm sandboxing, durable workflows (Temporal/BPMN). |
+| **Server-Driven UI** | [docs/rules/server_driven_ui.md](./docs/rules/server_driven_ui.md) | Client-agnostic layout schemas, multi-renderer component registries, DTCG tokens. |
 | **Database Transactions** | [docs/rules/database_transactions.md](./docs/rules/database_transactions.md) | ACID atomicity, isolation levels, defensive timeouts, transactional outbox. |
-| **Database Migrations** | [docs/rules/database_migrations.md](./docs/rules/database_migrations.md) | Versioned migrations, zero-downtime expand-contract, concurrent indexes. |
+| **Database Migrations** | [docs/rules/database_migrations.md](./docs/rules/database_migrations.md) | Declarative/versioned migrations (Atlas/Flyway), zero-downtime expand-contract. |
 | **Database Integrity** | [docs/rules/database_integrity.md](./docs/rules/database_integrity.md) | Foreign keys, domain CHECK constraints, interval EXCLUDE, soft-delete indexes. |
-| **Database Operations** | [docs/rules/database_operations.md](./docs/rules/database_operations.md) | Continuous PITR (pgBackRest/Barman), autovacuum, pg_repack, role separation. |
+| **Database Operations** | [docs/rules/database_operations.md](./docs/rules/database_operations.md) | Continuous PITR, autovacuum/defrag tuning, connection pooling, role separation. |
 | **Database Performance** | [docs/rules/database_performance.md](./docs/rules/database_performance.md) | Eliminating N+1 queries, DataLoader batching, composite tenant indexes. |
-| **Caching** | [docs/rules/caching.md](./docs/rules/caching.md) | Redis Cache-Aside, key namespacing, jittered TTLs, event-driven eviction, ETags. |
-| **Application Security** | [docs/rules/application_security.md](./docs/rules/application_security.md) | OWASP Top 10 defenses, cryptographic rigor, Redis token bucket rate limiting. |
+| **Caching** | [docs/rules/caching.md](./docs/rules/caching.md) | Cache Port semantics, Cache-Aside, jittered TTLs, XFetch stampede defense. |
+| **Application Security** | [docs/rules/application_security.md](./docs/rules/application_security.md) | OWASP Top 10 defenses, cryptographic rigor, token bucket rate limiting. |
 | **Regulatory Compliance** | [docs/rules/compliance.md](./docs/rules/compliance.md) | SOC 2 Type II controls, ISO/IEC 27001 ISMS, GDPR data erasure rights. |
 | **DevSecOps** | [docs/rules/devsecops.md](./docs/rules/devsecops.md) | Secretlint pre-commit gating, CycloneDX SBOM generation, Trivy/Grype scanning. |
-| **Error Architecture** | [docs/rules/error_handling.md](./docs/rules/error_handling.md) | Fail-fast Zod env validation, structured Pino request tracing, error envelopes. |
+| **Error Architecture** | [docs/rules/error_handling.md](./docs/rules/error_handling.md) | Fail-fast schema validation, structured OTel/Pino tracing, RFC 7807 envelopes. |
 | **Feature Flags** | [docs/rules/feature_flags.md](./docs/rules/feature_flags.md) | OpenFeature standard, Flipt/Unleash backends, targeting, kill switches. |
 | **Continuous Integration** | [docs/rules/continuous_integration.md](./docs/rules/continuous_integration.md) | Shift-left automated pipelines, trunk-based development, build caching. |
 | **Continuous Deployment** | [docs/rules/continuous_deployment.md](./docs/rules/continuous_deployment.md) | Zero-downtime rollouts, Cosign container signing, container minimization. |
-| **Container Infrastructure** | [docs/rules/container_infrastructure.md](./docs/rules/container_infrastructure.md) | Unified Nginx gateway, Docker healthcheck orchestration, non-root user security. |
-| **Transactional Email** | [docs/rules/transactional_email.md](./docs/rules/transactional_email.md) | Typed React Email templates, safe interpolation, Mailpit integration testing. |
-| **Accessibility** | [docs/rules/accessibility.md](./docs/rules/accessibility.md) | WCAG 2.2 AA compliance, Radix UI modals, focus trapping, ARIA live regions. |
+| **Container Infrastructure** | [docs/rules/container_infrastructure.md](./docs/rules/container_infrastructure.md) | Unified gateway, minimal OCI distroless/scratch containers, non-root user security. |
+| **Transactional Email** | [docs/rules/transactional_email.md](./docs/rules/transactional_email.md) | Declarative templates (MJML/JSON), safe interpolation, SMTP integration testing. |
+| **Accessibility** | [docs/rules/accessibility.md](./docs/rules/accessibility.md) | WCAG 2.2 AA compliance, accessible primitives, focus trapping, ARIA live regions. |
 | **UI Navigation** | [docs/rules/ui_navigation.md](./docs/rules/ui_navigation.md) | Bidirectional URL state synchronization, deep linking, search params. |
 | **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | INVEST user stories, executable Gherkin acceptance criteria, edge case matrices. |
 | **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Value Objects, Aggregates. |

@@ -4,17 +4,18 @@
 
 ---
 
-## 1. PostgreSQL Transaction Isolation Levels
+## 1. ANSI SQL Transaction Isolation Levels
 
-1. **`Read Committed` (Default):** Guarantees statements see only committed data (eliminates dirty reads).
-2. **`Repeatable Read` (Snapshot Isolation):** All statements within the transaction see the exact same database snapshot taken at transaction start. Mandatory for multi-table financial calculations, invoice aggregation, and inventory decrement operations.
-3. **`Serializable`:** Strict serializability. Prevents phantom reads and write skew. Mandatory for complex booking/reservation allocation. Requires application-level retry loops with exponential backoff to handle serialization failures (`SQLSTATE 40001: serialization_failure`).
+1. **`Read Committed` (Default):** Guarantees statements see only committed data (eliminates dirty reads). Suitable for standard CRUD operations.
+2. **`Repeatable Read` (Snapshot Isolation):** All operations within the transaction see the exact same database snapshot taken at transaction start. Mandatory for multi-entity financial calculations, ledger balance transfers, and inventory decrement operations.
+3. **`Serializable`:** Strict serializability. Prevents phantom reads and write skew. Mandatory for complex booking and seat allocation operations. Requires application-level retry loops with jittered exponential backoff to handle serialization failures.
 
 ---
 
 ## 2. Defensive Timeouts & Deadlock Prevention
 
-Prevent hung transactions or lock waits from starving connection pools:
+Prevent hung transactions or lock waits from starving database connection pools across any engine:
+
 ```sql
 SET lock_timeout = '3s';                           -- Abort if lock cannot be acquired within 3s
 SET statement_timeout = '10s';                      -- Abort queries running longer than 10s
@@ -22,41 +23,29 @@ SET idle_in_transaction_session_timeout = '30s';   -- Abort hung transactions id
 ```
 
 ### Deterministic Lock Ordering
-Always acquire locks on entities in a globally consistent order across application services (e.g. sort resource IDs lexicographically) to prevent deadlocks.
+Always acquire locks on entities in a globally consistent order across application services (e.g. sort resource IDs lexicographically before issuing `SELECT ... FOR UPDATE`) to prevent circular wait deadlocks.
 
 ---
 
-## 3. Prisma Interactive Transactions
+## 3. Abstract Unit of Work & Transaction Boundaries
 
-```typescript
-import { PrismaClient, Prisma } from '@prisma/client';
+Application services must control transaction boundaries via an abstract **Unit of Work** port, keeping domain logic decoupled from concrete ORMs:
 
-export async function transferFunds(
-  prisma: PrismaClient,
-  sourceId: string,
-  destId: string,
-  amount: number
-): Promise<void> {
-  await prisma.$transaction(
-    async (tx) => {
-      const source = await tx.account.update({
-        where: { id: sourceId },
-        data: { balance: { decrement: amount } }
-      });
-      if (source.balance < 0) throw new Error('Insufficient funds');
-
-      await tx.account.update({
-        where: { id: destId },
-        data: { balance: { increment: amount } }
-      });
-    },
-    {
-      maxWait: 5000,
-      timeout: 10000,
-      isolationLevel: Prisma.TransactionIsolationLevel.RepeatableRead
-    }
-  );
-}
+```
+┌────────────────────────────────────────────────────────┐
+│ Unit of Work Port Contract (Agnostic Specification)    │
+├────────────────────────────────────────────────────────┤
+│ executeTransaction(options, transactionCallback):       │
+│   options:                                             │
+│     isolationLevel: READ_COMMITTED | REPEATABLE_READ   │
+│     timeoutMs: integer (default 10000)                 │
+│     maxWaitMs: integer (default 5000)                  │
+│   behavior:                                            │
+│     1. Begin transaction on scoped connection          │
+│     2. Execute callback with transactional context     │
+│     3. On error: Rollback and propagate domain error   │
+│     4. On success: Commit atomically                   │
+└────────────────────────────────────────────────────────┘
 ```
 
 ---
@@ -66,18 +55,27 @@ export async function transferFunds(
 Never write to the database and publish to a message broker sequentially. Persist the domain mutation and the event record atomically within the same database transaction:
 
 ```sql
-CREATE TABLE "OutboxEvent" (
-  id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
-  tenant_id UUID NOT NULL REFERENCES "Tenant"(id) ON DELETE CASCADE,
+CREATE TABLE outbox_events (
+  id VARCHAR(64) PRIMARY KEY,
+  tenant_id VARCHAR(64) NOT NULL,
   aggregate_type VARCHAR(64) NOT NULL,
   aggregate_id VARCHAR(64) NOT NULL,
   event_type VARCHAR(128) NOT NULL,
-  payload JSONB NOT NULL,
+  payload TEXT NOT NULL,
   status VARCHAR(32) NOT NULL DEFAULT 'PENDING',
-  created_at TIMESTAMPTZ NOT NULL DEFAULT NOW()
+  created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP
 );
 
-CREATE INDEX idx_outbox_pending ON "OutboxEvent"(status, created_at) WHERE status = 'PENDING';
+CREATE INDEX idx_outbox_pending ON outbox_events(status, created_at);
 ```
 
-- **Asynchronous Relaying**: Relay outbox events via Logical CDC (Debezium + `pgoutput`) or worker polling using `FOR UPDATE SKIP LOCKED`.
+### Asynchronous Outbox Relaying
+- **Change Data Capture (CDC)**: Stream transaction logs directly to Kafka/NATS using tools like **Debezium**.
+- **Polling Worker**: Run background workers executing non-blocking polling:
+  ```sql
+  SELECT * FROM outbox_events 
+  WHERE status = 'PENDING' 
+  ORDER BY created_at ASC 
+  LIMIT 100 
+  FOR UPDATE SKIP LOCKED;
+  ```

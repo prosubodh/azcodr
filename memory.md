@@ -38,3 +38,10 @@
 - **Context:** Composite rules with conjunction names (`this_and_that.md`) mix disparate technical concerns, creating documentation bloat and ambiguity.
 - **Decision:** Decompose all rules into strictly atomic, single-topic rule files with zero conjunction names, enforcing Single Responsibility Principle across skills, rules, and database operations.
 - **Consequences:** 37 highly modular, composable, and maintainable domain rules with zero cross-leakage.
+
+### ADR-005: Universal Technology, Language, and Stack Agnosticism
+- **Date:** 2026-09-18 | **Status:** ACCEPTED
+- **Context:** Tightly coupling architecture rules and specifications to a single programming language (TypeScript), runtime (Node.js), ORM (Prisma), or database engine (PostgreSQL) creates technical lock-in and prevents polyglot implementation.
+- **Decision:** Adopt a Two-Tier Hexagonal / Ports-and-Adapters model across the entire system. Tier 1 mandates 100% technology-, language-, and stack-agnostic invariant domain capabilities and open standard specifications (Protocol Buffers v3, OpenAPI 3.1, JSON Schema Draft 2020-12, AsyncAPI, CloudEvents, W3C DTCG Design Tokens, CEL, Wasm/WASI, OPA/OpenFGA) with zero language bias or primary reference designation. Tier 2 encapsulates interchangeable polyglot adapters (Go, Rust, Python, Java, TypeScript, etc.).
+- **Consequences:** Eliminates language and framework lock-in, enables polyglot microservice implementation, future-proofs the enterprise architecture, and enforces pure boundary decoupling.
+

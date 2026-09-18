@@ -6,29 +6,35 @@
 
 ## 1. Structural & Creational Patterns
 
-- **Adapter Pattern (Crucial Boundary)**: Wrap all 3rd-party libraries, SDKs, or external services in project-owned adapter interfaces. *Rule: Only mock types you own.*
+- **Adapter Pattern (Hexagonal Boundary)**: Wrap all external libraries, database drivers, cloud SDKs, and third-party APIs in project-owned adapter interfaces. *Rule: Only mock types you own.*
 - **Factory Method**: Encapsulate complex collaborator instantiation (e.g. tenant-specific payment gateways or notification dispatchers) behind factory functions.
 - **Facade Pattern**: Expose a unified, simplified interface to complex underlying multi-service subsystems.
-- **Decorator / Middleware**: Compose cross-cutting concerns (logging, authentication, tenant resolution, rate-limiting) via middleware chains.
+- **Decorator / Middleware**: Compose cross-cutting concerns (observability, authentication, tenant context resolution, rate limiting) via middleware pipelines.
 
 ---
 
-## 2. Behavioral Patterns & Domain Errors
+## 2. Behavioral Patterns & Explicit Result Types
 
-- **Strategy Pattern**: Swap algorithms or execution behavior at runtime (e.g. tenant-specific discount strategies, notification transports).
+- **Strategy Pattern**: Swap algorithms or execution behavior at runtime without code changes (e.g. tenant-specific pricing algorithms, shipping calculation strategies).
 - **Result / Either Pattern**: Model anticipated domain errors as explicit return values (`Result<T, E>`) rather than throwing untyped exceptions across architectural boundaries:
 
-```typescript
-export type Result<T, E = Error> =
-  | { success: true; data: T }
-  | { success: false; error: E };
-
-export const ok = <T>(data: T): Result<T, never> => ({ success: true, data });
-export const err = <E>(error: E): Result<never, E> => ({ success: false, error });
 ```
+┌────────────────────────────────────────────────────────┐
+│ Universal Result Pattern Semantics                     │
+├────────────────────────────────────────────────────────┤
+│ Result<T, E> = Ok(T) | Err(E)                          │
+│                                                        │
+│ Rust:       Result<T, DomainError>                     │
+│ Go:         (T, error)                                 │
+│ TypeScript: type Result<T, E> = Ok<T> | Err<E>         │
+│ Python:     Union[Success[T], Failure[E]]              │
+└────────────────────────────────────────────────────────┘
+```
+
+Domain services must return explicit Result types, compelling callers to handle failure branches deterministically.
 
 ---
 
 ## 3. GoF 23 Patterns Catalog
 
-For production TypeScript implementations of all 23 Gang of Four patterns, consult [docs/rules/gof_design_patterns_reference.md](./gof_design_patterns_reference.md).
+For reference implementations of all 23 Gang of Four patterns across OOP and functional paradigms, consult [docs/rules/gof_design_patterns_reference.md](./gof_design_patterns_reference.md).

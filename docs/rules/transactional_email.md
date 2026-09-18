@@ -1,20 +1,20 @@
 # Transactional Email Subsystem
 
-> **Core Mandate:** Enforce typed React Email templates, safe token interpolation, and deterministic local test delivery through Mailpit SMTP routing.
+> **Core Mandate:** Enforce declarative email templates, safe variable interpolation, and deterministic local test delivery through Mailpit SMTP routing.
 
 ---
 
-## 1. Typed React Email Templates
+## 1. Declarative & Typed Email Templates
 
-- **Shared Templates**: Maintain typed React Email templates (`@mvp/emails`) shared between backend rendering engines and frontend preview development servers.
-- **Safe Token Interpolation**: Use typed template props and token interpolation (`{{token}}`, `{{resetUrl}}`) over raw, unescaped HTML string concatenation to prevent Cross-Site Scripting (XSS).
+- **Declarative Template Definition**: Author transactional email templates using language-agnostic markup formats (such as **MJML - Mailjet Markup Language**) or typed component schemas to ensure cross-client rendering consistency across Outlook, Gmail, and Apple Mail.
+- **Safe Variable Interpolation**: Strictly prohibit unescaped raw HTML string concatenation. Always use context-aware template engines that automatically escape HTML special characters to prevent Cross-Site Scripting (XSS) and injection vulnerabilities.
 
 ---
 
 ## 2. Local Mail Transport & Integration Verification
 
 - **Local SMTP via Mailpit**:
-  - Route local SMTP delivery to Mailpit (SMTP port 1025 / Web UI port 8025).
-  - Never send actual emails to public mail transfer agents during automated tests or local development.
-- **Test Assertion Protocol**:
-  - Assert email delivery in integration tests by querying Mailpit's REST API (`GET http://localhost:8025/api/v1/messages`) to verify sent email content, subject, headers, and delivery recipients deterministically.
+  - Route local and CI SMTP traffic to **Mailpit** (SMTP port 1025 / Web UI port 8025).
+  - Never route emails to public mail transfer agents (MTAs) or external API gateways during automated test runs or local development.
+- **Deterministic API Assertion Protocol**:
+  - Assert email delivery in integration tests by querying Mailpit's REST API (`GET /api/v1/messages`) to inspect recipient headers, delivery status, HTML body content, and verification links without timing dependencies.

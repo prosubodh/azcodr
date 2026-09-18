@@ -1,31 +1,33 @@
 # DevSecOps, Secret Scanning & SBOM Standards
 
-> **Core Mandate:** Enforce automated pre-commit secret gating via Secretlint, CycloneDX 1.6 SBOM generation, and vulnerability scanning with open-source tools.
+> **Core Mandate:** Enforce automated pre-commit secret gating, CycloneDX SBOM generation, polyglot SAST via Semgrep, and container/lockfile scanning with Trivy.
 
 ---
 
 ## 1. Automated Pre-Commit Secret Gating
 
-- Run open-source `secretlint --no-glob` on every staged commit via `lint-staged`.
-- Never bypass git commit hooks or commit secrets, private keys, or API tokens to the repository.
+- Run open-source secret scanning (**`gitleaks`** or **`secretlint`**) on every staged commit via pre-commit hooks.
+- Never bypass git commit hooks (`--no-verify`). Strictly forbid committing credentials, private keys, certificates, or API tokens to version control.
 
 ---
 
 ## 2. Software Bill of Materials (SBOM) Generation
 
-- Generate reproducible CycloneDX 1.6 SBOMs for backend and frontend builds using open-source `syft` or `@cyclonedx/cyclonedx-npm`:
+- Generate reproducible **CycloneDX 1.6** or **SPDX** SBOMs for all build artifacts using open-source **`syft`**:
   ```bash
-  syft dir:. -o cyclonedx-json=bom.json
+  syft dir:. -o cyclonedx-json=sbom.json
   ```
-- Archive the generated `bom.json` alongside release artifacts.
+- Archive the generated `sbom.json` alongside release binaries and container registries.
+- Sign release artifacts and container images cryptographically using **Cosign** (Sigstore) with SLSA provenance attestation.
 
 ---
 
-## 3. Dependency & Container CVE Scanning
+## 3. Polyglot SAST & Vulnerability Scanning
 
-- Scan dependencies and container base images using open-source `trivy` and `grype`:
+- **Static Analysis (SAST)**: Standardize on **Semgrep** for cross-language security and quality linting across Go, Rust, Python, Java, and TypeScript.
+- **Dependency & Container CVE Scanning**: Scan lockfiles (`go.mod`, `Cargo.lock`, `package-lock.json`, `poetry.lock`, `pom.xml`) and OCI container base images using open-source **`trivy`** and **`grype`**:
   ```bash
   trivy fs --severity HIGH,CRITICAL .
-  grype sbom:bom.json
+  grype sbom:sbom.json
   ```
-- Any unpatched Critical or High CVE halts the build pipeline.
+- Any unpatched `HIGH` or `CRITICAL` Common Vulnerabilities and Exposures (CVE) halts the continuous integration pipeline immediately.

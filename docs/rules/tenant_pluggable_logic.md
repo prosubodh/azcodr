@@ -1,84 +1,59 @@
 # Pluggable Multi-Tenant Business Logic & Workflows
 
-> **Core Mandate:** Eliminate `if-tenant` conditional branching via Strategy registries, declarative JSON rule engines, configurable statecharts, and secure WebAssembly script sandboxing.
+> **Core Mandate:** Eliminate `if-tenant` conditional branching via Strategy registries, Common Expression Language (CEL), durable workflow orchestration, and secure WebAssembly (Wasm) micro-sandboxes.
 
 ---
 
-## 1. Strategy Pattern & Dynamic Registry
+## 1. Strategy Pattern & Dynamic Strategy Registry
 
-Encapsulate diverging algorithms into discrete strategies conforming to a unified domain interface:
+Encapsulate diverging tenant algorithms into discrete strategies conforming to a unified domain port:
 
-```typescript
-export interface DiscountStrategy {
-  calculateDiscount(order: { total: number }): number;
-}
+```
+┌────────────────────────────────────────────────────────┐
+│ Discount Strategy Port Contract                        │
+├────────────────────────────────────────────────────────┤
+│ calculateDiscount(order): Decimal                      │
+└────────────────────────────────────────────────────────┘
+```
 
-export class StandardDiscountStrategy implements DiscountStrategy {
-  calculateDiscount(order: { total: number }): number {
-    return order.total >= 500 ? order.total * 0.05 : 0;
-  }
-}
+The application maintains an in-memory Strategy Registry resolving the active strategy based on `tenant.subscriptionTier` or custom tenant config:
 
-export class StrategyRegistry {
-  private static strategies = new Map<string, DiscountStrategy>();
+```
+StrategyRegistry.register("standard", StandardDiscountStrategy)
+StrategyRegistry.register("enterprise_vip", HighVolumeTierStrategy)
 
-  static register(key: string, strategy: DiscountStrategy): void {
-    this.strategies.set(key, strategy);
-  }
-
-  static resolve(key: string): DiscountStrategy {
-    return this.strategies.get(key) ?? new StandardDiscountStrategy();
-  }
-}
+strategy = StrategyRegistry.resolve(tenant.discountStrategyKey)
+discount = strategy.calculateDiscount(order)
 ```
 
 ---
 
-## 2. Declarative Rule Engines (`json-rules-engine`)
+## 2. Declarative Rule Evaluation: Common Expression Language (CEL)
 
-Allow tenants or administrators to configure dynamic conditional logic stored as JSON facts and conditions without deploying code:
+Allow tenants or administrators to configure dynamic conditional logic stored as declarative text or JSON without redeploying binaries. Standardize on **Common Expression Language (CEL)**:
 
-```typescript
-import { Engine } from 'json-rules-engine';
-
-export async function evaluateTenantApproval(
-  tenantRuleDefinition: object,
-  facts: { orderTotal: number; vendorTier: string }
-): Promise<boolean> {
-  const engine = new Engine();
-  engine.addRule(tenantRuleDefinition);
-
-  const results = await engine.run(facts);
-  return results.events.length > 0;
-}
+```cel
+// Example Tenant Rule Expression:
+order.total >= 500 && order.shipping_country == "US" && tenant.tier == "ENTERPRISE"
 ```
+
+- **Memory-Safe & Non-Turing Complete**: Prevents infinite loops, recursion crashes, and side-effects.
+- **Polyglot Portability**: Native compilers and runtimes available across Go (`cel-go`), Rust (`cel-rust`), Python (`cel-python`), Java (`cel-java`), and TypeScript (`cel-js`).
 
 ---
 
-## 3. Declarative Statecharts (XState)
+## 3. Durable Workflows & Orchestration (Temporal / BPMN 2.0)
 
-For tenants with diverging approval or order lifecycles, configure workflows declaratively using XState:
-
-```typescript
-import { setup } from 'xstate';
-
-export function buildTenantWorkflowMachine(config: { initial: string; states: any }) {
-  return setup({
-    guards: {
-      isAuthorized: () => true
-    }
-  }).createMachine({
-    id: 'tenantWorkflow',
-    initial: config.initial,
-    states: config.states
-  });
-}
-```
+For tenants with diverging multi-step approval, fulfillment, or refund lifecycles:
+- **Durable Execution Engines**: Standardize on **Temporal.io** or **Camunda 8 / Zeebe (BPMN 2.0)**.
+- **Resilience Guarantees**: Workflows automatically persist state across node crashes, manage timeouts, execute automatic retries, and trigger compensation transactions (Saga pattern) across polyglot workers.
+- **Tenant Workflow Selection**: The domain routes entity state transitions to tenant-specific workflow IDs configured in database metadata.
 
 ---
 
-## 4. Secure Script Sandboxing (QuickJS / `isolated-vm`)
+## 4. Secure Script Sandboxing: WebAssembly (Wasm / Extism)
 
-Never execute untrusted tenant strings in Node.js via `eval()` or `new Function()`.
-- **Execution Quotas:** Max 50ms CPU timeout, max 16MB memory limit.
-- **Isolate Environment:** Zero access to `process`, `fs`, `fetch`, or database connections.
+Never execute untrusted tenant strings via host runtime evaluation (`eval()`, dynamic reflection, or unshielded isolates).
+- **Universal Sandboxing with Extism / Wasmtime**: Tenants compile custom logic (in Rust, Go, Python, or TypeScript) to portable `.wasm` bytecode.
+- **Strict Execution Quotas**: Max 50ms CPU execution budget, max 16MB linear memory boundary.
+- **Complete Host Isolation**: Sandboxed instances possess zero access to host filesystem, network sockets, environment variables, or database connections unless explicitly passed via memory interfaces.

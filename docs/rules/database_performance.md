@@ -6,44 +6,39 @@
 
 ## 1. N+1 Query Elimination
 
-- **Never Fetch Children in Loops**:
-  ```typescript
-  // ❌ FORBIDDEN: N queries inside loop
-  const users = await prisma.user.findMany();
-  const withRoles = await Promise.all(users.map(u => prisma.userRole.findMany({ where: { userId: u.id } })));
+- **Prohibit Iterative Queries in Loops**: Never query child collections inside iteration loops.
   ```
-- **Native Eager Loading**:
-  ```typescript
-  // ✅ CORRECT: 1-2 optimized queries
-  const users = await prisma.user.findMany({
-    where: { tenantId },
-    include: { roles: true }
-  });
+  ❌ FORBIDDEN:
+  parents = query("SELECT id FROM parent_table")
+  for p in parents:
+      children = query("SELECT * FROM child_table WHERE parent_id = :id", p.id)
   ```
-- **Open-Source `dataloader`**: For decentralized service calls, batch IDs with `dataloader`.
+- **Batching & Eager Fetching**: Always fetch related entities via single `JOIN` statements or batched `IN` clauses (`WHERE parent_id IN (...)`).
+  ```
+  ✅ CORRECT:
+  parents = query("SELECT id FROM parent_table")
+  children = query("SELECT * FROM child_table WHERE parent_id IN (:ids)", parents.map(id))
+  ```
+- **Universal DataLoader Pattern**: For decentralized domain resolvers or GraphQL pipelines, employ language-native DataLoader ports to batch and deduplicate entity lookups within an execution cycle.
 
 ---
 
 ## 2. Multi-Tenant Indexing Strategy
 
 - **Tenant-Leading Composite Indexes**:
-  ```prisma
-  model Order {
-    id        String   @id @default(uuid())
-    tenantId  String
-    createdAt DateTime @default(now())
-
-    @@index([tenantId, createdAt])
-    @@unique([tenantId, orderNumber])
-  }
+  Every multi-tenant query pattern must be backed by a composite index where `tenant_id` is the primary leading column:
+  ```sql
+  CREATE INDEX idx_orders_tenant_created ON orders (tenant_id, created_at DESC);
+  CREATE UNIQUE INDEX uq_orders_tenant_number ON orders (tenant_id, order_number);
   ```
-- **Covering Indexes**: Include queried columns in compound indexes to enable PostgreSQL Index-Only Scans.
+- **Covering Indexes**:
+  Include frequently projected columns in index definitions (`INCLUDE (status, total_amount)` in engines that support index-only scans) to avoid secondary table lookups.
 
 ---
 
 ## 3. Connection Pooling & Statement Timeouts
 
-- **Pool Sizing Formula**:
-  $$\text{max\_connections} = (\text{CPU Cores} \times 2) + \text{Effective Spindle Count}$$
-- **PgBouncer**: Standardize on `pool_mode = transaction` for stateless microservice scale-out.
-- **Statement Timeout**: Set `statement_timeout = '5000'` (5s) in connection configs to abort runaway queries.
+- **Scientific Pool Sizing Formula**:
+  $$\text{max\_connections} = (\text{CPU Cores} \times 2) + \text{Effective Disk / Spindle Count}$$
+- **Transaction-Scoped Pooling**: Use lightweight connection poolers (e.g. PgBouncer, ProxySQL, or HikariCP) in transaction pooling mode to support thousands of concurrent client connections without memory exhaustion.
+- **Defensive Statement Timeout**: Enforce strict statement timeouts (e.g. 5 seconds) at the connection pool or gateway layer to terminate unindexed runaway queries before they degrade the cluster.

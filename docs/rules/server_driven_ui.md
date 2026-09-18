@@ -1,12 +1,12 @@
 # Server-Driven UI (SDUI) & Dynamic Theming
 
-> **Core Mandate:** Enforce metadata-driven UI rendering from declarative backend schemas, eliminating client-side tenant code forks, and inject white-label branding via dynamic CSS Custom Properties.
+> **Core Mandate:** Enforce metadata-driven UI rendering from declarative backend schemas, eliminating client-side tenant code forks, and inject white-label branding via W3C Design Tokens (DTCG).
 
 ---
 
-## 1. Declarative SDUI Schema
+## 1. Declarative Client-Agnostic SDUI Schema
 
-The backend provides a declarative UI schema describing fields, layouts, visibility rules, and allowed actions (`_actions`), eliminating client-side tenant branching:
+The backend provides a declarative UI layout schema describing fields, layouts, dynamic visibility rules (via Common Expression Language or JSON expressions), and allowed actions (`_actions`):
 
 ```json
 {
@@ -16,51 +16,56 @@ The backend provides a declarative UI schema describing fields, layouts, visibil
     {
       "id": "general",
       "title": "General Details",
-      "fields": [
-        { "name": "orderNumber", "component": "TextInput", "readOnly": true },
-        { "name": "custom_attributes.poNumber", "component": "TextInput", "required": true }
+      "components": [
+        { "type": "TextInput", "id": "orderNumber", "label": "Order #", "readOnly": true },
+        { "type": "TextInput", "id": "custom_attributes.poNumber", "label": "PO Number", "required": true }
       ]
     },
     {
       "id": "tax",
       "title": "Tax Exemption",
-      "visibleIf": { "field": "custom_attributes.isTaxExempt", "operator": "equals", "value": true },
-      "fields": [
-        { "name": "custom_attributes.taxExemptionId", "component": "TextInput", "required": true }
+      "visibleIf": "order.custom_attributes.isTaxExempt == true",
+      "components": [
+        { "type": "TextInput", "id": "custom_attributes.taxExemptionId", "label": "Tax ID", "required": true }
       ]
     }
   ],
   "_actions": [
-    { "action": "SUBMIT_FOR_APPROVAL", "label": "Submit Order", "method": "POST", "href": "/api/v1/orders/123/submit" }
+    { "action": "SUBMIT_FOR_APPROVAL", "label": "Submit Order", "method": "POST", "target": "/api/v1/orders/123/submit" }
   ]
 }
 ```
 
 ---
 
-## 2. Frontend Component Registry
+## 2. Multi-Platform Component Registries
 
-The client maps backend component descriptors dynamically to accessible **Radix UI** and Tailwind primitives, keeping the frontend codebase 100% tenant-agnostic.
+Frontend clients (Web, Mobile, Desktop) never contain hardcoded tenant branching. Each platform implements a local **Component Registry** mapping backend descriptors to native platform primitives:
+
+- **Web Clients**: Rendered dynamically via accessible primitives (Web Components, React, Vue, Svelte, or Solid).
+- **Mobile Clients**: Rendered natively via Flutter, iOS SwiftUI, or Android Jetpack Compose.
+- **Desktop Clients**: Rendered natively via Tauri or cross-platform toolkits.
 
 ---
 
-## 3. Dynamic Design Tokens (White-Label Theming)
+## 3. Universal Design Tokens (W3C DTCG Standard)
 
-Apply unique tenant branding dynamically at runtime using CSS Custom Properties without bundler rebuilds:
+Manage tenant white-label branding and design systems via the **W3C Design Tokens Community Group (DTCG)** specification:
 
-```typescript
-export interface TenantThemeTokens {
-  primaryColor: string;
-  accentColor: string;
-  borderRadius: string;
-  fontFamily: string;
-}
-
-export function applyTenantTheme(tokens: TenantThemeTokens): void {
-  const root = document.documentElement;
-  root.style.setProperty('--color-brand-primary', tokens.primaryColor);
-  root.style.setProperty('--color-brand-accent', tokens.accentColor);
-  root.style.setProperty('--radius-base', tokens.borderRadius);
-  root.style.setProperty('--font-brand', tokens.fontFamily);
+```json
+{
+  "color": {
+    "brand": {
+      "primary": { "$value": "#1e40af", "$type": "color" },
+      "accent": { "$value": "#f59e0b", "$type": "color" }
+    }
+  },
+  "dimension": {
+    "radius": {
+      "base": { "$value": "6px", "$type": "dimension" }
+    }
+  }
 }
 ```
+
+- **Universal Compilation**: Process tenant `tokens.json` files using **Style Dictionary** to compile dynamic themes at runtime for CSS Custom Properties (`--color-brand-primary`), Android XML / Compose, and iOS Swift tokens without code redeployments.

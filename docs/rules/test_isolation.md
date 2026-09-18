@@ -1,26 +1,26 @@
 # Test Coverage, Isolation & Determinism
 
-> **Core Mandate:** Enforce 100.00% full-stack test coverage thresholds, transactional database rollback per test, deterministic data factories, and zero-sleep flakiness elimination.
+> **Core Mandate:** Enforce 100.00% test coverage thresholds, transactional database rollback per test, deterministic data factories, and zero-sleep flakiness elimination across all test suites.
 
 ---
 
-## 1. Mandatory 100.00% Full-Stack Test Coverage
+## 1. Mandatory 100.00% Test Coverage Thresholds
 
-- **Strict Coverage Thresholds**: Maintain line, function, branch, and statement test coverage at **100.00%** across BOTH backend and frontend at all times via `npm run coverage` (`@vitest/coverage-v8`). Strictly enforce 100% thresholds in test configuration files.
-- **Exhaustive HTTP Status Codes & Error Branches**: Explicitly test all HTTP response status codes:
-  - `200 OK`, `201 Created`, `204 No Content`
-  - `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `405 Method Not Allowed`, `409 Conflict`, `422 Unprocessable Entity`, `429 Too Many Requests`
-  - `500 Internal Server Error`
-- **UI Interaction States & Edge Cases**: Fully assert all UI states (loading spinners, disabled buttons, error banners, success feedback, empty states) across test suites.
+- **Strict Coverage Thresholds**: Maintain line, function, branch, and statement test coverage at **100.00%** across all backend domain logic, adapters, contracts, and frontend suites. Strictly enforce 100% threshold failure gates in CI pipelines.
+- **Exhaustive Status Codes & Error Branches**: Explicitly test all HTTP/gRPC response codes:
+  - Success: `200 OK`, `201 Created`, `204 No Content`
+  - Client Errors: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict`, `422 Unprocessable Entity`, `429 Too Many Requests`
+  - Server Failures: `500 Internal Server Error`, `503 Service Unavailable`
+- **UI Interaction States & Edge Cases**: Fully assert all presentation states (loading spinners, disabled controls, error banners, success feedback, empty states) across suites.
 
 ---
 
 ## 2. Database Test Isolation & Zero Flakiness
 
 - **Transactional Rollback per Integration Test**:
-  - Every integration test that interacts with the database must run inside a transaction that is rolled back upon test completion (`afterEach` rollback) or use isolated, ephemeral tenant schemas. Never leave mutated rows that pollute subsequent tests.
+  - Every integration test that interacts with persistence must execute within a scoped transaction that is rolled back upon test completion (`afterEach` rollback) or use ephemeral, disposable database isolates. Never leave mutated rows that pollute subsequent tests.
 - **Deterministic Test Data Factories**:
-  - Use typed test data factories (`buildUser()`, `buildOrder()`) rather than hardcoded magic strings or fixed database IDs.
+  - Utilize strongly-typed test data factories (`buildUser()`, `buildOrder()`) with randomized unique identifiers rather than hardcoded magic strings or fixed database IDs.
 - **Zero Sleep / Flakiness Elimination**:
-  - Strictly forbid arbitrary `setTimeout()` or `sleep()` calls in tests.
-  - Rely exclusively on deterministic polling helpers (`waitFor(() => expect(...))`) or event-driven promises.
+  - Strictly forbid arbitrary `sleep()` or timeout pauses in tests.
+  - Rely exclusively on deterministic condition polling (`waitFor(condition)`) or reactive event promises to eliminate test flakiness.
