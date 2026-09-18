@@ -105,6 +105,20 @@
 
 ---
 
+### [2026-09-18] Health Probe & Reverse Proxy Tolerance (`/healthz`, `/healtz/`, LAN connectivity)
+- **Problem Identified:**
+  - In the React Web Dashboard, backend operational status reported `Offline / Connecting`.
+  - `apps/web/vite.config.ts` proxied `/api` and `/docs`, but omitted `/healthz` and `/readyz`, causing Vite's SPA fallback to serve `index.html` (text/html), causing `res.json()` in `client.ts` to crash.
+  - Express server registered `/healthz` without trailing slash tolerance (`/healthz/`), typo tolerance (`/healtz/`), or `/api/v1/healthz` alias.
+- **Changes Implemented:**
+  - **`apps/backend/src/adapters/primary/http/server.ts`:** Registered handler aliases for `/healthz`, `/healthz/`, `/healtz`, `/healtz/`, `/api/v1/healthz`, `/api/v1/healthz/`, `/api/v1/healtz`, `/api/v1/healtz/`, and `/readyz` variations.
+  - **`apps/backend/tests/integration/health_api.test.ts`:** Added exhaustive integration test cases verifying all route and slash variants, maintaining 100.00% statement, branch, function, and line coverage across 57 tests.
+  - **`apps/web/vite.config.ts`:** Added `/healthz`, `/healtz`, and `/readyz` to Vite proxy using `http://127.0.0.1:4000` targets.
+  - **`apps/web/src/api/client.ts`:** Updated `getHealth()` to defensively probe `${API_BASE}/healthz` with automatic fallback to `/healthz`.
+  - **Verification:** Verified live `200 OK` JSON responses over `http://localhost:4000/healthz`, `http://localhost:5173/healthz/`, `http://localhost:5173/healtz/`, and `http://192.168.1.150:5173/api/v1/healthz`.
+
+---
+
 ## 3. Current Status & Next Steps
 - [x] Canonical Specifications scaffolded (`specs/`).
 - [x] Backend Hexagonal Ports & Adapters scaffolded (`apps/backend/`).
@@ -113,6 +127,7 @@
 - [x] Frontend pages dynamically connected to live backend API endpoints (`apps/web/src/api/`).
 - [x] Deployment manifests scaffolded (`deploy/`).
 - [x] Full monorepo build passes cleanly (`pnpm build`).
-- [x] 100.00% test coverage threshold enforced and verified (`pnpm test` - 55 passing tests).
+- [x] 100.00% test coverage threshold enforced and verified (`pnpm test` - 57 passing tests).
 - [x] LAN remote device connectivity configured (`192.168.1.150`).
+- [x] Health probe reverse proxy and trailing slash tolerance resolved (`/healthz`, `/healtz/`).
 - [x] Agentic rule validation (`validate_agentic_configs.sh` - 100% clean).
