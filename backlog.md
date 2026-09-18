@@ -196,6 +196,27 @@
        - 100.00% test coverage maintained across backend test suite (64 tests passing).
        - Outer loop smoke tests verified (`scripts/smoke_test.sh`).
 
+### [2026-09-18] Agile Process Codification: The Non-Negotiable 5-Phase Domain-Driven TDD Lifecycle
+- **User Directives:**
+  - "research: we need an agile process properly defined, like tdd rules be strictly followed, requirement leads domain analysis->writing a test(UI to lower level tests and implement using red green refactor). NEVER deviate from this??"
+- **Research & Process Architecture:**
+  - Codified the immutable 5-Phase pipeline:
+    1. **Phase 1: Requirements Engineering:** INVEST vertical slicing, Gherkin Given-When-Then scenarios, Negative Scope (non-goals), and status code edge case matrices (`docs/rules/requirements_engineering.md`).
+    2. **Phase 2: Tactical Domain Analysis:** Ubiquitous Language definitions, Bounded Contexts, and Aggregate Roots encapsulating business invariants (`docs/rules/domain_driven_design.md`, `docs/rules/domain_expertise.md`).
+    3. **Phase 3: Outer-Loop Acceptance Test (RED):** Failing outer test driving UI component interaction (Playwright / testing library) or black-box HTTP API contract before any lower code is touched.
+    4. **Phase 4: Inner-Loop TDD & Collaborator Discovery (RED-GREEN-REFACTOR):** Discovered collaborators unit-tested with test doubles, minimal code written to turn green, refactoring strictly under green.
+    5. **Phase 5: Outer Acceptance Resolution & Definition of Done:** Outer test turns GREEN, cross-package boundary smoke tests pass (`scripts/smoke_test.sh`), 100.00% full-stack test coverage gate verified.
+  - **The Zero-Deviation Mandate:**
+    - Writing production code without an existing failing test is strictly prohibited.
+    - Writing tests without prior domain analysis (Ubiquitous Language & invariants) is strictly prohibited.
+    - Committing code without full-stack boundary verification is strictly prohibited.
+  - **Artifacts Codified Across Workspace:**
+    - Updated `AGENTS.md` Section 2 to define the 5-Phase Agile Domain Lifecycle.
+    - Updated `docs/rules/test_driven_development.md` with complete pipeline specifications and zero-deviation laws.
+    - Updated `docs/rules/project_management.md` Definition of Done with Lifecycle Provenance gate.
+    - Authored `ADR-009: Non-Negotiable 5-Phase Agile Domain Lifecycle & Outside-In TDD Invariant` in `memory.md`.
+    - Added zero-deviation rules to `docs/knowledge/dos_and_donts.md`.
+
 ---
 
 ## 3. Current Status & Next Steps
@@ -216,4 +237,5 @@
 - [x] API versioning SemVer trigger matrix researched and codified in `docs/rules/api_versioning.md`.
 - [x] Multi-version OpenAPI specifications and interactive Swagger UI version dropdown selector implemented.
 - [x] Process defect post-mortem logged (`ISSUE-005`, `ADR-008`); `lets-build` strictly decoupled from domain analysis.
-- [x] Agentic rule validation (`validate_agentic_configs.sh` - 100% clean).
+- [x] Agile Domain-Driven TDD Lifecycle codified (`ADR-009`, `AGENTS.md`, `docs/rules/test_driven_development.md`, `project_management.md`).
+- [x] Agentic rule validation clean.
