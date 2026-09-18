@@ -169,7 +169,8 @@ Once confirmed, the agent automatically executes:
 2. Canonical contract generation (`specs/openapi/`, `specs/protobuf/`, `specs/schemas/`, `specs/tokens/`).
 3. Build manifests, strict linter/formatter configurations, multi-stage Dockerfiles, and Compose environments.
 4. Domain entities, primary/secondary port interfaces, and initial adapter stubs.
-5. Deterministic validation via `validate_agentic_configs.sh` and initial compiler/test suite execution.
+5. **Project-Specific README Generation**: Completely replaces the starter template `README.md` with clean, project-specific documentation (mission, stack highlights, quickstart setup, build/test commands, and directory structure), preserving links to `docs/rules/`.
+6. Deterministic validation via `validate_agentic_configs.sh` and initial compiler/test suite execution.
 
 ---
 

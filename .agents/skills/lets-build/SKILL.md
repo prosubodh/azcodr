@@ -93,6 +93,8 @@ Upon user confirmation:
    - `src/adapters/`: Ingress controllers and egress persistence/broker adapters conforming to the ports.
 4. Generate build manifests (`go.mod`, `Cargo.toml`, `pyproject.toml`, or `package.json`), linter/formatter configurations, minimal multi-stage `Dockerfile`, and `docker-compose.yml`.
 5. Scaffold initial Outside-In acceptance and unit tests in `tests/`.
+6. **Replace Starter README with Project-Specific README**:
+   Generate a clean, project-specific `README.md` using [references/project_readme_template.md](./references/project_readme_template.md), completely replacing the starter/meta-template content with the project's actual name, mission, stack highlights, quickstart commands, directory tree, and links to `docs/rules/`.
 
 ---
 
