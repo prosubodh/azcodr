@@ -217,6 +217,34 @@
     - Authored `ADR-009: Non-Negotiable 5-Phase Agile Domain Lifecycle & Outside-In TDD Invariant` in `memory.md`.
     - Added zero-deviation rules to `docs/knowledge/dos_and_donts.md`.
 
+### [2026-09-18] Dashboard Unit Display Polish & Relational Hydration
+- **Problem Identified:**
+  - The Dashboard applicant screening queue previously displayed raw UUID identifiers (`app.unitId`), violating the mandate against exposing raw technical foreign keys to users.
+- **Changes Implemented:**
+  - In `apps/web/src/pages/DashboardPage.tsx`, loaded units in parallel via `api.getAllUnits()` using `Promise.allSettled`.
+  - Resolved `app.unitId` against the unit catalog, displaying human-readable badges (`Unit 101`) instead of raw IDs.
+  - Verified compilation and build cleanly with `pnpm --filter @rpms/web build`.
+
+### [2026-09-18] Many-to-Many ($M:N$) Skill Composability & Orthogonal Pipeline Architecture (ADR-010)
+- **User Directives:**
+  - "i wonder about the cases where actual coding and skill have many to many relationship. sometimes multiple skills are simultaneously needed for a coding task and sometimes single skill is required in multiple scenario, this may make skills composable??"
+- **Architectural Analysis & Codification:**
+  - **The $M:N$ Reality:**
+    1. *Multiple Skills per Coding Task:* A single business feature (e.g. ACID payment settlement or lease execution) requires distinct, orthogonal perspectives: ambiguity interrogation (`relentless-questioner`), requirement slicing (`product-analyst`), security auditing (`compliance-audit`), and code smell refactoring (`clean-code-refactor`).
+    2. *Single Skill in Multiple Scenarios:* A single capability (e.g. `clean-code-refactor` or `relentless-questioner`) is completely domain-agnostic and applies universally across backend controllers, database persistence adapters, React components, and background workers.
+  - **The 3 Formal Composition Patterns:**
+    1. *Pattern 1: Sequential Pipeline Chaining (Workflow Composition):* Upstream skills produce standardized artifacts (e.g. FAS, INVEST stories, Gherkin blocks, OpenAPI schemas) that serve as deterministic input contracts for downstream skills.
+    2. *Pattern 2: Dynamic Skill Stacking (Contextual Composition):* An agent selectively activates multiple orthogonal skills in its working context on demand, adhering strictly to Progressive Disclosure without polluting base prompts.
+    3. *Pattern 3: Multi-Agent Subagent Delegation (Division of Labor):* A coordinator agent delegates isolated sub-tasks to specialized subagents equipped with specific atomic skills, synthesizing structured outputs into a single atomic change.
+  - **Architectural Invariants:**
+    - Standardized Output Contracts (FAS, Gherkin, ADR, JSON envelopes).
+    - Zero Cross-Contamination (no skill writes outside its functional boundary).
+    - Pure Function Semantics (analysis and audit skills remain read-only).
+  - **Artifacts Codified Across Workspace:**
+    - `docs/rules/agentic_configuration.md`: Added Section 5.3 detailing the $M:N$ relationship and 3 composition patterns.
+    - `memory.md`: Authored `ADR-010: Many-to-Many Skill Composability & Orthogonal Pipeline Architecture`.
+    - `docs/knowledge/knowledge_graph.md`: Added Section 4 with Mermaid topology and cross-matrix.
+
 ---
 
 ## 3. Current Status & Next Steps
@@ -233,9 +261,12 @@
 - [x] Health probe reverse proxy and trailing slash tolerance resolved (`/healthz`, `/healtz/`).
 - [x] Complete CRUD operations across all entities implemented (Properties, Units, Tenants, Leases, Payments, Applications).
 - [x] Raw text identifier FK fields completely eliminated and replaced with relational shadcn `<Select>` dropdowns.
+- [x] Dashboard applicant queue polished with human-readable unit badges.
 - [x] Domain-level foreign key validation enforced with RFC 7807 error responses.
 - [x] API versioning SemVer trigger matrix researched and codified in `docs/rules/api_versioning.md`.
 - [x] Multi-version OpenAPI specifications and interactive Swagger UI version dropdown selector implemented.
 - [x] Process defect post-mortem logged (`ISSUE-005`, `ADR-008`); `lets-build` strictly decoupled from domain analysis.
 - [x] Agile Domain-Driven TDD Lifecycle codified (`ADR-009`, `AGENTS.md`, `docs/rules/test_driven_development.md`, `project_management.md`).
+- [x] Many-to-Many ($M:N$) Skill Composability Architecture codified (`ADR-010`, `docs/rules/agentic_configuration.md`, `knowledge_graph.md`).
 - [x] Agentic rule validation clean.
+
