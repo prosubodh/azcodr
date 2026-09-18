@@ -52,10 +52,55 @@ fi
 
 echo ""
 echo "--- 5. Checking Architecture Decision Records (memory.md) ---"
-if diff -q "$CURRENT_DIR/memory.md" "$BASELINE_DIR/memory.md" > /dev/null 2>&1; then
-  echo "✅ memory.md is identical."
+if [ -f "$CURRENT_DIR/memory.md" ] && [ -f "$BASELINE_DIR/memory.md" ]; then
+  mapfile -t BASELINE_ADRS < <(grep -E '^### ADR-[0-9]+:' "$BASELINE_DIR/memory.md" 2>/dev/null | sed -E 's/^### ADR-[0-9]+:[[:space:]]*//' || true)
+  mapfile -t CURRENT_ADRS < <(grep -E '^### ADR-[0-9]+:' "$CURRENT_DIR/memory.md" 2>/dev/null | sed -E 's/^### ADR-[0-9]+:[[:space:]]*//' || true)
+
+  MISSING_IN_CURRENT=()
+  for b_adr in "${BASELINE_ADRS[@]}"; do
+    [ -z "$b_adr" ] && continue
+    found=false
+    for c_adr in "${CURRENT_ADRS[@]}"; do
+      if [ "$b_adr" = "$c_adr" ]; then
+        found=true
+        break
+      fi
+    done
+    if [ "$found" = false ]; then
+      MISSING_IN_CURRENT+=("$b_adr")
+    fi
+  done
+
+  EXTRA_IN_CURRENT=()
+  for c_adr in "${CURRENT_ADRS[@]}"; do
+    [ -z "$c_adr" ] && continue
+    found=false
+    for b_adr in "${BASELINE_ADRS[@]}"; do
+      if [ "$c_adr" = "$b_adr" ]; then
+        found=true
+        break
+      fi
+    done
+    if [ "$found" = false ]; then
+      EXTRA_IN_CURRENT+=("$c_adr")
+    fi
+  done
+
+  if [ ${#MISSING_IN_CURRENT[@]} -gt 0 ]; then
+    echo "⚠️ Workspace is missing ${#MISSING_IN_CURRENT[@]} baseline ADR(s):"
+    for m in "${MISSING_IN_CURRENT[@]}"; do
+      echo "   - $m"
+    done
+  elif [ ${#EXTRA_IN_CURRENT[@]} -eq 0 ]; then
+    echo "✅ memory.md ADRs are 100% identical."
+  else
+    echo "✅ All generic baseline ADRs are synchronized."
+    for e in "${EXTRA_IN_CURRENT[@]}"; do
+      echo "   ℹ️ Project-specific ADR retained in workspace: $e"
+    done
+  fi
 else
-  echo "⚠️ memory.md differs (check for generic ADRs to port)."
+  echo "⚠️ memory.md not found in one or both workspaces."
 fi
 
 echo "=================================================================="
