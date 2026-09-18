@@ -30,6 +30,7 @@
 │       ├── agentic-architect/        # Authoring & auditing agent configurations
 │       ├── clean-code-refactor/      # Refactoring code smells with GoF & Clean Code
 │       ├── compliance-audit/         # SOC 2, ISO 27001 & OWASP open-source audits
+│       ├── lets-build/               # Architecture interview & project bootstrapper
 │       └── product-analyst/          # INVEST user stories & Gherkin criteria
 ├── docs/
 │   ├── knowledge/                    # Institutional knowledge & token economy
@@ -114,6 +115,61 @@ bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh
 - [`product-analyst`](.agents/skills/product-analyst/SKILL.md): Translating requirements into INVEST user stories and Gherkin acceptance criteria.
 - [`compliance-audit`](.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
 - [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and modern design patterns.
+- [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
+
+---
+
+## 🚀 Starting a New Project with `/lets-build`
+
+This repository serves as an **enterprise architectural starter template**. When beginning a new software project:
+
+### Step 1: Copy Workspace to New Project Folder
+Copy all files and directories from this template into your target project directory:
+```bash
+cp -r /path/to/mvp /path/to/my-new-project
+cd /path/to/my-new-project
+```
+
+### Step 2: Invoke the `/lets-build` Skill
+In your AI coding assistant (Google Antigravity, Claude Code, Cursor, or OpenHands), trigger the workflow:
+```
+/lets-build
+```
+*(Or simply prompt: "Let's build a new project from this template.")*
+
+### Step 3: The Relentless Architectural Interview
+The agent will execute a deep research loop and systematically interrogate you across all **18 systemic dimensions** (with zero assumptions) to lock in your desired technical stack:
+
+1. **Domain, Scale & Performance**: Problem domain, p95/p99 latency budgets, peak throughput (RPS), and regulatory standards (SOC 2, ISO 27001, GDPR).
+2. **Language & Runtime**: Go, Rust, Python, TypeScript, Java/Kotlin, C# (.NET), Elixir, or Polyglot.
+3. **Package Manager & Toolchain**: `go modules`, `cargo`, `uv`/`poetry`, `pnpm`, `gradle`, or `dotnet CLI`.
+4. **Transport & Network**: REST (OpenAPI 3.1), gRPC (Protobuf v3 via `buf`), GraphQL, or Event-Driven.
+5. **Transport Framework**: Gin, Axum, FastAPI, Fastify, Spring Boot, or ASP.NET Core.
+6. **Database Engine**: PostgreSQL, MySQL, SQLite, CockroachDB, MongoDB, or Hybrid.
+7. **Database Migrations**: Declarative schema migrations (**Atlas**) vs versioned SQL (**Flyway**, **Goose**).
+8. **Multi-Tenancy Isolation**: AST query interceptor, Database RLS, Schema-per-tenant, or DB-per-tenant.
+9. **Dynamic Schemas**: Universal **JSON Schema Draft 2020-12** in semi-structured columns vs EAV.
+10. **Pluggable Logic & Workflows**: Common Expression Language (CEL), WebAssembly (Extism) sandboxing, and Temporal.io / BPMN 2.0.
+11. **Authentication & Identity**: OIDC, OAuth 2.1, Passkeys (FIDO2/WebAuthn), PASETO, or JWT JWKS.
+12. **Authorization Engine**: Open Policy Agent (OPA Rego via HTTP/Wasm), OpenFGA (Zanzibar ReBAC), or Cerbos.
+13. **Frontend / Client**: Web (React, Vue, Svelte), Mobile (Flutter, Native), Server-Driven UI (SDUI), and W3C DTCG Design Tokens.
+14. **Caching & Locks**: Redis, Valkey, Dragonfly, Memcached, or local LRU with XFetch stampede defense.
+15. **Event Streaming**: Apache Kafka, NATS JetStream, RabbitMQ, SQS with Transactional Outbox.
+16. **Observability**: OpenTelemetry OTLP traces/metrics/logs over gRPC/HTTP with W3C trace context.
+17. **DevSecOps & Verification**: Semgrep SAST, Gitleaks, Trivy scanning, CycloneDX SBOM, Cosign, and Outside-In TDD (100% coverage gates).
+18. **Deployment Target**: Minimal OCI Distroless/Scratch, Docker Compose, Kubernetes, and OpenTofu IaC.
+
+### Step 4: Blueprint Synthesis & Explicit Approval
+The agent consolidates all your choices into a formal **Architectural Specification & Technology Blueprint** and records a formal ADR in [`memory.md`](./memory.md).  
+**The agent will stop and ask for your explicit confirmation before generating any code.**
+
+### Step 5: Deterministic Project Bootstrapping
+Once confirmed, the agent automatically executes:
+1. Directory scaffolding following **Hexagonal Architecture** (`src/domain/`, `src/ports/`, `src/adapters/`, `specs/`, `tests/`, `deploy/`).
+2. Canonical contract generation (`specs/openapi/`, `specs/protobuf/`, `specs/schemas/`, `specs/tokens/`).
+3. Build manifests, strict linter/formatter configurations, multi-stage Dockerfiles, and Compose environments.
+4. Domain entities, primary/secondary port interfaces, and initial adapter stubs.
+5. Deterministic validation via `validate_agentic_configs.sh` and initial compiler/test suite execution.
 
 ---
 
