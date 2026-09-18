@@ -117,6 +117,22 @@
   - **`apps/web/src/api/client.ts`:** Updated `getHealth()` to defensively probe `${API_BASE}/healthz` with automatic fallback to `/healthz`.
   - **Verification:** Verified live `200 OK` JSON responses over `http://localhost:4000/healthz`, `http://localhost:5173/healthz/`, `http://localhost:5173/healtz/`, and `http://192.168.1.150:5173/api/v1/healthz`.
 
+### [2026-09-18] Process Post-Mortem: In-Memory Supertest Illusion & Cross-Package Verification
+- **The Defect Identified (Process Blunder Analysis):**
+  - All 57 tests passed with 100.00% statement, branch, function, and line coverage, yet the actual live application reported `Offline / Connecting` and failed on `/healthz/`.
+  - **Why Tests Were Insufficient:**
+    1. Vitest evaluated Express routes using `supertest(app)` strictly inside Node.js process memory. It never tested real network socket binding (`app.listen()`) or the Vite dev server reverse proxy (`vite.config.ts`).
+    2. `apps/web` lacked a `test` script in `package.json`. When `pnpm test` ran recursively across the monorepo, pnpm silently skipped `apps/web`, giving the illusion of a fully-tested monorepo while the frontend client and proxy were completely untested.
+    3. London School Double-Loop TDD Outer Loop was skipped: there was no outer acceptance/smoke test asserting the end-to-end user request path from the browser/Vite dev server through the reverse proxy to the backend.
+  - **Why Code Was Insufficient:**
+    1. `vite.config.ts` was missing proxy mappings for `/healthz`, `/healtz`, and `/readyz`, causing Vite to serve SPA `index.html` (text/html).
+    2. `server.ts` lacked trailing slash (`/healthz/`) and typo (`/healtz/`) route tolerances.
+    3. `client.ts` was brittle, lacking defensive JSON validation and API path fallback.
+  - **Remediation & Institutional Fixes:**
+    1. Authored `scripts/smoke_test.sh` (7 automated assertions verifying direct backend, Vite proxy, trailing slash, typos, Content-Type headers, API proxying, and LAN IP binding).
+    2. Logged defect post-mortem in `docs/knowledge/issue_log.md` (`ISSUE-004`), `dos_and_donts.md`, and `lessons_learned.md`.
+    3. Updated `docs/rules/test_driven_development.md` to mandate Cross-Package Boundary Verification in Outer Loops.
+
 ---
 
 ## 3. Current Status & Next Steps
@@ -128,6 +144,8 @@
 - [x] Deployment manifests scaffolded (`deploy/`).
 - [x] Full monorepo build passes cleanly (`pnpm build`).
 - [x] 100.00% test coverage threshold enforced and verified (`pnpm test` - 57 passing tests).
+- [x] Automated full-stack smoke & boundary test created and passing (`scripts/smoke_test.sh`).
 - [x] LAN remote device connectivity configured (`192.168.1.150`).
 - [x] Health probe reverse proxy and trailing slash tolerance resolved (`/healthz`, `/healtz/`).
+- [x] Process post-mortem logged across knowledge base (`ISSUE-004`) and rules.
 - [x] Agentic rule validation (`validate_agentic_configs.sh` - 100% clean).
