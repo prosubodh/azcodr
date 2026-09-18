@@ -133,6 +133,44 @@
     2. Logged defect post-mortem in `docs/knowledge/issue_log.md` (`ISSUE-004`), `dos_and_donts.md`, and `lessons_learned.md`.
     3. Updated `docs/rules/test_driven_development.md` to mandate Cross-Package Boundary Verification in Outer Loops.
 
+### [2026-09-18] Complete CRUD Operations & Foreign Key Relational Selectors
+- **User Directives:**
+  1. "You can't call a feature complete unless all its CRUD functionalities are working."
+  2. "Using identifier as text field for fk field is never a good practice."
+- **Defects Remediated:**
+  1. Entities previously had partial read/create without full edit/update/delete capabilities across their lifecycle.
+  2. Foreign key inputs (`unitId`, `tenantUserId`, `leaseId`) were raw text fields where users had to manually type entity IDs, causing 400/500 relational failures and poor UX.
+- **Architectural & Code Changes Across Monorepo:**
+  - **Contracts (`packages/shared/src/types/index.ts`):**
+    - Added DTOs and inputs: `UserDTO`, `CreateTenantInput`, `UpdatePropertyInput`, `UpdateUnitInput`, `UpdateLeaseInput`, `UpdatePaymentInput`, `UpdateApplicationInput`.
+    - Enriched `UnitDTO` and `LeaseDTO` with relational display metadata (`propertyName`, `unitNumber`, `tenantName`, `tenantEmail`).
+  - **Domain Core (`apps/backend/src/domain/entities/`):**
+    - Added mutation methods: `Property.update()`, `Unit.update()`, `Lease.cancel()`, `PaymentLedgerEntry.refund()`, `RentalApplication.review()`.
+  - **Hexagonal Ports & Repositories (`apps/backend/src/`):**
+    - Expanded `PropertyRepositoryPort`, `LeaseRepositoryPort`, `PaymentRepositoryPort`, `ApplicationRepositoryPort` with update, delete, and tenant-scoped global list methods.
+    - Implemented methods in both `InMemory*` and `Prisma*` repositories.
+    - Enforced foreign key existence validation in `LeaseUseCase` (`unitId`), `PaymentUseCase` (`leaseId`), and `ApplicationUseCase` (`unitId`), returning RFC 7807 problem details if referenced entities do not exist.
+  - **REST API Endpoints (`apps/backend/src/adapters/primary/http/server.ts`):**
+    - Properties: `GET /api/v1/properties/:id`, `PUT /api/v1/properties/:id`, `DELETE /api/v1/properties/:id`.
+    - Units: `GET /api/v1/units` (global multi-property catalog), `GET /api/v1/units/:id`, `PUT /api/v1/units/:id`, `DELETE /api/v1/units/:id`.
+    - Tenants: `GET /api/v1/tenants`, `POST /api/v1/tenants`.
+    - Leases: `GET /api/v1/leases/:id`, `PATCH /api/v1/leases/:id`, `DELETE /api/v1/leases/:id`.
+    - Payments: `GET /api/v1/payments/:id`, `PATCH /api/v1/payments/:id`.
+    - Applications: `GET /api/v1/applications/:id`, `PATCH /api/v1/applications/:id`, `DELETE /api/v1/applications/:id`.
+  - **Testing & 100.00% Coverage Gate:**
+    - Expanded backend test suites in `entities.test.ts`, `usecases.test.ts`, and `api.test.ts` to 64 tests.
+    - Verified 100.00% lines, 100.00% branches, 100.00% functions, 100.00% statements.
+  - **Frontend UI & shadcn/ui Components (`apps/web/`):**
+    - Added `components/ui/select.tsx` wrapping `@radix-ui/react-select` with canonical styling and zero custom markup.
+    - Expanded `api/client.ts` with all CRUD methods and 204 No-Content handling.
+    - `PropertiesPage.tsx`: Full CRUD for Properties (Create, Read, Edit, Delete); complete Unit management modal (Add unit, Edit unit rent/status, Delete unit).
+    - `LeasesPage.tsx`: Replaced raw text inputs with relational `<Select>` for Units (with property name & rent display) and Tenants (with name & email display); added quick "+ Add Tenant" dialog; added Activate, Terminate, and Delete lease actions.
+    - `PaymentsPage.tsx`: Replaced raw text input with relational `<Select>` for Leases with auto-fill rent amounts; added Complete and Refund status action buttons.
+    - `ApplicationsPage.tsx`: Replaced raw text input with relational `<Select>` for Target Units; added Review, Approve, Reject, and Delete application action buttons.
+  - **Status & Verification:**
+    - Verified live proxy and REST endpoints with curl and `./scripts/smoke_test.sh`.
+    - Verified full monorepo build with `pnpm build` (0 errors).
+
 ---
 
 ## 3. Current Status & Next Steps
@@ -143,9 +181,12 @@
 - [x] Frontend pages dynamically connected to live backend API endpoints (`apps/web/src/api/`).
 - [x] Deployment manifests scaffolded (`deploy/`).
 - [x] Full monorepo build passes cleanly (`pnpm build`).
-- [x] 100.00% test coverage threshold enforced and verified (`pnpm test` - 57 passing tests).
+- [x] 100.00% test coverage threshold enforced and verified (`pnpm test` - 64 passing tests).
 - [x] Automated full-stack smoke & boundary test created and passing (`scripts/smoke_test.sh`).
 - [x] LAN remote device connectivity configured (`192.168.1.150`).
 - [x] Health probe reverse proxy and trailing slash tolerance resolved (`/healthz`, `/healtz/`).
+- [x] Complete CRUD operations across all entities implemented (Properties, Units, Tenants, Leases, Payments, Applications).
+- [x] Raw text identifier FK fields completely eliminated and replaced with relational shadcn `<Select>` dropdowns.
+- [x] Domain-level foreign key validation enforced with RFC 7807 error responses.
 - [x] Process post-mortem logged across knowledge base (`ISSUE-004`) and rules.
 - [x] Agentic rule validation (`validate_agentic_configs.sh` - 100% clean).
