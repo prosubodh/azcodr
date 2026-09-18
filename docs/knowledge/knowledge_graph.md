@@ -131,3 +131,58 @@ erDiagram
 | **Event Streaming** | CNCF CloudEvents v1.0.2 | Kafka, NATS JetStream, RabbitMQ, SQS | [`database_transactions.md`](../rules/database_transactions.md) |
 | **Observability** | OpenTelemetry OTLP standard | OTel Collector, Jaeger, Prometheus, OpenSearch | [`cloud_native.md`](../rules/cloud_native.md) |
 
+---
+
+## 4. Agentic Skill Topology & Composability Matrix
+
+```mermaid
+flowchart TD
+  subgraph Inputs["Inception & Intent"]
+    Req["Stakeholder Feature Request / Mutation"]
+  end
+
+  subgraph Pattern1["Pattern 1: Sequential Pipeline Chaining (Workflows)"]
+    direction TB
+    SkillRQ["relentless-questioner"]
+    SkillPA["product-analyst"]
+    SkillTDD["test_driven_development"]
+    SkillRefactor["clean-code-refactor"]
+
+    SkillRQ -->|"Feature Alignment Spec (FAS)"| SkillPA
+    SkillPA -->|"INVEST Stories & Gherkin AC"| SkillTDD
+    SkillTDD -->|"Working Green Code"| SkillRefactor
+  end
+
+  subgraph Pattern2["Pattern 2: Dynamic Skill Stacking (Contextual Composition)"]
+    AgentCore["Primary Agent Session"]
+    SkillSec["compliance-audit"]
+    SkillArch["agentic-architect"]
+
+    AgentCore -.->|"Dynamic Load"| SkillSec
+    AgentCore -.->|"Dynamic Load"| SkillArch
+  end
+
+  subgraph Pattern3["Pattern 3: Multi-Agent Subagent Delegation (Division of Labor)"]
+    Coord["Coordinator Agent"]
+    SubA["Subagent A: Compliance Auditor"]
+    SubB["Subagent B: Code Refactorer"]
+
+    Coord -->|"Invoke Task"| SubA
+    Coord -->|"Invoke Task"| SubB
+    SubA -->|"Audit Findings"| Coord
+    SubB -->|"Refactored Units"| Coord
+  end
+
+  Req --> SkillRQ
+```
+
+### Many-to-Many Skill Cross-Matrix
+
+| Skill Name | Functional Specialty | Applicable Lifecycle Stages | Target Artifacts Produced |
+|---|---|---|---|
+| `relentless-questioner` | Context-aware ambiguity interrogation | Pre-Discovery, Pre-Planning | Feature Alignment Spec (FAS), Invariant List |
+| `product-analyst` | Requirements decomposition & Gherkin | Phase 1: Requirements | INVEST User Stories, Gherkin Scenarios |
+| `lets-build` | Technical infrastructure scaffolding | Initial Bootstrapping only | Package manifests, build configs, `/healthz` |
+| `clean-code-refactor` | Code smell eradication, GoF patterns | Phase 4: TDD Inner Loop | Decoupled classes, small functions (< 30 lines) |
+| `compliance-audit` | Security & compliance verification | Phase 1, Phase 5: DoD | Gitleaks, Semgrep, Trivy, OWASP audit logs |
+| `agentic-architect` | Agent configuration & skill governance | Continuous meta-refinement | Atomic `SKILL.md`, `AGENTS.md`, ADR records |

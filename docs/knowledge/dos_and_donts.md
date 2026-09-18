@@ -1,57 +1,27 @@
-# Consolidated Architectural DO's & DONT's
+# Consolidated Architectural DO's & DONT's Directory
 
-> **Core Purpose:** Authoritative directory of verified development best practices and prohibited anti-patterns, eliminating repeated mistakes and token overhead.
-
----
-
-## 1. Architecture & Global Directives
-- **DO:** Standardize exclusively on 100% open-source tools, packages, open standards, and vendor-neutral specifications.
-- **DO:** Decouple domain core logic from transient runtimes, frameworks, and databases using Hexagonal Architecture (Ports & Adapters).
-- **DO:** Confine all file modifications, dependencies, and assumptions strictly to this workspace (`./`).
-- **DO:** Maintain all rule files strictly atomic (Single Responsibility Principle, zero conjunction naming).
-- **DONT:** Never couple domain business logic to ORM models, web frameworks, or language-specific runtime globals.
-- **DONT:** Never import, execute, or assume global user packages or tools from external sibling projects.
-- **DONT:** Never let root `AGENTS.md` exceed 120 lines; offload deep domain manuals into `docs/rules/`.
+> **Core Purpose:** Authoritative index linking to verified development best practices, invariants, and prohibited anti-patterns colocated within their respective atomic rules and skills.
 
 ---
 
-## 2. Database & Persistence
-- **DO:** Wrap every multi-entity mutation inside an explicit ACID transaction with bounded timeouts (`maxWait: 5000, timeout: 10000`).
-- **DO:** Use the Transactional Outbox pattern to persist domain mutations and event records atomically before notifying brokers.
-- **DO:** Always use concurrent, non-blocking index creation in migrations on live production tables.
-- **DO:** Use partial unique indexes (`WHERE deleted_at IS NULL`) on tables utilizing soft deletes.
-- **DONT:** Never execute raw unversioned DDL or schema-push commands in CI or production; use versioned declarative migrations (Atlas/Flyway).
-- **DONT:** Never run blocking table locks or blocking full table rewrites during online production operations.
-- **DONT:** Never write to the database and publish to a message queue sequentially without an outbox table (the dual-write anti-pattern).
+## Direct Rule Index of DO's & DONT's
 
----
+To eliminate duplicate maintenance and token bloat, all normative directives are colocated directly within their governing atomic domain rule files:
 
-## 3. Multi-Tenancy & Extensibility
-- **DO:** Enforce multi-tenancy isolation via AST query interceptors, database RLS, schema namespaces, or connection routing.
-- **DO:** Store custom attributes in standardized JSON/document columns validated at runtime via JSON Schema Draft 2020-12.
-- **DO:** Use Common Expression Language (CEL), Strategy registries, or durable workflows (Temporal/BPMN) for diverging tenant logic.
-- **DONT:** Never add sparse nullable columns (`custom_col_1`, `custom_col_2`) to core entity tables.
-- **DONT:** Never scatter hardcoded `if (tenant.id === 'acme')` conditionals across service code.
-- **DONT:** Never execute arbitrary tenant scripts in host runtime memory; execute via isolated WebAssembly (Wasm) micro-sandboxes.
+| Domain Area | Governing Atomic Rule | Colocated Directives & Invariants |
+|---|---|---|
+| **System Lifecycle** | [`test_driven_development.md`](../rules/test_driven_development.md#3-invariants-dos--donts) | 5-Phase Agile Lifecycle, Zero-Deviation Invariant, boundary tests, test double rules. |
+| **Database Integrity** | [`database_integrity.md`](../rules/database_integrity.md#5-invariants-dos--donts) | Relational FK existence checks, `<Select>` dropdowns (no raw strings), soft delete indexes, full CRUD. |
+| **REST API Conventions** | [`rest_api_conventions.md`](../rules/rest_api_conventions.md#5-invariants-dos--donts) | Status codes, RFC 7807 envelopes, enumeration masking, probe tolerances (`/healthz/`). |
+| **API Versioning** | [`api_versioning.md`](../rules/api_versioning.md#5-invariants-dos--donts) | SemVer 2.0.0 trigger matrix, URI major prefix, RFC 8594 Sunset/Deprecation headers. |
+| **Database Transactions** | [`database_transactions.md`](../rules/database_transactions.md) | ACID atomicity, defensive timeouts, Transactional Outbox, no dual-writes. |
+| **Database Migrations** | [`database_migrations.md`](../rules/database_migrations.md) | Declarative Atlas/Flyway migrations, non-blocking concurrent index creation. |
+| **Multi-Tenancy** | [`multitenancy_isolation.md`](../rules/multitenancy_isolation.md) | Query interceptors, PostgreSQL RLS, no hardcoded tenant conditionals. |
+| **Dynamic Schemas** | [`tenant_dynamic_schemas.md`](../rules/tenant_dynamic_schemas.md) | JSON Schema Draft 2020-12 runtime validation, no sparse nullable columns. |
+| **Pluggable Logic** | [`tenant_pluggable_logic.md`](../rules/tenant_pluggable_logic.md) | CEL expression validation, Wasm sandboxing, Temporal durable workflows. |
+| **Project Bootstrapping** | [`.agents/skills/lets-build/SKILL.md`](../../.agents/skills/lets-build/SKILL.md#3-gotchas--what-not-to-do) | Scaffolding decoupling, mandatory Phase 5 Handover Gate, no premature domain modeling. |
+| **Project Management** | [`project_management.md`](../rules/project_management.md#4-invariants-dos--donts) | WIP = 1 limit, Definition of Done provenance gate, blocker escalation. |
+| **Security & DevSecOps** | [`devsecops.md`](../rules/devsecops.md) | Secret scanning (gitleaks/secretlint), in-memory tokens, fail-fast schema validation. |
 
----
 
-## 4. Testing & Code Quality
-- **DO:** Follow Outside-In TDD (London School): Outer acceptance test ➔ collaborator discovery ➔ unit tests with test doubles.
-- **DO:** Maintain 100.00% line, branch, statement, and function coverage across all backend, contract, and frontend suites.
-- **DO:** Roll back database transactions or use ephemeral isolates after each test to guarantee complete test isolation.
-- **DO:** Keep functions small (under 20–30 lines) adhering to Single Level of Abstraction (SLAP) and Command-Query Separation (CQS).
-- **DO:** Enforce sound static typing and nominal branded types across domain identifiers.
-- **DONT:** Never mock types you do not own; always wrap third-party dependencies in application-owned adapters.
-- **DONT:** Never use arbitrary `setTimeout()` or `sleep()` in tests; use deterministic event polling (`waitFor`).
-- **DONT:** Never bypass compiler strictness or use unsafe escape hatches (`any`, raw void pointers, untyped casts).
-
----
-
-## 5. Security & DevSecOps
-- **DO:** Run automated secret scanning (`gitleaks`, `secretlint`) on every staged commit via pre-commit hooks.
-- **DO:** Store short-lived access tokens strictly in memory; rotate refresh tokens cryptographically in HttpOnly Secure cookies or secure keyrings.
-- **DO:** Fail fast at process bootstrap by validating all configuration and environment variables against strict schemas.
-- **DONT:** Never store secrets, passwords, or private keys in source control.
-- **DONT:** Never return detailed database stack traces or raw internal errors to client API callers in production.
 

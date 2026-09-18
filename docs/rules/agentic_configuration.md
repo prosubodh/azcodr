@@ -92,6 +92,25 @@ Every rule, skill, workflow, and configuration component must adhere to the **Si
 - **Encapsulated Artifacts:** Scripts, assets, and reference docs must live within the skill's isolated directory tree.
 - **Idempotent Execution:** Re-executing a skill against the same inputs must produce identical, deterministic results.
 
+### Many-to-Many Skill Composability Models
+Coding tasks and agentic skills exhibit an explicit **Many-to-Many ($M:N$) Relationship**:
+1. **Multiple Skills per Coding Task:** Implementing a complex domain feature frequently requires composing several orthogonal skills:
+   - `relentless-questioner` (resolves ambiguous invariants and failure edge cases).
+   - `product-analyst` (decomposes into INVEST user stories and executable Gherkin criteria).
+   - `compliance-audit` (verifies OWASP, SOC 2, and data isolation controls).
+   - `clean-code-refactor` (applies GoF patterns, CQS, SLAP, and eliminates code smells during the TDD inner loop).
+2. **Single Skill in Multiple Scenarios:** An atomic skill functions as a reusable capability across completely different business problems (e.g. `clean-code-refactor` applies equally to financial ledgers, lease lifecycle state machines, and authentication middleware).
+
+#### The 3 Composition Patterns:
+- **Pattern 1: Sequential Pipeline Chaining (Workflow Composition):** Skill $A$ produces a structured artifact (e.g. Feature Alignment Spec) that serves as the direct input contract for Skill $B$ (e.g. Gherkin test suite generation).
+- **Pattern 2: Dynamic Skill Stacking (Contextual Composition):** An agent activates multiple orthogonal skills simultaneously in its execution context, adhering to Progressive Disclosure without polluting global prompts.
+- **Pattern 3: Multi-Agent Subagent Delegation (Division of Labor):** A coordinator agent delegates isolated sub-tasks to specialized subagents equipped with specific skills, synthesizing their outputs into a single atomic change.
+
+#### Invariants for Valid Skill Composition:
+- **Standardized Output Contracts:** Skills must emit predictable, structured markdown or JSON envelopes (e.g. FAS, Gherkin blocks, ADR templates).
+- **Zero Cross-Contamination:** No skill may write code or modify files outside its declared functional boundary.
+- **Pure Function Semantics:** Analysis skills must remain read-only and side-effect free.
+
 ---
 
 ## 6. The Relentless Skill Architecture Inquiry

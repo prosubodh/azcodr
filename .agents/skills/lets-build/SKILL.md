@@ -77,41 +77,44 @@ Do NOT guess or assume any technology or stack choice. Execute the relentless in
 
 ---
 
-### Phase 4: Bootstrap (Deterministic Scaffolding)
+### Phase 4: Bootstrap (Deterministic Technical Scaffolding)
 Upon user confirmation:
 1. Run the deterministic workspace initialization script:
    ```bash
    bash .agents/skills/lets-build/scripts/bootstrap_workspace.sh . <language>
    ```
-2. Generate the canonical specifications in `specs/`:
-   - `specs/openapi/openapi.yaml` or `specs/protobuf/*.proto`
-   - `specs/schemas/*.json` (JSON Schema Draft 2020-12)
-   - `specs/tokens/tokens.json` (W3C DTCG tokens)
-3. Scaffold initial Hexagonal application source code following [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md):
-   - `src/domain/`: Pure entities, value objects, and domain invariants with zero framework imports.
-   - `src/ports/`: Primary use case ports and secondary repository/event ports.
-   - `src/adapters/`: Ingress controllers and egress persistence/broker adapters conforming to the ports.
+2. Generate base infrastructure and open specification foundations in `specs/`:
+   - `specs/openapi/v1/openapi.yaml` (minimal health probe and API versioning metadata)
+   - `specs/tokens/tokens.json` (W3C DTCG design tokens baseline)
+3. Scaffold initial Hexagonal application technical skeleton following [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md):
+   - Pure architecture ports and adapters layout (`src/domain/`, `src/ports/`, `src/adapters/`).
+   - Minimal system health probes (`/healthz`, `/readyz`).
+   - Strict isolation: **Do NOT scaffold application business features or fabricate domain entities yet.**
 4. Generate build manifests (`go.mod`, `Cargo.toml`, `pyproject.toml`, or `package.json`), linter/formatter configurations, minimal multi-stage `Dockerfile`, and `docker-compose.yml`.
-5. Scaffold initial Outside-In acceptance and unit tests in `tests/`.
+5. Scaffold initial test runner and boundary verification smoke test (`scripts/smoke_test.sh`).
 6. **Replace Starter README with Project-Specific README**:
    Generate a clean, project-specific `README.md` using [references/project_readme_template.md](./references/project_readme_template.md), completely replacing the starter/meta-template content with the project's actual name, mission, stack highlights, quickstart commands, directory tree, and links to `docs/rules/`.
 
 ---
 
-### Phase 5: Verify (Deterministic Validation & Health Proof)
+### Phase 5: Verify & Handover to Domain Analysis
 1. Run the workspace validation script:
    ```bash
    bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh
    ```
-2. Execute toolchain dependency checks, build commands, and initial tests:
+2. Execute toolchain dependency checks, build commands, and health probe tests:
    - Compile code and verify zero compiler or lint errors.
-   - Run unit/contract tests to verify that the scaffold passes cleanly.
-3. Present the bootstrapped project summary and next development steps to the user.
+   - Verify direct backend and reverse proxy health probes (`/healthz`).
+3. **Mandatory Handover to Domain Analysis (STOP & PIVOT):**
+   - **`lets-build` IS NOW COMPLETE.** Do NOT proceed to write domain business entities, repositories, or application features.
+   - Present the bootstrapped technical skeleton to the user.
+   - Instruct the user to invoke `product-analyst` and `relentless-questioner` to initiate the **Domain Discovery & Requirements Engineering Phase** (Ubiquitous Language, Bounded Contexts, Aggregate Boundaries, INVEST User Stories, and Gherkin Acceptance Criteria) before any domain feature code is written.
 
 ---
 
 ## 3. Gotchas & What NOT to Do
 
+- **MAJOR DONT: DO NOT invent, assume, or scaffold application domain entities, business logic, or feature pages during `/lets-build`.** The `lets-build` skill is strictly an infrastructure and technical stack bootstrapper. Fabricating business domain features without dedicated domain analysis and relentless questioning of the user is a fatal architectural defect.
 - **DO NOT** assume the stack. Never start writing Go, Rust, Python, or TypeScript before asking the user.
 - **DO NOT** scaffold all options at once. Follow the user's chosen stack strictly.
 - **DO NOT** couple domain entities to ORMs, database libraries, or HTTP frameworks. The domain core must remain pure.

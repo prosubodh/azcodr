@@ -18,7 +18,9 @@
 ## 2. Definition of Done (DoD)
 
 A task is only marked `DONE` when all of the following verifiable criteria are met:
-- [ ] **Tests Green**: 100.00% full-stack test coverage maintained (`npm run coverage`).
+- [ ] **Lifecycle Provenance**: Code developed strictly via the 5-Phase Agile Domain Lifecycle (Requirements ➔ Domain Analysis ➔ Outer Acceptance RED ➔ Inner Unit RED-GREEN-REFACTOR ➔ Outer GREEN). Zero production code written before tests.
+- [ ] **Tests Green**: 100.00% full-stack test coverage maintained (`npm run coverage` or `pnpm test`).
+- [ ] **Boundary Verified**: Cross-package boundary smoke tests passed (`scripts/smoke_test.sh`).
 - [ ] **Zero Lints & Types**: 0 ESLint warnings and 0 TypeScript compilation errors (`npm run lint && npm run typecheck`).
 - [ ] **No Unverified Assumptions**: All behavior backed by tests or verified command evidence.
 - [ ] **ADR Logged**: An Architectural Decision Record is logged in `memory.md` if architectural trade-offs were made.
@@ -30,3 +32,19 @@ A task is only marked `DONE` when all of the following verifiable criteria are m
 
 - If a blocker or ambiguity arises, immediately transition the task to `BLOCKED`, halt execution, and interrogate the root cause.
 - Never guess or write speculative code to bypass an unresolved requirement.
+
+---
+
+## 4. Invariants, DO's & DONT's
+
+### DO's:
+- **DO:** Maintain strict WIP = 1 limit. Never work on multiple active tasks concurrently.
+- **DO:** Deliver features in vertical slices (UI ➔ API ➔ DB) rather than isolated horizontal stubs.
+- **DO:** Halt and transition to `BLOCKED` whenever assumptions are required.
+- **DO:** Satisfy all 7 criteria of the Definition of Done before declaring any increment complete.
+
+### DONT's:
+- **DONT:** Never mark a task `DONE` with skipped, failing, or unwritten tests.
+- **DONT:** Never bypass the 5-Phase Agile Domain Lifecycle provenance gate.
+- **DONT:** Never leave unresolved blockers or silent errors in working branches.
+

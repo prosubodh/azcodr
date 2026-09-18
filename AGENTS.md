@@ -40,9 +40,13 @@ Before acting on any decision branch, answer:
 
 ## 2. Execution Lifecycle
 
-Progress all tasks systematically through five stages:
+Progress all tasks systematically through the unified **Agent Cognitive & Agile Domain Lifecycle**, seamlessly interlocking the 5 agent operational disciplines with the 5-phase domain engineering pipeline:
 ```
-1. DISCOVER (Read Only) ──► 2. INTERROGATE (Question Gaps) ──► 3. PLAN (Minimal Scope) ──► 4. EXECUTE (Surgical Edits) ──► 5. VERIFY (Produce Proof)
+1. DISCOVER / REQUIREMENTS   ──► Read-only inspection; INVEST user stories & executable Gherkin scenarios.
+2. INTERROGATE / DOMAIN     ──► Relentless questioning; Ubiquitous Language & domain invariants.
+3. PLAN / OUTER TDD         ──► Minimal blast radius; failing Outer Acceptance Test (UI/API RED).
+4. EXECUTE / INNER TDD      ──► Surgical edits; Inner TDD collaborator discovery (RED-GREEN-REFACTOR).
+5. VERIFY / DoD & PROOF     ──► Outer test turns GREEN; boundary smoke tests & 100.00% test coverage.
 ```
 
 ---
@@ -95,6 +99,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [docs/rules/workspace_isolation.md](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [docs/rules/continuous_learning.md](./docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's logging, dynamic rule updates. |
+| **Upstream Sync** | [docs/rules/upstream_synchronization.md](./docs/rules/upstream_synchronization.md) | Syncing generic AI knowledge to upstream baselines; zero domain contamination. |
 
 ---
 
@@ -109,6 +114,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
   - [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and design patterns.
   - [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
   - [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
+  - [`merge-ai`](.agents/skills/merge-ai/SKILL.md): Auditing, filtering, and merging generic rules and skills to upstream baseline.
 - **Relentless Skill Architecture Inquiry:** Never author or update skills on assumptions. Interrogate all 7 inquiry branches (placement, trigger intent, domain truth, gotchas/anti-patterns, determinism, progressive bloat, verification loop) defined in [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) before writing `SKILL.md`.
 - **Workspace Memory & Knowledge Hub:** Consult [`memory.md`](./memory.md) for ADRs, and [`docs/knowledge/`](./docs/knowledge/knowledge_graph.md) for system topologies, issue logs, and DO's/DONT's.
 - **Harness Parity & Symlinks:** `AGENTS.md`, `CLAUDE.md`, and `agents.md` must remain identical via filesystem symbolic links to eliminate configuration divergence across different agent harnesses.

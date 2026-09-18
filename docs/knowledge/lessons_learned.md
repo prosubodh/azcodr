@@ -20,3 +20,16 @@
 ## 3. Database Atomicity & Concurrency
 - **The Dual-Write Problem is Everywhere:** As soon as an application updates a database and publishes to a broker or sends an email sequentially, it risks data divergence. The Transactional Outbox pattern is the gold standard for reliable event-driven state propagation.
 - **DDL Locks Starve Production:** DDL queries queue up and block all subsequent reads and writes. Setting defensive `lock_timeout` and using non-blocking operations (`CREATE INDEX CONCURRENTLY`, two-phase constraint validation) is essential for zero-downtime operations.
+
+---
+
+## 4. Full-Stack Boundary & Monorepo Test Integrity
+- **The In-Memory Supertest Illusion:** In-memory integration testing (`supertest(app)`) operates entirely within Node.js process memory. It validates route mapping and status codes, but completely masks network binding failures, reverse proxy omissions (Vite dev server / NGINX), and frontend client JSON serialization mismatches.
+- **Coverage Percentages Do Not Equal System Integrity:** 100.00% statement and branch coverage in an isolated backend package gives zero guarantees about whether the frontend client or reverse proxy works. Monorepo test suites must mandate outer-loop smoke verification (`scripts/smoke_test.sh`) before declaring a full-stack system functional.
+
+---
+
+## 5. Process Integrity: Decoupling Bootstrapping from Domain Discovery
+- **The Bootstrapping Scope Trap:** AI agents naturally gravitate toward rapidly generating complete functional applications. When invoked with `/lets-build`, an eager agent tends to generate entire domain entities, database tables, and mock UIs on sheer assumptions. This skips the most crucial phase of software engineering: deep, relentless stakeholder domain analysis.
+- **Strict Phase Gating:** Project bootstrapping (`lets-build`) must be strictly confined to technical plumbing (toolchain, package manifests, build scripts, linter, Docker/Compose, and a minimal `/healthz` probe). Once the technical foundation is verified, the agent must stop and hand off to Domain Analysis (`product-analyst`, `relentless-questioner`). Real domain models must emerge exclusively from stakeholder interviews and Ubiquitous Language discovery.
+
