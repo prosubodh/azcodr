@@ -145,4 +145,54 @@ If skills are designed as monolithic, coupled bundles, agent contexts suffer pro
   - Eliminates prompt bloat by loading only the exact skills needed for the current lifecycle step.
   - Supports complex end-to-end workflows through deterministic artifact piping.
 
+### ADR-011: The Canonical 6 Total Audit Fields Architecture & Modern React Stack
+- **Date:** 2026-09-19 | **Status:** ACCEPTED
+
+#### 1. Context & Problem Statement
+Stateful entities across databases and domain models frequently suffer from inconsistent audit accountability—omitting actor attribution (`createdBy`, `updatedBy`) or destructive deletion tracking (`deletedAt`, `deletedBy`). Furthermore, frontend state management often defaults to ad-hoc `useEffect` fetch loops and unvalidated forms without structured caching, automated mutation invalidation, or sound schema contracts.
+
+#### 2. Decision Drivers
+- Universal Total Audit Accountability: Every stateful database table, ORM entity, and domain aggregate must implement **The Canonical 6 Total Audit Fields**: `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, and `deletedBy`.
+- Strictly Immutable Ledger Invariant: Append-only financial ledgers and event outboxes must enforce strict immutability, prohibiting `updatedAt`, `updatedBy`, `deletedAt`, and `deletedBy`.
+- Non-Destructive Soft-Delete: All delete operations must mark `deletedAt` and `deletedBy` with actor attribution, and queries for active records must strictly filter `WHERE deletedAt IS NULL`.
+- Modern React Architecture: Standardize on `@tanstack/react-query` for asynchronous server state, caching, and optimistic mutations; standardize on `react-hook-form` / `tanstack-form` + `zod` for type-safe form contracts; mandate accessible headless primitives (`shadcn/ui` + `@radix-ui`) with zero native alerts.
+
+#### 3. Decision Outcome & Consequences
+- Codified Section 5 & 6 in [`docs/rules/database_integrity.md`](./docs/rules/database_integrity.md) mandating the Canonical 6 Total Audit Fields and append-only ledger invariants.
+- Authored [`docs/rules/react.md`](./docs/rules/react.md) codifying TanStack Query, React Hook Form + Zod, TanStack Table, and accessible `<ConfirmDialog>` primitives.
+- Upgraded `lets-build` architecture interview matrix (Dimensions 6 & 13) to interrogate audit fields and form state management during scaffolding.
+- **Positive Consequences:**
+  - Complete compliance with SOC 2 / ISO 27001 auditability controls.
+  - Permanent prevention of accidental data loss via soft deletion.
+  - Predictable, type-safe frontend state management with zero stale cache bugs.
+
+### ADR-012: State Machine Lifecycle Configurability & Living Ubiquitous Language Contract
+- **Date:** 2026-09-19 | **Status:** ACCEPTED
+
+#### 1. Context & Problem Statement
+Two recurring systemic questions arise during enterprise architecture evolution:
+1. *State Configurability Paradox:* Should all status fields and business logic be user/tenant-configurable? Unconstrained configurability leads to the "Inner Platform Effect" anti-pattern, where core domain invariants collapse.
+2. *Linguistic Drift & Agreement:* How can domain-code language agreement be maintained deterministically across product requirements, code, tests, and database tables without vocabulary divergence?
+
+#### 2. Decision Drivers
+- Invariant Integrity: Core business invariants (e.g. accounting balance, executed orders) must be non-negotiable and protected inside compiled Aggregate Roots.
+- Operational Customization: Multi-tenant platforms require configurable review stages, approval funnels, and sub-statuses.
+- Guaranteed Linguistic Alignment: Establish a binding, living contract between business vocabulary and source code identifiers, backed by AST linter rules and branded nominal types.
+
+#### 3. Decision Outcome & Consequences
+- **The Dual-State Architecture ([`docs/rules/workflow_state_machines.md`](./docs/rules/workflow_state_machines.md)):**
+  - Bifurcated state into:
+    1. *Core Invariant States (Hard FSM)*: Enforced strictly inside compiled Aggregate Roots using Discriminated Unions or the GoF State Pattern.
+    2. *Operational Workflow Stages (Soft FSM)*: Managed via Declarative State Transition Matrices stored in JSON/metadata, evaluated via Common Expression Language (CEL) or durable workflow engines (Temporal / BPMN 2.0).
+  - Enforced a mandatory append-only State Transition Log (`transitionId`, `entityType`, `entityId`, `fromState`, `toState`, `actorId`, `event`, `timestamp`).
+- **Domain-Code Language Agreement ([`docs/rules/domain_driven_design.md`](./docs/rules/domain_driven_design.md) & [`docs/knowledge/ubiquitous_language.md`](./docs/knowledge/ubiquitous_language.md)):**
+  - Codified the "Single Name Rule" and zero-tolerance for synonyms.
+  - Established the living glossary template and AST linter denylist patterns.
+- **Upgraded Skills & References:**
+  - Enhanced `product-analyst` and `lets-build` (Dimensions 19 & 20) to interrogate state taxonomy and verify glossary alignment.
+- **Positive Consequences:**
+  - Complete architectural clarity: aggregate invariants remain inviolate while operational workflows gain full tenant configurability.
+  - Elimination of linguistic drift across domain models, APIs, and UI layers.
+
+
 

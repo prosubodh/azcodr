@@ -35,7 +35,6 @@ Before acting on any decision branch, answer:
 - **ALWAYS:** Read files before editing; verify commands before running; verify results with evidence.
 - **ASK FIRST:** Adding/removing external dependencies; deleting/renaming files; changing DB schemas or build scripts; modifying existing tests.
 - **NEVER:** Guess paths, flags, or signatures; silently ignore errors; bypass unresolved questions.
-
 ---
 
 ## 2. Execution Lifecycle
@@ -48,7 +47,6 @@ Progress all tasks systematically through the unified **Agent Cognitive & Agile 
 4. EXECUTE / INNER TDD      ──► Surgical edits; Inner TDD collaborator discovery (RED-GREEN-REFACTOR).
 5. VERIFY / DoD & PROOF     ──► Outer test turns GREEN; boundary smoke tests & 100.00% test coverage.
 ```
-
 ---
 
 ## 3. Progressive Disclosure: Specialized Domain Rules
@@ -90,8 +88,10 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Transactional Email** | [docs/rules/transactional_email.md](./docs/rules/transactional_email.md) | Declarative templates (MJML/JSON), safe interpolation, SMTP integration testing. |
 | **Accessibility** | [docs/rules/accessibility.md](./docs/rules/accessibility.md) | WCAG 2.2 AA compliance, accessible primitives, focus trapping, ARIA live regions. |
 | **UI Navigation** | [docs/rules/ui_navigation.md](./docs/rules/ui_navigation.md) | Bidirectional URL state synchronization, deep linking, search params. |
+| **React & Frontend** | [docs/rules/react.md](./docs/rules/react.md) | Modern React, shadcn/ui, TanStack Query, React Hook Form, and Zod validation. |
 | **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | INVEST user stories, executable Gherkin acceptance criteria, edge case matrices. |
 | **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Value Objects, Aggregates. |
+| **Workflow State Machines** | [docs/rules/workflow_state_machines.md](./docs/rules/workflow_state_machines.md) | Configurable workflows, in-aggregate invariant FSMs, transition guards & audit logs. |
 | **Cloud-Native 12-Factor** | [docs/rules/cloud_native.md](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
 | **Agentic Config & Skills** | [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) | Progressive disclosure architecture, skill inquiry branches, refinement loop. |
 | **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), task lifecycle states, Definition of Done. |
@@ -100,7 +100,6 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Workspace Isolation** | [docs/rules/workspace_isolation.md](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [docs/rules/continuous_learning.md](./docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's logging, dynamic rule updates. |
 | **Upstream Sync** | [docs/rules/upstream_synchronization.md](./docs/rules/upstream_synchronization.md) | Syncing generic AI knowledge to upstream baselines; zero domain contamination. |
-
 ---
 
 ## 4. Agent Configuration & Workspace Architecture

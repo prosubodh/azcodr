@@ -1,0 +1,25 @@
+{
+  "name": "property-management",
+  "version": "1.0.0",
+  "title": "Multi-Tenant Property & Asset Management Profile",
+  "description": "Enterprise multi-tenant property management domain archetype covering portfolio isolation, unit inventories, lease execution, resident vetting, and immutable rent ledgers.",
+  "domainVertical": "Real Estate & Property Management",
+  "provenanceWorkspace": "https://github.com/prosubodh/sthanori",
+  "coreEntities": [
+    "Portfolio",
+    "Property",
+    "Unit",
+    "Renter",
+    "Lease",
+    "RentalApplication",
+    "PaymentLedgerEntry"
+  ],
+  "multiTenancyModel": "Portfolio-Isolated Multi-Tenancy",
+  "recommendedStack": {
+    "language": "TypeScript",
+    "backendFramework": "Fastify / Node.js",
+    "frontendFramework": "React (Vite) + TanStack Query + shadcn/ui",
+    "database": "PostgreSQL (Prisma ORM)",
+    "testing": "Vitest (100% Outside-In TDD coverage)"
+  }
+}

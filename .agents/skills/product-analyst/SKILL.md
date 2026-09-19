@@ -28,9 +28,12 @@ description: Use when analyzing product requirements, decomposing features into 
 - Identify the primary user persona and the ultimate business outcome.
 - Explicitly define the **Out-of-Scope boundaries** (what will NOT be built in this increment) to prevent scope creep.
 
-### Step 2: Establish Domain Ubiquitous Language
-- Align on exact domain terms (e.g. `Tenant`, `Organization`, `Member`, `Seat`, `Workspace`).
-- Disallow ambiguous synonyms. Define domain entity relationships using open-source Mermaid diagrams (`erDiagram` or `flowchart TD`).
+### Step 2: Establish Domain Ubiquitous Language & State Taxonomy
+- **Domain-Code Language Agreement**: Consult and update [`docs/knowledge/ubiquitous_language.md`](../../../docs/knowledge/ubiquitous_language.md). Enforce canonical terms and forbid banned synonyms across all stories.
+- **State Machine Taxonomy**: Interrogate every lifecycle status:
+  - *Core Invariant State (Hard FSM)*: Does this status protect fundamental aggregate invariants or financial/legal consistency? If yes, it belongs inside the compiled Aggregate Root and CANNOT be user-configurable.
+  - *Operational Workflow Stage (Soft FSM)*: Is this a tenant-specific review, pipeline, or checklist stage? If yes, design it as a configurable state transition matrix guarded by CEL expressions or durable workflows.
+- Define domain entity relationships using open-source Mermaid diagrams (`erDiagram` or `flowchart TD`).
 
 ### Step 3: Author User Stories (INVEST Framework)
 Ensure every story is:
@@ -60,7 +63,9 @@ Map out all HTTP status code scenarios: `400` (validation), `401` (unauthenticat
 - **DO NOT** write horizontal, technical user stories (e.g. *"Create database table for users"*). Always slice vertically with user value.
 - **DO NOT** omit the Out-of-Scope section. Lack of negative boundaries causes runaway complexity.
 - **DO NOT** use passive voice in Gherkin scenarios. Use concrete actions (`When the user clicks "Submit" with email "test@example.com"`).
-- **DO NOT** mix domain terms (e.g. using `Account`, `Company`, and `Tenant` interchangeably). Pick one and enforce it.
+- **DO NOT** mix domain terms (e.g. using `Account`, `Company`, and `Tenant` interchangeably). Pick one and enforce it in [`ubiquitous_language.md`](../../../docs/knowledge/ubiquitous_language.md).
+- **DO NOT** allow core aggregate invariant states to be modeled as dynamic user-configurable strings.
+- **DO NOT** design state transitions without an immutable transition audit trail (`fromState`, `toState`, `actorId`, `event`, `timestamp`).
 - **DO NOT** skip failure paths. Happy-path-only requirements lead to production outages.
 
 ---

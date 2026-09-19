@@ -1,55 +1,61 @@
-# Architectural Interview Matrix: 18 Systemic Dimensions
+# Comprehensive Architecture Interview Matrix
 
-> **Core Purpose:** The exhaustive, relentless question bank executed during `/lets-build` to eliminate all assumptions and finalize technical choices across all architectural domains.
-
----
-
-## Dimension 1: Domain & Performance Requirements
-- **Business Domain:** What is the core business problem being solved (e.g. Fintech, Healthcare, E-Commerce, Logistics, SaaS)?
-- **Scale & Throughput:** What are the expected peak requests-per-second (RPS) and concurrent active tenants/users?
-- **Latency Budget:** What are the target p95 and p99 response latency limits (e.g. < 20ms, < 100ms)?
-- **Regulatory Frameworks:** Must the system comply with SOC 2 Type II, ISO/IEC 27001, HIPAA, PCI-DSS, or GDPR?
+> **Source of Truth:** Exhaustive taxonomy across 20 architectural dimensions to interrogate before bootstrapping any enterprise project.
 
 ---
 
-## Dimension 2: Primary Programming Language & Runtime
-- **Language Selection:** Which language will power the backend core services?
-  - Options: Go, Rust, Python, TypeScript / Node.js, Java / Kotlin, C# (.NET), Elixir, Zig, or Polyglot microservices?
-- **Rationale & Trade-offs:** Memory safety, garbage collection overhead, concurrency model, developer velocity, or ecosystem libraries?
+## Dimension 0: Project Baseline Archetype & Domain Variant Profile
+- **Architecture Profile:**
+  - **Generic Clean Baseline:** 100% domain-agnostic Hexagonal chassis with standard archetypes (`Entity`, `Aggregate`, `Resource`).
+  - **Domain Variant Profiles (`variants/`):** Pre-configured domain Ubiquitous Language, entity models, and specialized invariants:
+    - `variants/property-management/`: Multi-tenant property, unit, lease, renter, and ledger archetypes.
+    - Custom / User-Defined Variant: Author a new profile under `variants/<name>/`.
 
 ---
 
-## Dimension 3: Package Manager, Build Tools & Toolchain
+## Dimension 1: Architectural Paradigm & Monolith-to-Service Boundary
+- **System Topology:** Modular Monolith (Modulith), Event-Driven Architecture (EDA), Service-Oriented (SOA), or Microservices?
+- **Domain Decoupling:** Hexagonal Ports & Adapters, Clean Architecture, Onion Architecture, or Pragmatic Layered?
+- **Language Bias:** Zero language bias; pure business domain core decoupled from infrastructure adapters.
+
+---
+
+## Dimension 2: Core Programming Languages & Runtimes
+- **Primary Languages:**
+  - Systems / High-Performance: Rust, Go, or C++23
+  - Enterprise / JVM: Java 21+ (Loom virtual threads) or Kotlin
+  - Web / Full-Stack: TypeScript (Node.js / Bun)
+  - Data / ML / Scripting: Python 3.12+ or Elixir (BEAM concurrency)
+- **Language Invariants:** Strict static sound typing; zero unhandled exceptions at domain boundaries.
+
+---
+
+## Dimension 3: Package Managers, Workspaces & Monorepo Tooling
 - **Package Manager:**
-  - Go: `go modules` (`go.mod`)
-  - Rust: `cargo`
-  - Python: `uv`, `poetry`, or `pip` / `pdm`
-  - TypeScript: `pnpm`, `npm`, or `yarn`
-  - Java: `gradle` or `maven`
-  - C#: `dotnet CLI` / NuGet
-- **Task Runner / Monorepo Tooling:** Makefiles, Taskfile, Earthly, Bazel, or language-native build scripts?
-- **Linters & Formatters:** Language-native strict linters (e.g. `golangci-lint`, `clippy`, `ruff`, `eslint`/`biome`, `spotless`)?
+  - Node/TS: `pnpm` (with strict isolated node_modules), `bun`, or `yarn` (Berry)
+  - Rust: `cargo` (with cargo workspaces)
+  - Go: Go Modules (with multi-module workspaces)
+  - Python: `uv`, `poetry`, or `pixi`
+- **Monorepo Build Orchestration:** Turborepo, Nx, or Bazel/Buck2 with remote caching?
 
 ---
 
-## Dimension 4: API, Network & Transport Protocols
+## Dimension 4: Containerization, Base OS & Cloud-Native Runtime
+- **Container Strategy:**
+  - Zero-cve distroless (`gcr.io/distroless/*`) or `scratch` base images?
+  - Rootless container execution (`USER nonroot:nonroot`)?
+  - Multi-stage Dockerfiles with build caching?
+- **Cloud-Native Invariants:** 12-Factor (2026 Edition); stateless runtime isolates; graceful `SIGTERM` draining.
+
+---
+
+## Dimension 5: API Protocols, Transports & Network Contracts
 - **Primary Transport:**
-  - REST / JSON (OpenAPI 3.1)
-  - gRPC / Protocol Buffers (proto3) via `buf`
-  - GraphQL (Schema-First SDL)
-  - Event-Driven / WebSockets / Server-Sent Events (SSE)
-- **Ingress Gateway / Reverse Proxy:** Envoy Proxy, Traefik, Nginx, or Cloud-Native API Gateway?
-
----
-
-## Dimension 5: Web & Transport Framework
-- **Framework Choice:**
-  - Go: `gin`, `chi`, `echo`, or `fiber`
-  - Rust: `axum` or `actix-web`
-  - Python: `fastapi` or `litestar`
-  - TypeScript: `fastify` or `express`
-  - Java/Kotlin: Spring Boot 3, Quarkus, or Micronaut
-  - C#: ASP.NET Core Minimal APIs
+  - RESTful HTTP/JSON (RFC 7807 problem details + OpenAPI 3.1)
+  - gRPC / Protocol Buffers (v3 / Buf CLI)
+  - GraphQL (Apollo / GraphQL-Yoga with code-first or schema-first SDL)
+  - WebSockets / Server-Sent Events (SSE) for real-time push
+- **API Versioning Strategy:** URI Path (`/v1/`), Request Header, or Media Type negotiation?
 
 ---
 
@@ -58,7 +64,10 @@
   - Relational: PostgreSQL, MySQL / MariaDB, SQLite, CockroachDB, or TiDB
   - Document / NoSQL: MongoDB, DynamoDB, or Cassandra
   - Multi-Model / Hybrid: Relational core with document extension
-- **Persistence Pattern:** Repository Pattern with raw SQL / query builders (e.g. `sqlx`, `pgx`, `Kysely`, `jOOQ`) vs ORM (e.g. SQLAlchemy, GORM, Hibernate)?
+- **Persistence Pattern:** Repository Pattern with raw SQL / query builders (e.g. `sqlx`, `pgx`, `Kysely`, `jOOQ`) vs ORM (e.g. Prisma, SQLAlchemy, GORM, Hibernate)?
+- **Mandatory Universal Audit Columns:**
+  - Standardize on **The Canonical 6 Total Audit Fields** (`createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`) across all mutable relational entities?
+  - Strictly immutable append-only ledgers (`createdAt`, `createdBy` only; updates/deletions prohibited)?
 
 ---
 
@@ -109,11 +118,22 @@
 ---
 
 ## Dimension 13: Presentation, Client & Server-Driven UI (SDUI)
-- **Frontend Architecture:**
+- **Frontend Framework & Architecture:**
   - Web: React, Vue, Svelte, Solid, Angular, or Web Components?
   - Mobile: Flutter, React Native, iOS SwiftUI, or Android Jetpack Compose?
   - Hypermedia / SSR: HTMX / HTML-over-the-wire?
   - Server-Driven UI (SDUI): Declarative JSON layout schemas rendered by client registries?
+- **UI Component Primitives & Styling:**
+  - Standardize on `shadcn/ui` with `@radix-ui` headless primitives + Tailwind CSS?
+  - Accessible dialogs, focus trapping, and zero native alerts per `accessibility.md`?
+- **Server-State Caching & Data Synchronization:**
+  - **TanStack Query (`@tanstack/react-query`)** with query keys, stale-while-revalidate, and automatic mutation invalidation vs SWR vs raw fetch?
+- **Form State Management & Validation:**
+  - **React Hook Form (`react-hook-form` + `@hookform/resolvers/zod`)** or **TanStack Form (`@tanstack/react-form`)** with **Zod** schema contracts?
+- **Data Grids & Table Virtualization:**
+  - **TanStack Table (`@tanstack/react-table`)** for headless sorting, filtering, and pagination?
+- **Client Stores & Global State:**
+  - **Zustand** vs Jotai vs Redux Toolkit for shared client-only state?
 - **Design Tokens:** W3C Design Tokens Community Group (DTCG) `tokens.json` processed via Style Dictionary?
 
 ---
@@ -153,3 +173,25 @@
 - **Contract Testing:** Consumer-Driven Contract testing via Pact?
 - **Property-Based Testing:** Schemathesis OpenAPI / GraphQL automated fuzzing?
 - **Coverage Gate:** Mandatory 100.00% coverage thresholds across all suites?
+
+---
+
+## Dimension 19: State Machines, Workflows & Lifecycle Configurability
+- **State Taxonomy & Invariant Separation:**
+  - **Core Invariant States (Hard FSM):** Enforced strictly inside compiled Domain Aggregate Roots? (Financial/legal integrity states like `SETTLED`, `CANCELLED` cannot be user-rewritten).
+  - **Operational Workflow Stages (Soft FSM):** Tenant-configurable review funnels, approval tiers, or sub-statuses managed via Declarative State Transition Matrices?
+- **Transition Guards & Rule Evaluation:**
+  - Standardize on Common Expression Language (CEL) or embedded Wasm sandboxing for tenant-defined guards?
+- **Workflow Orchestration:**
+  - Durable workflow engine (Temporal.io, Camunda 8 / Zeebe BPMN 2.0) for multi-step distributed sagas?
+- **Transition Audit Trail:**
+  - Mandatory append-only state transition log (`transitionId`, `entityType`, `entityId`, `fromState`, `toState`, `event`, `actorId`, `createdAt`)?
+
+---
+
+## Dimension 20: Ubiquitous Language & Domain-Code Agreement
+- **Living Glossary:** Authoritative `docs/knowledge/ubiquitous_language.md` mapping domain terms, business definitions, and exact code identifiers?
+- **Linguistic Drift Defenses:**
+  - Mechanical AST / Linter rules (ESLint `id-denylist`) prohibiting banned synonyms?
+  - Branded nominal types (`type UserId = string & { readonly __brand: unique symbol }`) preventing primitive obsession and cross-domain identifier confusion?
+- **Anti-Corruption Layer (ACL):** Adapters at system perimeters converting external vendor terminology into the canonical Ubiquitous Language?
