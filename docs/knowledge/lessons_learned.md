@@ -33,3 +33,11 @@
 - **The Bootstrapping Scope Trap:** AI agents naturally gravitate toward rapidly generating complete functional applications. When invoked with `/lets-build`, an eager agent tends to generate entire domain entities, database tables, and mock UIs on sheer assumptions. This skips the most crucial phase of software engineering: deep, relentless stakeholder domain analysis.
 - **Strict Phase Gating:** Project bootstrapping (`lets-build`) must be strictly confined to technical plumbing (toolchain, package manifests, build scripts, linter, Docker/Compose, and a minimal `/healthz` probe). Once the technical foundation is verified, the agent must stop and hand off to Domain Analysis (`product-analyst`, `relentless-questioner`). Real domain models must emerge exclusively from stakeholder interviews and Ubiquitous Language discovery.
 
+---
+
+## 6. UX Integrity: Decoupling Developer Personas from Production Auth & Design Triage
+- **The "Toy Prototype" Anti-Pattern:** A major failure mode in rapid prototyping is embedding test personas ("Admin Alice", "Operator Bob", "Member Charlie") directly inside end-user sign-in forms or modals. This destroys product credibility, confuses real users, and masks broken authentication and onboarding flows.
+- **Strict Separation of Concerns:** Developer testing personas must be 100% decoupled from production authentication. They belong exclusively in a dedicated development toolbar (`import.meta.env.DEV`), completely invisible in production builds. Production authentication must be a clean, dedicated, professional experience with validation, session persistence, and role-based post-login redirection.
+- **The Untriaged Design Architecture Trap:** Building user interfaces without upfront Design Architecture Triage (roles, information architecture, navigation shell, URL state synchronization, and page flows) inevitably produces fractured, toy-like prototypes. Every UI increment must pass the 7-Pillar Design Architecture Triage Gate before writing a line of view code.
+
+

@@ -194,5 +194,36 @@ Two recurring systemic questions arise during enterprise architecture evolution:
   - Complete architectural clarity: aggregate invariants remain inviolate while operational workflows gain full tenant configurability.
   - Elimination of linguistic drift across domain models, APIs, and UI layers.
 
+### ADR-013: Formal Design Architecture Triage Framework, Persistent Navigation Shell, Dual-Experience Portals, and Strict Isolation of Development Personas from Production Authentication
+- **Date:** 2026-09-20 | **Status:** ACCEPTED
+
+#### 1. Context & Problem Statement
+UI development without upfront design architecture triage creates severe user experience and security failure modes:
+1. Conflating developer demo/mock personas with end-user sign-in flows, producing a toy-like prototype that confuses real users.
+2. Mixing operator-dense navigation with consumer self-service workflows into a single chaotic layout.
+3. Lack of a persistent application shell and collapsible sidebar, causing disruptive layout shifts and broken navigation state on page transitions.
+4. Missing deep-linkable URL synchronization for active tabs, search queries, and drawers.
+
+#### 2. Decision Drivers
+- Need for a mandatory upfront design gate before writing UI code.
+- Strict physical separation between developer test harnesses and production authentication.
+- Strict architectural duality between enterprise operator workspaces and consumer/member portals.
+- Persistent app shell with collapsible 64px icon rail mode, persistent state in `localStorage`, and bidirectional URL search parameter synchronization.
+
+#### 3. Decision Outcome & Consequences
+- **The 7-Pillar Design Architecture Triage Gate ([`docs/rules/ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md)):**
+  - Mandated 7 triage pillars (Role Triage, Information Architecture, Duality, Wayfinding, URL Sync, Route Guards, Accessibility) before building UI increments.
+- **Strict Decoupling of Developer Personas ([`docs/rules/authentication.md`](./docs/rules/authentication.md)):**
+  - Developer demo personas are completely isolated into a dev-only floating toolbar (`import.meta.env.DEV`), completely excluded from production bundles.
+  - Production sign-in enforces clean, dedicated forms with Zod schema validation and role-based post-login redirection.
+- **Dual-Experience Model & Persistent Shell:**
+  - Separated Enterprise Operator Workspace (`/`) from Consumer / Member Self-Service Portal (`/portal`).
+  - Standardized persistent header, contextual breadcrumbs, collapsible sidebar with 64px icon rail, and URL search param state sync.
+- **Positive Consequences:**
+  - Eliminates toy-like demo persona leaks in production.
+  - Clean separation between dense administrative workflows and consumer self-service.
+  - Fully accessible, deep-linkable web applications conforming to WCAG 2.2 AA.
+
+
 
 

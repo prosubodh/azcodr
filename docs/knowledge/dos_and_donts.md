@@ -274,6 +274,8 @@
 6. **DO** enforce strict authorization checks on both the API server and UI layers (defense-in-depth); never trust client-side route guards alone.
 7. **DO** configure comprehensive HTTP security headers: Content Security Policy (CSP), Strict-Transport-Security (HSTS), X-Content-Type-Options, X-Frame-Options.
 8. **DO** scan repositories pre-commit and in CI for committed credentials using automated secret scanners (Gitleaks / Secretlint).
+9. **DO** isolate developer demo personas into a dedicated development-only test harness (`import.meta.env.DEV`), completely decoupled from production authentication.
+10. **DO** redirect users automatically upon authentication to their role-specific portal (e.g. Operator to `/`, Consumer/Member to `/portal`).
 
 ### DONT
 1. **DONT** store access tokens or sensitive user credentials in `localStorage` or `sessionStorage` where they are vulnerable to XSS attacks.
@@ -284,6 +286,8 @@
 6. **DONT** disclose whether an email exists or is registered during authentication, password reset, or invitation flows.
 7. **DONT** implement custom cryptographic algorithms or roll your own encryption schemes; rely exclusively on established, audited open-source libraries.
 8. **DONT** disable TLS/HTTPS or accept self-signed certificates in non-local environments.
+9. **DONT** embed test personas or mock accounts directly into user-facing sign-in or registration dialogs.
+10. **DONT** rely solely on UI button hiding for access control; protect all routes with server-checked `<ProtectedRoute>` guards.
 
 ---
 
@@ -315,7 +319,7 @@
 
 ## 12. Frontend Architecture & Modern Web UI
 **Authoritative Sources:** *Dan Abramov (Presentational and Container Components)*; *Tanner Linsley (TanStack Query Architecture)*; *W3C WAI-ARIA 1.2 Authoring Practices Guide*; *Web.dev (Core Web Vitals)*.  
-**Governing Rules:** [`react.md`](../rules/react.md), [`accessibility.md`](../rules/accessibility.md), [`ui_navigation.md`](../rules/ui_navigation.md).
+**Governing Rules:** [`react.md`](../rules/react.md), [`accessibility.md`](../rules/accessibility.md), [`ui_navigation.md`](../rules/ui_navigation.md), [`ui_ux_architecture.md`](../rules/ui_ux_architecture.md).
 
 ### DO
 1. **DO** separate server state caching (managed via TanStack Query) from transient local client UI state (managed via component state or lightweight stores like Zustand).
@@ -326,6 +330,9 @@
 6. **DO** optimize Web Vitals: ensure Largest Contentful Paint (LCP) < 2.5s, Interaction to Next Paint (INP) < 200ms, and Cumulative Layout Shift (CLS) < 0.1.
 7. **DO** lazy-load heavy route components and non-critical modules via dynamic imports (`React.lazy` / code splitting).
 8. **DO** implement user-friendly empty states, skeleton loaders, and accessible error boundaries for all data-fetching views.
+9. **DO** execute the 7-Pillar Design Architecture Triage Gate before writing any UI views or navigation components.
+10. **DO** enforce a strict Dual-Experience Model separating Enterprise Operator Workspaces (`/`) from Consumer / Member Portals (`/portal`).
+11. **DO** construct the UI around a Persistent Shell (Header, Collapsible Sidebar, Breadcrumbs, Notifications) with a slim 64px icon rail mode persisted in `localStorage`.
 
 ### DONT
 1. **DONT** use browser-native dialogs (`window.alert()`, `window.confirm()`, `window.prompt()`) in production user interfaces.
@@ -336,6 +343,8 @@
 6. **DONT** store raw unformatted monetary strings in form states; handle money as structured decimal/minor unit objects.
 7. **DONT** create unconstrained re-renders by creating new object or function instances inside JSX prop assignments without necessity.
 8. **DONT** hide interactive elements from screen readers without providing accessible `aria-label` or visually hidden descriptions.
+9. **DONT** initiate UI development on assumptions without triaging role visibility, navigation hierarchies, and user flows.
+10. **DONT** force consumer/portal users to navigate dense enterprise operator layouts with disabled buttons; provide a dedicated consumer portal.
 
 ---
 
