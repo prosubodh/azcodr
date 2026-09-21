@@ -144,6 +144,7 @@
 6. **DO** type all async function return values explicitly (`Promise<Result<T, E>>`).
 7. **DO** keep types colocated or imported from a shared contract package rather than duplicated across apps.
 8. **DO** use `readonly` modifiers on entity properties and collection arrays to prevent accidental mutations.
+9. **DO** standardize on `@/*` module path aliases mapped to `./src/*` across TypeScript configs, bundlers, and test runners, eliminating fragile deep relative traversals (`../../..`).
 
 ### DONT
 1. **DONT** use `any`, `unknown` without narrowing, or loose untyped object dictionaries (`Record<string, any>`).
@@ -154,6 +155,7 @@
 6. **DONT** export mutable global variables or mutable module-level objects.
 7. **DONT** ignore compiler warnings or treat strict linter rules as optional guidelines.
 8. **DONT** use enum numeric values that risk deserialization mismatches; prefer string literal unions.
+9. **DONT** use deep relative path traversals (`../../../..`, `../../..`) across layers, packages, or directory hierarchies; use standardized `@/*` path aliases.
 
 ---
 
@@ -222,6 +224,7 @@
 6. **DO** validate dynamic tenant schema extensions against JSON Schema Draft 2020-12 meta-schemas before persisting custom data.
 7. **DO** isolate tenant cache keys using explicit namespace prefixes (`tenant:{tenant_id}:{cache_key}`).
 8. **DO** include multi-tenant boundary violation test cases in automated CI test suites.
+9. **DO** verify that non-admin actors requesting tenant operations belong to the requested tenant organization/workspace, rejecting mismatched header overrides (`x-tenant-id`) with HTTP 403 `FORBIDDEN_TENANT_ACCESS`.
 
 ### DONT
 1. **DONT** trust unverified client-supplied tenant identifiers in query parameters or request headers without cryptographic session verification.

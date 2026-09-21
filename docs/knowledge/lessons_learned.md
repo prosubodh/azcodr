@@ -90,4 +90,18 @@
 - **The Telemetry Bleed Anti-Pattern:** Placing internal architectural metrics ("ACID ledger", "Hexagonal ports", "API Connected" pulsing pills, "Role: OPERATOR" badges) into user-facing wayfinding breadcrumbs, headers, or footers creates confusion for end users (consumers and enterprise operators alike). These technical indicators belong strictly within development tools conditionally mounted under `import.meta.env.DEV`, ensuring production builds are clean and focused on user tasks.
 - **Centralized Single Source of Truth for Copy:** Distributing strings across JSX templates causes text divergence, typos, and high refactoring overhead. Consolidating all copy, error messages, empty states, breadcrumbs, and action text into a single configuration module (`UI_STRINGS` in `app-constants.ts`) simplifies internationalization readiness, branding updates, and unit test verification.
 
+---
+
+## 15. Monorepo-Wide Module Path Aliasing (`@/*`) & Deep Relative Traversal Elimination
+- **Fragility of Deep Relative Imports:** Using deep relative traversals (`../../../..`, `../../..`, `../..`) across modular hexagonal architectures creates fragile couplings. Minor file restructuring breaks dozens of imports, and deep relative paths obscure which architectural boundary (domain core, primary ports, secondary adapters) is being invoked.
+- **Unified Path Aliasing Standard:** Standardizing on `@/*` mapped to `./src/*` across TypeScript compiler configs (`tsconfig.json`), test runners (Vitest), and bundlers (Vite) enforces consistent, unambiguous imports across the entire monorepo.
+- **Node.js ESM Build Resolution via `tsc-alias`:** TypeScript's `tsc` compiler does not rewrite path aliases in emitted JavaScript by default. In Node.js ESM environments, running `tsc-alias` post-compilation (`tsc && tsc-alias`) transforms `@/*` aliases into valid relative paths directly in `dist/`, enabling 100% native Node.js ESM execution with zero runtime loader overhead.
+
+---
+
+## 16. Canonical Domain Error Hierarchy & Zero-`any` Type Safety
+- **The Monkey-Patching Anti-Pattern:** Adding status codes to arbitrary error objects at catch sites (e.g. `(err as any).statusCode = 404`) bypasses TypeScript strict mode, prevents compile-time exhaustiveness checking, and risks dropping contextual problem details.
+- **Structured Domain Error Model:** Modeling operational domain errors via an explicit `DomainError` base class with canonical subclasses (`ValidationError`, `UnauthorizedError`, `ForbiddenError`, `NotFoundError`, `ConflictError`, `ExpiredError`) allows clean `instanceof` type narrowing in HTTP error middleware, guaranteeing RFC 7807 compliance without type assertion escape hatches.
+
+
 
