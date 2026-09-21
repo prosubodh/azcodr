@@ -333,6 +333,9 @@
 9. **DO** execute the 7-Pillar Design Architecture Triage Gate before writing any UI views or navigation components.
 10. **DO** enforce a strict Dual-Experience Model separating Enterprise Operator Workspaces (`/`) from Consumer / Member Portals (`/portal`).
 11. **DO** construct the UI around a Persistent Shell (Header, Collapsible Sidebar, Breadcrumbs, Notifications) with a slim 64px icon rail mode persisted in `localStorage`.
+12. **DO** synchronize authentication and tenant selection across browser tabs via `window.addEventListener('storage')`, and isolate complex subcomponents or page outlets using accessible `<ErrorBoundary>` components to prevent unhandled render exceptions from crashing the application shell.
+13. **DO** decouple all technical internal telemetry (API gateway connection states, hexagonal port health, database adapter indicators, and active security roles) from user-facing screens and confine them exclusively to development tools and harnesses gated by `import.meta.env.DEV`.
+14. **DO** centralize all user interface copy, status labels, error notifications, action titles, and templated messages into configuration constants (`UI_STRINGS`) to eliminate scattered hardcoded strings.
 
 ### DONT
 1. **DONT** use browser-native dialogs (`window.alert()`, `window.confirm()`, `window.prompt()`) in production user interfaces.
@@ -345,6 +348,8 @@
 8. **DONT** hide interactive elements from screen readers without providing accessible `aria-label` or visually hidden descriptions.
 9. **DONT** initiate UI development on assumptions without triaging role visibility, navigation hierarchies, and user flows.
 10. **DONT** force consumer/portal users to navigate dense enterprise operator layouts with disabled buttons; provide a dedicated consumer portal.
+11. **DONT** expose internal architecture jargon (e.g. "ACID ledger", "Hexagonal ports", "API Connected", "Active Role") in production user-facing or administrator views.
+12. **DONT** hardcode error messages, status labels, or button copy directly in page components; reference centralized configuration constants.
 
 ---
 
@@ -501,3 +506,32 @@
 6. **DONT** treat documentation, glossaries, or decision records as afterthoughts to be written weeks after shipping.
 7. **DONT** ignore recurring defects; codify automated linting or testing rules to make repeat defects impossible.
 8. **DONT** bypass code reviews, automated CI gates, or security scans for urgent hotfixes.
+
+---
+
+## 19. Product Ownership, Backlog Management & OKRs
+**Authoritative Sources:** *Scrum Guide (Ken Schwaber & Jeff Sutherland)*; *Scrum.org Professional Scrum Product Owner & Backlog Management*; *Bill Wake (INVEST in Good Stories & SMART Tasks)*; *Ron Jeffries (The 3 C's of User Stories)*; *Gunther Verheyen (Scrum - A Pocket Guide)*; *Andy Grove (High Output Management)*; *John Doerr (Measure What Matters)*; *OKR Institute*.  
+**Governing Rules:** [`product_ownership.md`](../rules/product_ownership.md), [`requirements_engineering.md`](../rules/requirements_engineering.md), [`project_management.md`](../rules/project_management.md).
+
+### DO
+1. **DO** formulate and explicitly communicate a singular, long-term Product Goal that provides direction and a measurable commitment for the Product Backlog.
+2. **DO** connect strategic Objectives and Key Results (OKRs) directly to the Product Goal and backlog items, measuring outcomes rather than activities.
+3. **DO** focus relentlessly on closing the customer **Satisfaction Gap** ($\text{Desired Experience} - \text{Current Experience}$) and delivering measurable business outcomes.
+4. **DO** order the Product Backlog using objective prioritization models (Kano Model, MoSCoW, RICE scoring, Buy a Feature) rather than subjective opinion.
+5. **DO** practice progressive backlog elaboration: keep items at the top of the backlog finely granular, sprintable, and well-understood, while keeping long-term items coarse.
+6. **DO** recognize that **user stories are not requirements**, but a technique to express them; embody Ron Jeffries' 3 C's (Card, Conversation, Confirmation) as a "pidgin language" bridging business and engineering.
+7. **DO** slice all user stories vertically through the full stack (UI ➔ API ➔ Domain ➔ DB) like a multi-layer cake to ensure observable customer value.
+8. **DO** decompose INVEST user stories into technical developer tasks that satisfy the SMART framework (Specific, Measurable, Achievable, Relevant, Time-boxed to under 4 hours).
+9. **DO** enforce that the only vehicle for delivering product value is a usable Product Increment meeting 100% of the Definition of Done.
+10. **DO** actively decide **what NOT to do**; saying "no" to low-impact, speculative requests is the core discipline of product ownership.
+
+### DONT
+1. **DONT** fall into the "Feature Factory" trap by measuring output (story points burned, features completed) instead of outcome (value delivered, satisfaction improved).
+2. **DONT** write activity-based Key Results (e.g. "Conduct 5 interviews"); Key Results must measure objective quantitative outcomes (e.g. "Increase activation from 40% to 75%").
+3. **DONT** confuse KPIs (ongoing operational baseline health) with OKRs (time-bound, aspirational strategic breakthroughs).
+4. **DONT** write horizontal technical user stories (e.g. "Create database tables" or "Build API endpoints") that deliver zero observable customer value.
+5. **DONT** force non-story requirements (system invariants, SLAs, security controls, architectural spikes) into artificial `"As a user..."` syntax; model them directly as architectural constraints or spike tasks.
+6. **DONT** prioritize speculative "Attractive / Delighters" when core baseline "Must-be" table stakes are unfulfilled or broken.
+7. **DONT** maintain separate, disconnected backlogs for the same product; the Product Backlog must remain single, transparent, and ordered.
+8. **DONT** allow developer tasks to be open-ended without time-boxing; tasks exceeding 4 hours must be split or paired.
+9. **DONT** accumulate "un-done" work across sprint boundaries; an increment that fails the Definition of Done delivers zero value.

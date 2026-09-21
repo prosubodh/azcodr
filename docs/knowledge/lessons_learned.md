@@ -40,4 +40,54 @@
 - **Strict Separation of Concerns:** Developer testing personas must be 100% decoupled from production authentication. They belong exclusively in a dedicated development toolbar (`import.meta.env.DEV`), completely invisible in production builds. Production authentication must be a clean, dedicated, professional experience with validation, session persistence, and role-based post-login redirection.
 - **The Untriaged Design Architecture Trap:** Building user interfaces without upfront Design Architecture Triage (roles, information architecture, navigation shell, URL state synchronization, and page flows) inevitably produces fractured, toy-like prototypes. Every UI increment must pass the 7-Pillar Design Architecture Triage Gate before writing a line of view code.
 
+---
+
+## 7. Server State Synchronization vs. Mock React Context
+- **The Local Mock Store Debt:** Maintaining temporary in-memory React contexts (`MockResourceContext.tsx`) or mock data arrays alongside a real backend REST API creates phantom state, breaks multi-tab consistency, and causes state divergence.
+- **Server-Authoritative State via TanStack Query:** Migrating to server-authoritative state via TanStack Query (`useQuery`, `useMutation`, and cache invalidation) with declarative RBAC guards (`<Can permission="...">`) grounds the entire web application in persistent backend data, eliminating client-side mocks and guaranteeing multi-tenant consistency.
+
+---
+
+## 8. Zero-Dependency SMTP Sockets & Deterministic Email Testing
+- **Third-Party Mailer Bloat vs. Native Sockets:** Standard local development and containerized mail catchers (e.g. Mailpit) accept RFC 5321 commands over TCP sockets. Relying on heavy external mailer packages introduces unneeded transitive dependencies and supply chain risks. Implementing a clean socket-based SMTP adapter with standard library sockets provides zero-dependency, fully audited delivery with multipart/alternative MIME formatting and graceful offline fallback.
+- **Strict HTML Escaping & Injection Neutralization:** Transactional notifications interpolate user inputs (names, action titles, payment references). Centralizing sanitization through a strict escaping utility neutralizing `&`, `<`, `>`, `"`, and `'` guarantees zero HTML injection or XSS risks.
+- **Double-Loop Decoupling with Background Job Queue:** Decoupling notification delivery from HTTP request-response cycles via an asynchronous job queue ensures API responsiveness. Testing event dispatchers against in-memory notification sinks allows 100.00% branch and statement coverage without network flakes.
+
+---
+
+## 9. Digital Contract Execution, Schema Evolution & Signature Auditing
+- **Non-Destructive Schema Evolution with Declarative JSON:** Expanding database models to support variable contractual covenants, conditions, and digital signature records without table bloat is achieved cleanly through semi-structured JSON fields (`termsJson`, `signatureJson`). Running declarative synchronization preserves database integrity and avoids premature migration schema lock-in during rapid domain evolution.
+- **Cryptographic Execution Audit Trails:** Digital signatures require more than a boolean `isSigned` flag. A legally defensible electronic execution record must record: (1) Typed signer legal name, (2) ISO 8601 UTC timestamp, (3) Authenticated user actor ID, (4) Client IP address, (5) Client User-Agent string, and (6) A deterministic cryptographic checksum or execution reference hash.
+- **Outside-In Event Notification Synchronization:** Executing an agreement is a domain transition that must trigger notification side effects. Emitting domain events on an asynchronous queue allows event notification dispatchers to compose transactional confirmation messages with executed terms and receipt summaries without blocking the HTTP response.
+
+---
+
+## 10. Design Token Completeness & Application-Wide Theme Architecture
+- **The Partial Dark Mode Token Pitfall:** Automated component CLI generators inject component-scoped CSS variables into `.dark` (e.g. `--sidebar-*`), but do not populate omitted foundational design tokens (`--background`, `--foreground`, `--card`, `--border`, `--popover`). If root `.dark` is missing foundational tokens, applying the `dark` class leaves background colors white and text illegible. Always maintain symmetric, complete design tokens across `:root` and `.dark`.
+- **System Preference Detection & Reactive Synchronization:** A robust `ThemeProvider` must listen to `window.matchMedia('(prefers-color-scheme: dark)')` with dynamic event listeners so OS appearance toggles seamlessly propagate in real-time. Synchronizing `document.documentElement.style.colorScheme = resolvedTheme` ensures native browser elements (scrollbars, datetime pickers) match the selected theme.
+
+---
+
+## 11. Dependency Injection Hygiene vs. Split-Brain In-Memory Traps
+- **The Split-Brain Instantiation Anti-Pattern:** When application factories (`createApp(deps)`) provide default fallback instances for domain repositories, passing some repositories while omitting others creates two disconnected sets of state. For instance, if `index.ts` creates a `userRepo` and seeds admin credentials, but `createApp` defaults to a newly constructed `userRepo`, API requests hit the empty fallback instance.
+- **Strict Inversion of Control:** Factories must accept a fully instantiated `AppDependencies` composite or explicit container. Server entrypoints must assemble the complete dependency graph and inject all collaborators explicitly.
+
+---
+
+## 12. Domain Invariant Synchronization & Resource Concurrency
+- **Aggregate Isolation Requires Domain Coordination:** An agreement or reservation is a separate aggregate from a constrained inventory resource. However, activating an agreement without validating resource availability permits double-allocation race conditions. Hexagonal use cases must coordinate aggregate transitions atomically: validating resource availability before agreement signing, transitioning the resource status to `ALLOCATED` upon execution, and restoring `AVAILABLE` upon termination.
+- **Fail-Closed Multi-Tenancy:** Never trust client-supplied tenant headers (`x-tenant-id`) without cryptographically verifying the authenticated actor's tenant organization memberships. Mismatched tenant headers must immediately fail closed with HTTP 403 `FORBIDDEN_TENANT_ACCESS`.
+
+---
+
+## 13. Client-Side Resilience & Multi-Tab Reactive Synchronization
+- **Error Boundaries Prevent Catastrophic Shell Crashes:** Heavy visual components (such as charts with dynamic SVG/canvas rendering) or dynamic sub-routes can throw runtime exceptions on unexpected data. Wrapping page outlets and complex widgets in accessible `<ErrorBoundary>` components preserves the shell and navigation while offering modular retry.
+- **Cross-Tab Synchronization via Storage Events:** Modern multi-tab workflows mean users open links, resource lists, or self-service portals in separate tabs. Listening to the browser's native `storage` event ensures that login, logout, and active tenant switches are immediately synchronized across all open tabs without desynchronization.
+
+---
+
+## 14. Decoupling Developer Diagnostics from Production Shell & Centralizing UI Copy
+- **The Telemetry Bleed Anti-Pattern:** Placing internal architectural metrics ("ACID ledger", "Hexagonal ports", "API Connected" pulsing pills, "Role: OPERATOR" badges) into user-facing wayfinding breadcrumbs, headers, or footers creates confusion for end users (consumers and enterprise operators alike). These technical indicators belong strictly within development tools conditionally mounted under `import.meta.env.DEV`, ensuring production builds are clean and focused on user tasks.
+- **Centralized Single Source of Truth for Copy:** Distributing strings across JSX templates causes text divergence, typos, and high refactoring overhead. Consolidating all copy, error messages, empty states, breadcrumbs, and action text into a single configuration module (`UI_STRINGS` in `app-constants.ts`) simplifies internationalization readiness, branding updates, and unit test verification.
+
 

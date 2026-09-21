@@ -9,7 +9,6 @@
 ---
 
 ## 1. Zero-Assumption Operating Framework
-
 ### Core Principles
 1. **No External Assumptions:** You have no prior knowledge of external setups, hidden tools, libraries, or unverified conventions outside this workspace.
 2. **Ground Truth Only:** A statement is only true if proven by a workspace file, verified command output, or direct user instruction.
@@ -90,12 +89,13 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **UI Navigation** | [docs/rules/ui_navigation.md](./docs/rules/ui_navigation.md) | Bidirectional URL state synchronization, deep linking, search params. |
 | **UI/UX Architecture** | [docs/rules/ui_ux_architecture.md](./docs/rules/ui_ux_architecture.md) | Design triage, persistent app shell, collapsible sidebar, dual-experience portals. |
 | **React & Frontend** | [docs/rules/react.md](./docs/rules/react.md) | Modern React, shadcn/ui, TanStack Query, React Hook Form, and Zod validation. |
-| **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | INVEST user stories, executable Gherkin acceptance criteria, edge case matrices. |
+| **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
+| **Product Ownership** | [docs/rules/product_ownership.md](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
 | **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Value Objects, Aggregates. |
 | **Workflow State Machines** | [docs/rules/workflow_state_machines.md](./docs/rules/workflow_state_machines.md) | Configurable workflows, in-aggregate invariant FSMs, transition guards & audit logs. |
 | **Cloud-Native 12-Factor** | [docs/rules/cloud_native.md](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
 | **Agentic Config & Skills** | [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) | Progressive disclosure architecture, skill inquiry branches, refinement loop. |
-| **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), task lifecycle states, Definition of Done. |
+| **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), SMART developer tasks, Definition of Done. |
 | **Domain Modeling** | [docs/rules/domain_expertise.md](./docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, Ubiquitous Language. |
 | **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [docs/rules/workspace_isolation.md](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
@@ -104,12 +104,11 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 ---
 
 ## 4. Agent Configuration & Workspace Architecture
-
 - **Progressive Disclosure Principle:** Never load all documentation upfront. Rely on the table above to pull specialized instructions only when performing relevant tasks.
 - **Nested AGENTS.md for Monorepos:** In multi-package workspaces (e.g. `apps/backend`, `apps/frontend`), place package-specific conventions in nested `AGENTS.md` files scoped strictly to those subtrees.
 - **Specialized Skills Catalog:** On-demand multi-step workflows are encapsulated under `.agents/skills/`:
   - [`agentic-architect`](.agents/skills/agentic-architect/SKILL.md): Authoring, auditing, and modularizing agent configurations and skills.
-  - [`product-analyst`](.agents/skills/product-analyst/SKILL.md): Translating requirements into INVEST user stories and Gherkin criteria.
+  - [`product-analyst`](.agents/skills/product-analyst/SKILL.md): Aligning OKRs, backlog ordering (Kano/MoSCoW/RICE), INVEST stories, and Gherkin criteria.
   - [`compliance-audit`](.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
   - [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and design patterns.
   - [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.

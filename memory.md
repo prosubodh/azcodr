@@ -224,6 +224,39 @@ UI development without upfront design architecture triage creates severe user ex
   - Clean separation between dense administrative workflows and consumer self-service.
   - Fully accessible, deep-linkable web applications conforming to WCAG 2.2 AA.
 
+### ADR-014: Product Ownership, Backlog Prioritization Models, SMART Developer Tasks, and INVEST Slicing
+- **Date:** 2026-09-21 | **Status:** ACCEPTED
+
+#### 1. Context & Problem Statement
+Agile teams frequently suffer from the "Feature Factory" anti-pattern: measuring output (story points burned, code volume) instead of outcome (customer value realized, satisfaction gap closed). Additional failure modes include:
+1. Conflating user stories with formal requirements rather than treating them as conversational placeholders (the 3 C's) and pidgin language bridges.
+2. Forcing system invariants, security controls, and architectural spikes into artificial `"As a user..."` syntax.
+3. Slicing stories horizontally (e.g. database migration only or UI mock only) delivering zero usable software to customers.
+4. Open-ended developer tasks lacking measurable pass/fail boundaries, leading to multi-day task drift.
+5. Arbitrary backlog prioritization driven by executive gut feeling rather than quantitative value models.
+
+#### 2. Decision Drivers
+- Ground product development in empiricism (Build-Measure-Learn) and clear Product Goals.
+- Connect strategic Objectives and Key Results (OKRs) to backlog ordering.
+- Standardize objective prioritization frameworks (Kano Model, MoSCoW, RICE, Buy a Feature).
+- Mandate Bill Wake's INVEST criteria and vertical cake slicing (UI ➔ API ➔ Domain ➔ DB).
+- Standardize Bill Wake's SMART framework for decomposing user stories into bounded developer tasks (2–4 hours).
+
+#### 3. Decision Outcome & Consequences
+- **Dedicated Rule & Skill ([`docs/rules/product_ownership.md`](./docs/rules/product_ownership.md), [`.agents/skills/product-analyst/`](./.agents/skills/product-analyst/)):**
+  - Codified Product Owner accountabilities, the satisfaction gap, and outcome vs. output discipline.
+  - Added reference guides for Kano, MoSCoW, RICE scoring, and OKR alignment.
+- **Requirements Engineering & Vertical Cake Slicing ([`docs/rules/requirements_engineering.md`](./docs/rules/requirements_engineering.md)):**
+  - Clarified that user stories are tokens for conversation (Ron Jeffries' 3 C's: Card, Conversation, Confirmation).
+  - Explicitly decoupled non-story requirements (system invariants, NFRs, architectural spikes) from story syntax.
+  - Enforced multi-layer cake vertical slicing across all layers.
+- **SMART Developer Task Breakdown ([`docs/rules/project_management.md`](./docs/rules/project_management.md)):**
+  - Required decomposing INVEST stories into Specific, Measurable, Achievable, Relevant, and Time-boxed (2–4h) developer tasks.
+- **Positive Consequences:**
+  - Guarantees working software in every vertical increment.
+  - Eliminates horizontal stubs and open-ended technical drift.
+  - Objective backlog ranking minimizes stakeholder friction.
+
 
 
 

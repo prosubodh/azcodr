@@ -152,12 +152,17 @@ Per [`docs/rules/ui_navigation.md`](./ui_navigation.md), all view state that rep
 - **DO** enforce route guards on all routes, automatically redirecting users according to their authenticated role.
 - **DO** synchronize tabs, search terms, and pagination with URL search parameters.
 - **DO** use accessible Radix UI dialogs (`<ConfirmDialog>`) for destructive actions and ARIA live regions for status alerts.
+- **DO** synchronize authentication and tenant selection across browser tabs via `window.addEventListener('storage')`, and isolate complex subcomponents or page outlets using accessible `<ErrorBoundary>` components to prevent unhandled render exceptions from crashing the application shell.
+- **DO** decouple all technical internal telemetry (API gateway connection states, hexagonal port health, database adapter indicators, and active security roles) from user-facing screens and confine them exclusively to development tools and harnesses gated by `import.meta.env.DEV`.
+- **DO** centralize all user interface copy, status labels, error notifications, action titles, and templated messages into configuration constants (`UI_STRINGS`) to eliminate scattered hardcoded strings.
 
 ### DONT:
 - **DONT** build UI views on assumptions without completing the Design Architecture Triage Gate.
 - **DONT** embed mock/demo personas inside user-facing login or registration forms.
 - **DONT** force Member/Consumer users to navigate the enterprise operator sidebar with disabled buttons.
 - **DONT** expose multi-tenant organization switchers or system audit fields to consumer roles.
+- **DONT** expose internal architecture jargon (e.g. "ACID ledger", "Hexagonal ports", "API Connected", "Active Role") in production user-facing or administrator views.
+- **DONT** hardcode error messages, status labels, or button copy directly in page components; reference centralized configuration constants.
 - **DONT** use browser-native `window.alert()` or `window.confirm()` popups.
 - **DONT** rely solely on hiding UI buttons to enforce authorization; always wrap routes in `<ProtectedRoute>`.
 - **DONT** lose search queries or active tab states upon page reload; always sync to URL search params.
