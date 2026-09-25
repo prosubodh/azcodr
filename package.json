@@ -1,6 +1,6 @@
 {
   "name": "azcodr",
-  "version": "1.2.2",
+  "version": "1.2.3",
   "description": "Enterprise Architecture & Agentic Engineering Starter Template",
   "bin": {
     "azcodr": "bin/azcodr.js"

@@ -77,3 +77,10 @@ When an AI agent or engineer discovers a generic architectural improvement, bug 
   3. Reduced active progressive disclosure rules from 47 to 45 while preserving 100% domain coverage.
 - **Domain Filter Verification:** Verified 100% generic; purged of all redundant files and circular links.
 
+### [2026-09-25] Purge Speculative Domain Terms from Ubiquitous Language Template
+- **Category:** Knowledge Hub
+- **Target File(s):** `docs/knowledge/ubiquitous_language.md`
+- **Rationale:** Starter templates must not pre-populate domain concepts (`Organization`, `Membership`, `Ledger Entry`) prior to Phase 1 Requirements & Domain Discovery. Ubiquitous Language is an emergent output of domain modeling, not a pre-baked template assumption.
+- **Description:** Reset the canonical domain vocabulary matrix in `docs/knowledge/ubiquitous_language.md` to an unopinionated blank template schema while preserving linguistic invariants (Single Name Rule, Bounded Contexts, Continuous Updating).
+- **Domain Filter Verification:** Verified 100% generic; purged of all hypothetical business entities and identifiers.
+
