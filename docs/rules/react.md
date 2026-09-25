@@ -72,17 +72,7 @@
 
 ---
 
-## 5. Invariants, DO's & DONT's
+## 5. Theme Architecture & Design Token Completeness
 
-### DO's:
-- **DO:** Use `shadcn/ui` components backed by `@radix-ui` primitives for all interactive elements.
-- **DO:** Use `@tanstack/react-query` (`useQuery`, `useMutation`) for all server data fetching, caching, and mutation invalidation.
-- **DO:** Validate all form inputs using formal Zod schemas and `react-hook-form` / `tanstack-form`.
-- **DO:** Display user feedback and errors using accessible ARIA live regions (`role="alert"` for errors, `role="status"` for confirmations) and `<ConfirmDialog>`.
-- **DO:** Synchronize pagination, active tabs, and search filters into URL search parameters.
-
-### DONT's:
-- **DONT:** Never use `window.alert()` or `window.confirm()`.
-- **DONT:** Never fetch data in raw `useEffect` hooks with manual `loading` / `error` boolean state.
-- **DONT:** Never manage multi-field forms using raw `useState` and manual imperative string validations.
-- **DONT:** Never use unstyled raw HTML select or dialog elements when `shadcn/ui` components exist.
+- **Symmetric Design Tokens**: Ensure foundational CSS variables (`--background`, `--foreground`, `--card`, `--border`, `--popover`) are symmetrically declared across `:root` and `.dark`. Omitted root tokens in `.dark` result in unstyled backgrounds and illegible text when switching themes.
+- **System Preference Detection & Reactive Synchronization**: `ThemeProvider` implementations must listen to `window.matchMedia('(prefers-color-scheme: dark)')` with dynamic event listeners so OS appearance toggles seamlessly propagate in real-time, and synchronize `document.documentElement.style.colorScheme = resolvedTheme` to ensure browser-native elements (scrollbars, input widgets) match the active theme.

@@ -98,21 +98,3 @@ Every state change across any entity or workflow MUST be immutably recorded in a
 | `reason` | String? | Optional justification or audit comment. |
 | `metadata` | JSON? | Snapshot of transition context or rule evaluation. |
 | `createdAt` | DateTime | Immutable timestamp of transition. |
-
----
-
-## 4. Invariants (DO's & DONT's)
-
-### DO
-- **DO** enforce core business invariants inside Aggregate Roots using strongly-typed state transitions.
-- **DO** decouple core domain state from operational display stages or tenant-specific sub-statuses.
-- **DO** use non-Turing complete expression languages (CEL) to evaluate dynamic transition guards.
-- **DO** maintain an immutable transition history table for all status alterations.
-- **DO** validate state transition graphs at creation time to prevent dead-end or unreachable states.
-
-### DONT
-- **DONT** make financial or legal integrity states (e.g., `SETTLED`, `CANCELLED`, `REFUNDED`) freely rewritable by tenant configuration.
-- **DONT** expose generic status setters (`entity.setStatus(newStatus)`) on domain models.
-- **DONT** execute untrusted scripts or dynamic strings in the host runtime for workflow evaluations.
-- **DONT** allow a workflow orchestrator to bypass aggregate invariants by directly updating database columns.
-- **DONT** delete historical state transitions; status audit logs must be append-only.

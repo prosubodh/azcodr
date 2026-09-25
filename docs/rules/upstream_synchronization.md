@@ -51,18 +51,3 @@ Every upstream-bound proposal logged to `changes.md` must follow the standardize
 - **Description:** Concise summary of the mutation or invariant added.
 - **Domain Filter Verification:** Verified 100% generic; purged of all project-specific business entities and models.
 ```
-
----
-
-## 4. Invariants, DO's & DONT's
-
-### DO's:
-- **DO:** Record candidate generic architectural improvements in `changes.md`.
-- **DO:** Distill all lessons and post-mortems into generic, domain-agnostic language before logging.
-- **DO:** Colocate DOs and DONTs directly inside the relevant atomic rules and skills.
-- **DO:** Verify that all entries in `changes.md` are 100% stack- and domain-agnostic.
-
-### DONT's:
-- **DONT:** Never execute automated upstream git cloning or merge AI workflows during project work.
-- **DONT:** Never contaminate `changes.md` with project-specific business logic, schemas, or customer requirements.
-- **DONT:** Never leave machine-specific or absolute user paths in scripts or documentation.

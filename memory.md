@@ -1,262 +1,128 @@
 # Workspace Memory, Architecture Decisions & Knowledge Hub
 
-> **Core Purpose:** Authoritative persistent memory ledger for the workspace repository (`./`), maintaining Lightweight Architectural Decision Records (ADRs), system topologies, issue logs, and institutional lessons.
+> **Core Purpose:** Authoritative persistent memory ledger for the workspace repository (`./`), maintaining Lightweight Architectural Decision Records (ADRs), system topologies, and living domain contracts.
 
 ---
 
 ## 1. Quick Navigation & Knowledge Repositories
 
 - 🗺️ **[System Knowledge Graph](./docs/knowledge/knowledge_graph.md)**: Architectural subsystems, Mermaid topologies, entity relationships, and fast-lookup matrices.
-- 📋 **[Consolidated DO's & DONT's](./docs/knowledge/dos_and_donts.md)**: High-impact rules, anti-patterns to avoid, and coding invariants.
-- 🐛 **[Coding Issue Log](./docs/knowledge/issue_log.md)**: Defect post-mortems, root causes, and synthesized preventing rules.
-- 💡 **[Institutional Lessons Learned](./docs/knowledge/lessons_learned.md)**: Strategic engineering takeaways and optimization insights.
+- 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative, single-name domain vocabulary contract.
+- 📜 **[Lightweight ADR Master Index](#adr-master-index)**: Summary of all architectural decisions and direct links to governing rules.
+- 📝 **[Upstream Changes Ledger](./changes.md)**: Ledger of candidate improvements and generic patterns for upstream azcodr.
 
 ---
 
-## 2. Architectural Decision Records (ADRs)
+## 2. Consolidated Architectural Decision Records (ADRs)
 
-### ADR-001: 100% Open-Source Tooling & Framework Mandate
+### ADR Master Index
+
+| ID | Title | Date | Status | Governing Rule / Skill |
+|---|---|---|---|---|
+| **ADR-001** | 100% Open-Source Tooling & Framework Mandate | 2026-09-16 | ACCEPTED | [`compliance.md`](./docs/rules/compliance.md), [`devsecops.md`](./docs/rules/devsecops.md) |
+| **ADR-002** | Progressive Disclosure Architecture for Agentic Context | 2026-09-16 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`agentic-architect`](./.agents/skills/agentic-architect/SKILL.md) |
+| **ADR-003** | Dual-Layer Multi-Tenancy Isolation with PostgreSQL RLS | 2026-09-16 | ACCEPTED | [`multitenancy_isolation.md`](./docs/rules/multitenancy_isolation.md) |
+| **ADR-004** | Systemic Atomicity & Pure Single-Responsibility Rule Decomposition | 2026-09-16 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
+| **ADR-005** | Universal Technology, Language, and Stack Agnosticism | 2026-09-18 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md) |
+| **ADR-006** | Mandatory Full Lifecycle CRUD & Relational FK Selector Pattern | 2026-09-18 | ACCEPTED | [`database_integrity.md`](./docs/rules/database_integrity.md), [`rest_api_conventions.md`](./docs/rules/rest_api_conventions.md), [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md) |
+| **ADR-007** | Decoupling Project Bootstrapping from Domain Analysis | 2026-09-18 | ACCEPTED | [`lets-build`](./.agents/skills/lets-build/SKILL.md), [`product-analyst`](./.agents/skills/product-analyst/SKILL.md) |
+| **ADR-008** | Non-Negotiable 5-Phase Agile Domain Lifecycle & Outside-In TDD | 2026-09-18 | ACCEPTED | [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`test_isolation.md`](./docs/rules/test_isolation.md) |
+| **ADR-009** | Many-to-Many Skill Composability & Orthogonal Pipelines | 2026-09-18 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`agentic-architect`](./.agents/skills/agentic-architect/SKILL.md) |
+| **ADR-011** | Canonical 6 Total Audit Fields Architecture & Modern React Stack | 2026-09-19 | ACCEPTED | [`database_integrity.md`](./docs/rules/database_integrity.md), [`react.md`](./docs/rules/react.md) |
+| **ADR-012** | State Machine Lifecycle Configurability & Ubiquitous Language Contract | 2026-09-19 | ACCEPTED | [`workflow_state_machines.md`](./docs/rules/workflow_state_machines.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) |
+| **ADR-013** | Design Architecture Triage, Persistent Shell & Dev Persona Isolation | 2026-09-20 | ACCEPTED | [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md), [`authentication.md`](./docs/rules/authentication.md) |
+| **ADR-014** | Product Ownership, Prioritization Models, SMART Tasks & INVEST Slicing | 2026-09-21 | ACCEPTED | [`product_ownership.md`](./docs/rules/product_ownership.md), [`requirements_engineering.md`](./docs/rules/requirements_engineering.md), [`project_management.md`](./docs/rules/project_management.md) |
+| **ADR-015** | Problem-First Architecture, Topology Scaffolding, Tipping Points & Nano-TDD | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md) |
+
+---
+
+### Lightweight Decision Summaries
+
+#### ADR-001: 100% Open-Source Tooling & Framework Mandate
 - **Date:** 2026-09-16 | **Status:** ACCEPTED
 - **Context:** Proprietary SaaS dependencies introduce vendor lock-in, recurring operational costs, and black-box security risks.
-- **Decision:** Standardize exclusively on open-source solutions across all domains (PostgreSQL, Redis, Trivy, Semgrep, Gitleaks, OpenTelemetry, Vitest, Playwright, Radix UI).
-- **Consequences:** Maximizes infrastructure control, auditable security compliance, and zero license encumbrances.
+- **Decision:** Standardize exclusively on open-source solutions across all architectural domains (PostgreSQL, Redis, Trivy, Semgrep, Gitleaks, OpenTelemetry, Vitest, Playwright, Radix UI).
+- **Enforced In:** Root [`AGENTS.md`](./AGENTS.md), [`compliance.md`](./docs/rules/compliance.md), [`devsecops.md`](./docs/rules/devsecops.md).
 
-### ADR-002: Progressive Disclosure Architecture for Agentic Context
+#### ADR-002: Progressive Disclosure Architecture for Agentic Context
 - **Date:** 2026-09-16 | **Status:** ACCEPTED
-- **Context:** Injecting large monolithic documentation files on every AI prompt exhausts token windows and degrades attention and reasoning.
-- **Decision:** Keep root `AGENTS.md` lean (≤ 120 lines), decoupling specialized engineering manuals into modular files under `docs/rules/`.
-- **Consequences:** Eliminates prompt token bloat while ensuring deep domain guidance is loaded strictly on demand.
+- **Context:** Injecting large monolithic documentation files on every AI prompt exhausts token windows and degrades model attention.
+- **Decision:** Keep root `AGENTS.md` lean (≤ 120 lines), decoupling specialized engineering manuals into modular files under `docs/rules/` and skills under `.agents/skills/`.
+- **Enforced In:** Root [`AGENTS.md`](./AGENTS.md), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`agentic-architect`](./.agents/skills/agentic-architect/SKILL.md).
 
-### ADR-003: Dual-Layer Multi-Tenancy Isolation with PostgreSQL RLS
+#### ADR-003: Dual-Layer Multi-Tenancy Isolation with PostgreSQL RLS
 - **Date:** 2026-09-16 | **Status:** ACCEPTED
 - **Context:** Application-level `where: { tenantId }` filtering is prone to human error, risking catastrophic cross-tenant data leaks.
 - **Decision:** Combine application middleware context resolution with database-level PostgreSQL Row-Level Security (RLS) policies as an immutable backstop.
-- **Consequences:** Physical isolation at the database layer; prevents cross-tenant data access even if application code forgets a filter.
+- **Enforced In:** [`multitenancy_isolation.md`](./docs/rules/multitenancy_isolation.md).
 
-### ADR-004: Systemic Atomicity & Pure Single-Responsibility Rule Decomposition
+#### ADR-004: Systemic Atomicity & Pure Single-Responsibility Rule Decomposition
 - **Date:** 2026-09-16 | **Status:** ACCEPTED
 - **Context:** Composite rules with conjunction names (`this_and_that.md`) mix disparate technical concerns, creating documentation bloat and ambiguity.
 - **Decision:** Decompose all rules into strictly atomic, single-topic rule files with zero conjunction names, enforcing Single Responsibility Principle across skills, rules, and database operations.
-- **Consequences:** 37 highly modular, composable, and maintainable domain rules with zero cross-leakage.
+- **Enforced In:** Root [`AGENTS.md`](./AGENTS.md), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md).
 
-### ADR-005: Universal Technology, Language, and Stack Agnosticism
+#### ADR-005: Universal Technology, Language, and Stack Agnosticism
 - **Date:** 2026-09-18 | **Status:** ACCEPTED
-- **Context:** Tightly coupling architecture rules and specifications to a single programming language (TypeScript), runtime (Node.js), ORM (Prisma), or database engine (PostgreSQL) creates technical lock-in and prevents polyglot implementation.
-- **Decision:** Adopt a Two-Tier Hexagonal / Ports-and-Adapters model across the entire system. Tier 1 mandates 100% technology-, language-, and stack-agnostic invariant domain capabilities and open standard specifications (Protocol Buffers v3, OpenAPI 3.1, JSON Schema Draft 2020-12, AsyncAPI, CloudEvents, W3C DTCG Design Tokens, CEL, Wasm/WASI, OPA/OpenFGA) with zero language bias or primary reference designation. Tier 2 encapsulates interchangeable polyglot adapters (Go, Rust, Python, Java, TypeScript, etc.).
-- **Consequences:** Eliminates language and framework lock-in, enables polyglot microservice implementation, future-proofs the enterprise architecture, and enforces pure boundary decoupling.
+- **Context:** Coupling architecture rules to a single programming language or database creates technical lock-in and prevents polyglot implementation.
+- **Decision:** Adopt a Two-Tier Hexagonal / Ports-and-Adapters model across the entire system: Tier 1 mandates 100% technology-, language-, and stack-agnostic invariant domain capabilities and open standard specifications; Tier 2 encapsulates interchangeable polyglot adapters.
+- **Enforced In:** Root [`AGENTS.md`](./AGENTS.md), [`clean_code.md`](./docs/rules/clean_code.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md).
 
-### ADR-006: Mandatory Full Lifecycle CRUD and Relational Foreign Key Selector Pattern
+#### ADR-006: Mandatory Full Lifecycle CRUD & Relational Foreign Key Selector Pattern
 - **Date:** 2026-09-18 | **Status:** ACCEPTED
+- **Context:** Prototypes often provide partial CRUD, leaving entities un-editable or undeletable. Exposing foreign keys as raw text inputs causes severe relational errors.
+- **Decision:** Every feature must implement complete lifecycle CRUD (Create, Read/Detail, Update/Transition, Delete/Archive) with 100.00% test coverage. Foreign keys must never be exposed as raw string inputs; they must be resolved via accessible relational dropdown selectors displaying contextual business metadata.
+- **Enforced In:** [`database_integrity.md`](./docs/rules/database_integrity.md), [`rest_api_conventions.md`](./docs/rules/rest_api_conventions.md), [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md).
 
-#### 1. Context & Problem Statement
-Prototypes often provide only partial read and create actions, leaving entities unable to be edited, status-transitioned, or archived/deleted. Furthermore, foreign key associations (such as `parentEntityId`, `resourceId`) are frequently exposed as raw text inputs where users must manually know and type string/UUID identifiers. This creates significant relational failure rates (400 Bad Request, foreign key violations) and breaks standard user experience.
-
-#### 2. Decision Drivers
-- Every feature must support its complete lifecycle CRUD (Create, Read/Detail, Update/Transition, Delete/Archive) before being considered feature-complete.
-- Foreign keys must never be exposed as raw text fields in the UI. Relational references must be resolved and selected via structured UI primitives (e.g. `<Select>`) displaying human-readable contextual metadata (e.g. names, titles, codes, labels, and status).
-- Domain and use case layers must strictly validate foreign key existence before persisting child entities, returning RFC 7807 problem details if referenced records do not exist.
-
-#### 3. Decision Outcome & Consequences
-- **Chosen Pattern:** 
-  1. Primary and secondary ports support comprehensive CRUD operations (`update`, `delete`, catalog queries).
-  2. Use cases enforce foreign key invariants with parent record existence checks prior to child entity mutation.
-  3. Presentation layer replaces all raw identifier text inputs with accessible relational dropdown selectors backed by dynamic API queries.
-  4. Test suites maintain 100.00% test coverage gate across all CRUD methods, branches, and error paths.
-- **Positive Consequences:**
-  - Complete elimination of relational integrity errors caused by typos or non-existent IDs.
-  - Richer user experience displaying contextual business metadata during association.
-  - Strict compliance with workspace definitions of done and 100.00% coverage gates.
-
-### ADR-007: Strict Decoupling of Project Bootstrapping from Domain Analysis and Feature Engineering
+#### ADR-007: Strict Decoupling of Project Bootstrapping from Domain Analysis
 - **Date:** 2026-09-18 | **Status:** ACCEPTED
+- **Context:** Agents running `/lets-build` frequently fabricate domain entities on sheer assumptions during technical bootstrapping, skipping requirements discovery.
+- **Decision:** Project bootstrapping terminates strictly after technical skeleton creation and health probe verification (`Phase 5`). A mandatory Handover Gate halts coding and directs the agent to initiate Domain Analysis via `product-analyst` and `relentless-questioner` before domain models or schemas are authored.
+- **Enforced In:** [`lets-build`](./.agents/skills/lets-build/SKILL.md), [`product-analyst`](./.agents/skills/product-analyst/SKILL.md), [`requirements_engineering.md`](./docs/rules/requirements_engineering.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md).
 
-#### 1. Context & Problem Statement
-During initial project execution with `/lets-build`, technical infrastructure bootstrapping (stack selection, monorepo setup, package manifests, build toolchains) is frequently conflated with application domain modeling. Agents tend to fabricate business entities without engaging the user in thorough domain discovery, Ubiquitous Language alignment, Bounded Context mapping, or INVEST user story decomposition. This violates Rule Zero ("Assume nothing") and skips the foundational requirements engineering lifecycle.
-
-#### 2. Decision Drivers
-- Project bootstrapping must be strictly scoped to technical plumbing (workspace configuration, package manifests, ports/adapters skeletons, build commands, Docker/Compose, and a minimal `/healthz` probe).
-- Domain modeling and feature engineering must never be assumed or generated by an agent during bootstrapping.
-- Domain features must emerge exclusively through structured stakeholder interviews using `product-analyst`, `relentless-questioner`, `docs/rules/domain_driven_design.md`, and `docs/rules/requirements_engineering.md`.
-
-#### 3. Decision Outcome & Consequences
-- **Chosen Pattern:** 
-  1. `/lets-build` strictly terminates after technical skeleton creation and health probe verification (`Phase 5`).
-  2. A mandatory Handover Gate halts further coding and directs the agent to initiate Domain Analysis.
-  3. Domain models, database schemas, and API resources are authored iteratively only after user stories and Gherkin criteria are approved.
-- **Positive Consequences:**
-  - Prevents premature code generation and hallucinated domain structures.
-  - Aligns software design with real stakeholder requirements rather than AI guesses.
-  - Ensures proper Outside-In Double-Loop TDD execution.
-
-### ADR-008: Non-Negotiable 5-Phase Agile Domain Lifecycle & Outside-In TDD Invariant
+#### ADR-008: Non-Negotiable 5-Phase Agile Domain Lifecycle & Outside-In TDD Invariant
 - **Date:** 2026-09-18 | **Status:** ACCEPTED
+- **Context:** Writing production code before tests or domain understanding leads to brittle code, regressions, and "toy prototypes."
+- **Decision:** Enforce an immutable 5-Phase Agile Domain Lifecycle across all tasks (Requirements ➔ Domain Analysis ➔ Outer Acceptance RED ➔ Inner Unit TDD RED-GREEN-REFACTOR ➔ Outer GREEN & DoD). Writing production code without a failing test is strictly prohibited.
+- **Enforced In:** Root [`AGENTS.md`](./AGENTS.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`test_isolation.md`](./docs/rules/test_isolation.md).
 
-#### 1. Context & Problem Statement
-Engineering practices frequently suffer from shortcutting: writing production code before writing tests, writing tests before understanding domain models, and designing domain models without engaging stakeholders. This leads to brittle software, high defect rates, mismatched requirements, and the "toy prototype blunder" where foreign key relationships, validation rules, and proxy transports are improperly implemented.
-
-#### 2. Decision Drivers
-- Need for a mathematically rigorous, repeatable, and non-negotiable software engineering process.
-- Guarantee that all production code is justified by an existing, failing automated test (Red-Green-Refactor).
-- Guarantee that tests assert real business invariants derived from rigorous domain analysis rather than arbitrary syntax.
-- Guarantee that requirements are decomposed into vertically sliced, testable INVEST user stories and Gherkin scenarios.
-
-#### 3. Decision Outcome & Consequences
-- **Chosen Pattern:** Enforce an immutable 5-Phase Agile Domain Lifecycle across all tasks:
-  1. **Phase 1: Requirements Engineering** (INVEST user stories + executable Gherkin Given/When/Then scenarios + Negative Scope).
-  2. **Phase 2: Tactical Domain Analysis** (Ubiquitous Language definitions + Bounded Contexts + Aggregate Roots with invariants + State Machines).
-  3. **Phase 3: Outer-Loop Acceptance Test (RED)** (Failing UI component interaction test via Playwright/React Testing Library, or black-box HTTP route contract test).
-  4. **Phase 4: Inner-Loop TDD & Collaborator Discovery (RED-GREEN-REFACTOR)** (Collaborators discovered by outer loop unit-tested in isolation, minimal code written to pass, strict refactoring under green).
-  5. **Phase 5: Outer Acceptance Resolution & Definition of Done** (Outer test turns GREEN, cross-package boundary smoke tests pass, 100.00% coverage verified).
-- **Zero-Deviation Mandate:**
-  - Writing production code without a failing test is strictly prohibited.
-  - Generating domain entities without stakeholder requirements analysis is strictly prohibited.
-  - Committing code without 100.00% full-stack test coverage and boundary verification is strictly prohibited.
-- **Positive Consequences:**
-  - Eliminates regression bugs and defect escapes to production.
-  - Ensures clean, maintainable architecture with small functions (< 30 lines) adhering to SLAP, CQS, and DRY.
-  - Guarantees complete alignment between user intent, domain models, tests, and deployed code.
-
-### ADR-009: Many-to-Many Skill Composability & Orthogonal Pipeline Architecture
+#### ADR-009: Many-to-Many Skill Composability & Orthogonal Pipeline Architecture
 - **Date:** 2026-09-18 | **Status:** ACCEPTED
+- **Context:** Complex engineering tasks require multiple orthogonal skills; coupling skills into monolithic bundles causes context bloat and cross-contamination.
+- **Decision:** Codify Many-to-Many skill composability via three formal patterns: Sequential Pipeline Chaining, Dynamic Skill Stacking, and Multi-Agent Subagent Delegation, with standardized output contracts, pure function semantics, and zero cross-contamination.
+- **Enforced In:** [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`agentic-architect`](./.agents/skills/agentic-architect/SKILL.md).
 
-#### 1. Context & Problem Statement
-In agentic software engineering, a naive assumption is that a single skill corresponds 1:1 to a single task or development phase. In reality, software development exhibits an explicit Many-to-Many ($M:N$) relationship between coding tasks and agentic capabilities:
-1. A single coding task simultaneously requires multiple specialized skills: domain requirement decomposition, invariant modeling, security compliance auditing, and clean code refactoring.
-2. A single skill (e.g. `clean-code-refactor` or `relentless-questioner`) is orthogonal to any specific domain and must be reused across widely diverse scenarios (database transactions, HTTP middleware, UI components, and background queues).
-If skills are designed as monolithic, coupled bundles, agent contexts suffer prompt bloat, cognitive dilution, and cross-contamination.
-
-#### 2. Decision Drivers
-- Need for high reusability and atomic modularity across agent skills without prompt token bloat.
-- Need for predictable, deterministic execution when multiple skills are required for a single complex engineering task.
-- Need for clean input/output contracts so skills can be piped or composed sequentially, contextually, or across subagents without side effects.
-- Strict adherence to Rule Zero ("Assume nothing"), Systemic Atomicity, and the Single Responsibility Principle.
-
-#### 3. Decision Outcome & Consequences
-- **Chosen Pattern:** Codify and enforce the Many-to-Many Skill Composability Architecture across three formal composition patterns:
-  1. **Pattern 1: Sequential Pipeline Chaining (Workflow Composition):** Upstream skills produce structured, standardized artifacts (FAS, INVEST stories, Gherkin blocks, OpenAPI contracts) serving as the direct input contract for downstream skills.
-  2. **Pattern 2: Dynamic Skill Stacking (Contextual Composition):** An agent dynamically loads multiple orthogonal skills into its working memory based on task needs, adhering to Progressive Disclosure without polluting base prompts.
-  3. **Pattern 3: Multi-Agent Subagent Delegation (Division of Labor):** A coordinator agent spawns specialized subagents equipped with specific atomic skills, synthesizing findings into a single coordinated action.
-- **Architectural Invariants for Valid Skill Composition:**
-  - **Standardized Output Contracts:** Every skill emits standardized, machine- and human-readable artifacts.
-  - **Zero Cross-Contamination:** A skill must never write or mutate code outside its declared functional boundary.
-  - **Pure Function Semantics:** Analytical, audit, and questioning skills must remain read-only and side-effect free.
-- **Positive Consequences:**
-  - Skills remain strictly atomic, modular, and reusable across unlimited domains and stacks.
-  - Eliminates prompt bloat by loading only the exact skills needed for the current lifecycle step.
-  - Supports complex end-to-end workflows through deterministic artifact piping.
-
-### ADR-011: The Canonical 6 Total Audit Fields Architecture & Modern React Stack
+#### ADR-011: The Canonical 6 Total Audit Fields Architecture & Modern React Stack
 - **Date:** 2026-09-19 | **Status:** ACCEPTED
+- **Context:** Inconsistent audit tracking risks SOC 2 / ISO 27001 non-compliance. Frontend `useEffect` fetch loops cause stale states and race conditions.
+- **Decision:** Every mutable stateful table must implement the Canonical 6 Total Audit Fields (`createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`), with append-only ledgers omitting update/delete fields. Standardize frontend on TanStack Query, React Hook Form + Zod, and headless Radix primitives.
+- **Enforced In:** [`database_integrity.md`](./docs/rules/database_integrity.md), [`react.md`](./docs/rules/react.md).
 
-#### 1. Context & Problem Statement
-Stateful entities across databases and domain models frequently suffer from inconsistent audit accountability—omitting actor attribution (`createdBy`, `updatedBy`) or destructive deletion tracking (`deletedAt`, `deletedBy`). Furthermore, frontend state management often defaults to ad-hoc `useEffect` fetch loops and unvalidated forms without structured caching, automated mutation invalidation, or sound schema contracts.
-
-#### 2. Decision Drivers
-- Universal Total Audit Accountability: Every stateful database table, ORM entity, and domain aggregate must implement **The Canonical 6 Total Audit Fields**: `createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, and `deletedBy`.
-- Strictly Immutable Ledger Invariant: Append-only financial ledgers and event outboxes must enforce strict immutability, prohibiting `updatedAt`, `updatedBy`, `deletedAt`, and `deletedBy`.
-- Non-Destructive Soft-Delete: All delete operations must mark `deletedAt` and `deletedBy` with actor attribution, and queries for active records must strictly filter `WHERE deletedAt IS NULL`.
-- Modern React Architecture: Standardize on `@tanstack/react-query` for asynchronous server state, caching, and optimistic mutations; standardize on `react-hook-form` / `tanstack-form` + `zod` for type-safe form contracts; mandate accessible headless primitives (`shadcn/ui` + `@radix-ui`) with zero native alerts.
-
-#### 3. Decision Outcome & Consequences
-- Codified Section 5 & 6 in [`docs/rules/database_integrity.md`](./docs/rules/database_integrity.md) mandating the Canonical 6 Total Audit Fields and append-only ledger invariants.
-- Authored [`docs/rules/react.md`](./docs/rules/react.md) codifying TanStack Query, React Hook Form + Zod, TanStack Table, and accessible `<ConfirmDialog>` primitives.
-- Upgraded `lets-build` architecture interview matrix (Dimensions 6 & 13) to interrogate audit fields and form state management during scaffolding.
-- **Positive Consequences:**
-  - Complete compliance with SOC 2 / ISO 27001 auditability controls.
-  - Permanent prevention of accidental data loss via soft deletion.
-  - Predictable, type-safe frontend state management with zero stale cache bugs.
-
-### ADR-012: State Machine Lifecycle Configurability & Living Ubiquitous Language Contract
+#### ADR-012: State Machine Lifecycle Configurability & Living Ubiquitous Language Contract
 - **Date:** 2026-09-19 | **Status:** ACCEPTED
+- **Context:** Unconstrained state configurability causes the "Inner Platform Effect." Linguistic drift between business terms and code identifiers breaks domain models.
+- **Decision:** Bifurcate state into Core Invariant States (Hard FSM in compiled aggregate roots) and Operational Workflow Stages (Soft FSM in declarative JSON state transition matrices evaluated via CEL/Temporal). Maintain a living, single-name Ubiquitous Language Glossary contract.
+- **Enforced In:** [`workflow_state_machines.md`](./docs/rules/workflow_state_machines.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`ubiquitous_language.md`](./docs/knowledge/ubiquitous_language.md).
 
-#### 1. Context & Problem Statement
-Two recurring systemic questions arise during enterprise architecture evolution:
-1. *State Configurability Paradox:* Should all status fields and business logic be user/tenant-configurable? Unconstrained configurability leads to the "Inner Platform Effect" anti-pattern, where core domain invariants collapse.
-2. *Linguistic Drift & Agreement:* How can domain-code language agreement be maintained deterministically across product requirements, code, tests, and database tables without vocabulary divergence?
-
-#### 2. Decision Drivers
-- Invariant Integrity: Core business invariants (e.g. accounting balance, executed orders) must be non-negotiable and protected inside compiled Aggregate Roots.
-- Operational Customization: Multi-tenant platforms require configurable review stages, approval funnels, and sub-statuses.
-- Guaranteed Linguistic Alignment: Establish a binding, living contract between business vocabulary and source code identifiers, backed by AST linter rules and branded nominal types.
-
-#### 3. Decision Outcome & Consequences
-- **The Dual-State Architecture ([`docs/rules/workflow_state_machines.md`](./docs/rules/workflow_state_machines.md)):**
-  - Bifurcated state into:
-    1. *Core Invariant States (Hard FSM)*: Enforced strictly inside compiled Aggregate Roots using Discriminated Unions or the GoF State Pattern.
-    2. *Operational Workflow Stages (Soft FSM)*: Managed via Declarative State Transition Matrices stored in JSON/metadata, evaluated via Common Expression Language (CEL) or durable workflow engines (Temporal / BPMN 2.0).
-  - Enforced a mandatory append-only State Transition Log (`transitionId`, `entityType`, `entityId`, `fromState`, `toState`, `actorId`, `event`, `timestamp`).
-- **Domain-Code Language Agreement ([`docs/rules/domain_driven_design.md`](./docs/rules/domain_driven_design.md) & [`docs/knowledge/ubiquitous_language.md`](./docs/knowledge/ubiquitous_language.md)):**
-  - Codified the "Single Name Rule" and zero-tolerance for synonyms.
-  - Established the living glossary template and AST linter denylist patterns.
-- **Upgraded Skills & References:**
-  - Enhanced `product-analyst` and `lets-build` (Dimensions 19 & 20) to interrogate state taxonomy and verify glossary alignment.
-- **Positive Consequences:**
-  - Complete architectural clarity: aggregate invariants remain inviolate while operational workflows gain full tenant configurability.
-  - Elimination of linguistic drift across domain models, APIs, and UI layers.
-
-### ADR-013: Formal Design Architecture Triage Framework, Persistent Navigation Shell, Dual-Experience Portals, and Strict Isolation of Development Personas from Production Authentication
+#### ADR-013: Design Architecture Triage Framework, Persistent Shell & Dev Persona Isolation
 - **Date:** 2026-09-20 | **Status:** ACCEPTED
+- **Context:** Conflating developer demo personas with production auth creates toy-like prototypes. Untriaged UI produces layout shifts and broken navigation.
+- **Decision:** Mandate the 7-Pillar Design Architecture Triage Gate before writing UI code; separate Enterprise Operator Workspace (`/`) from Consumer Portal (`/portal`); standardize on a persistent shell with 64px collapsible icon rail and bidirectional URL state sync; strictly isolate developer demo personas into a dev-only floating toolbar (`import.meta.env.DEV`).
+- **Enforced In:** [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md), [`authentication.md`](./docs/rules/authentication.md), [`ui_navigation.md`](./docs/rules/ui_navigation.md).
 
-#### 1. Context & Problem Statement
-UI development without upfront design architecture triage creates severe user experience and security failure modes:
-1. Conflating developer demo/mock personas with end-user sign-in flows, producing a toy-like prototype that confuses real users.
-2. Mixing operator-dense navigation with consumer self-service workflows into a single chaotic layout.
-3. Lack of a persistent application shell and collapsible sidebar, causing disruptive layout shifts and broken navigation state on page transitions.
-4. Missing deep-linkable URL synchronization for active tabs, search queries, and drawers.
-
-#### 2. Decision Drivers
-- Need for a mandatory upfront design gate before writing UI code.
-- Strict physical separation between developer test harnesses and production authentication.
-- Strict architectural duality between enterprise operator workspaces and consumer/member portals.
-- Persistent app shell with collapsible 64px icon rail mode, persistent state in `localStorage`, and bidirectional URL search parameter synchronization.
-
-#### 3. Decision Outcome & Consequences
-- **The 7-Pillar Design Architecture Triage Gate ([`docs/rules/ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md)):**
-  - Mandated 7 triage pillars (Role Triage, Information Architecture, Duality, Wayfinding, URL Sync, Route Guards, Accessibility) before building UI increments.
-- **Strict Decoupling of Developer Personas ([`docs/rules/authentication.md`](./docs/rules/authentication.md)):**
-  - Developer demo personas are completely isolated into a dev-only floating toolbar (`import.meta.env.DEV`), completely excluded from production bundles.
-  - Production sign-in enforces clean, dedicated forms with Zod schema validation and role-based post-login redirection.
-- **Dual-Experience Model & Persistent Shell:**
-  - Separated Enterprise Operator Workspace (`/`) from Consumer / Member Self-Service Portal (`/portal`).
-  - Standardized persistent header, contextual breadcrumbs, collapsible sidebar with 64px icon rail, and URL search param state sync.
-- **Positive Consequences:**
-  - Eliminates toy-like demo persona leaks in production.
-  - Clean separation between dense administrative workflows and consumer self-service.
-  - Fully accessible, deep-linkable web applications conforming to WCAG 2.2 AA.
-
-### ADR-014: Product Ownership, Backlog Prioritization Models, SMART Developer Tasks, and INVEST Slicing
+#### ADR-014: Product Ownership, Backlog Prioritization Models, SMART Developer Tasks & INVEST Slicing
 - **Date:** 2026-09-21 | **Status:** ACCEPTED
+- **Context:** Teams frequently measure output (lines of code, story points) rather than outcome (customer value), leading to the "Feature Factory" anti-pattern.
+- **Decision:** Ground backlog ordering in quantitative prioritization (Kano, MoSCoW, RICE) aligned with OKRs; decompose epics into vertically sliced INVEST user stories; decompose user stories into bounded SMART developer tasks (2–4 hours).
+- **Enforced In:** [`product_ownership.md`](./docs/rules/product_ownership.md), [`requirements_engineering.md`](./docs/rules/requirements_engineering.md), [`project_management.md`](./docs/rules/project_management.md), [`product-analyst`](./.agents/skills/product-analyst/SKILL.md).
 
-#### 1. Context & Problem Statement
-Agile teams frequently suffer from the "Feature Factory" anti-pattern: measuring output (story points burned, code volume) instead of outcome (customer value realized, satisfaction gap closed). Additional failure modes include:
-1. Conflating user stories with formal requirements rather than treating them as conversational placeholders (the 3 C's) and pidgin language bridges.
-2. Forcing system invariants, security controls, and architectural spikes into artificial `"As a user..."` syntax.
-3. Slicing stories horizontally (e.g. database migration only or UI mock only) delivering zero usable software to customers.
-4. Open-ended developer tasks lacking measurable pass/fail boundaries, leading to multi-day task drift.
-5. Arbitrary backlog prioritization driven by executive gut feeling rather than quantitative value models.
-
-#### 2. Decision Drivers
-- Ground product development in empiricism (Build-Measure-Learn) and clear Product Goals.
-- Connect strategic Objectives and Key Results (OKRs) to backlog ordering.
-- Standardize objective prioritization frameworks (Kano Model, MoSCoW, RICE, Buy a Feature).
-- Mandate Bill Wake's INVEST criteria and vertical cake slicing (UI ➔ API ➔ Domain ➔ DB).
-- Standardize Bill Wake's SMART framework for decomposing user stories into bounded developer tasks (2–4 hours).
-
-#### 3. Decision Outcome & Consequences
-- **Dedicated Rule & Skill ([`docs/rules/product_ownership.md`](./docs/rules/product_ownership.md), [`.agents/skills/product-analyst/`](./.agents/skills/product-analyst/)):**
-  - Codified Product Owner accountabilities, the satisfaction gap, and outcome vs. output discipline.
-  - Added reference guides for Kano, MoSCoW, RICE scoring, and OKR alignment.
-- **Requirements Engineering & Vertical Cake Slicing ([`docs/rules/requirements_engineering.md`](./docs/rules/requirements_engineering.md)):**
-  - Clarified that user stories are tokens for conversation (Ron Jeffries' 3 C's: Card, Conversation, Confirmation).
-  - Explicitly decoupled non-story requirements (system invariants, NFRs, architectural spikes) from story syntax.
-  - Enforced multi-layer cake vertical slicing across all layers.
-- **SMART Developer Task Breakdown ([`docs/rules/project_management.md`](./docs/rules/project_management.md)):**
-  - Required decomposing INVEST stories into Specific, Measurable, Achievable, Relevant, and Time-boxed (2–4h) developer tasks.
-- **Positive Consequences:**
-  - Guarantees working software in every vertical increment.
-  - Eliminates horizontal stubs and open-ended technical drift.
-  - Objective backlog ranking minimizes stakeholder friction.
-
-
-
+#### ADR-015: Problem-First Architecture, Topology Scaffolding, Evolutionary Tipping Points & Incremental Nano-Cycle TDD
+- **Date:** 2026-09-25 | **Status:** ACCEPTED
+- **Context:** Tool-first planning (asking for languages, databases, and microservices upfront) creates accidental complexity and forces non-backend projects (such as Chrome extensions, game engines, or CLIs) into heavy enterprise templates (as observed in `force-dark-light`). Furthermore, AI assistants naturally accelerate architectural drift by appending code without structural evolution, and fake TDD by batch-generating 15 tests and implementations at once.
+- **Decision:**
+  1. Enforce **Problem-First Architecture**: Strictly separate Problem Space from Solution Space (Evans, Vernon, Brooks). Derive tools and runtimes from problem constraints (latency budget, GC tolerance, memory, execution target).
+  2. Implement **Topology-Aware Scaffolding**: Eliminate universal templates. Match architectural styles to system topologies (Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, Hexagonal for enterprise backends).
+  3. Codify **Evolutionary Architecture & Architectural Tipping Points**: Enforce Kent Beck's "Refactor-Before-Add" protocol and 5 explicit tipping points to halt AI-generated code rot.
+  4. Mandate **True Incremental TDD & Nano-Cycles**: Prohibit batch-test dumps ("Test-First Waterfall"); enforce Uncle Bob's Three Laws (especially Law #2) and Ping-Pong pair programming with verified RED failure proofs.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`clean_code.md`](./docs/rules/clean_code.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md), [`architecture_interview_matrix.md`](./.agents/skills/lets-build/references/architecture_interview_matrix.md).
 

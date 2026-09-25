@@ -23,3 +23,40 @@
 - **Orthogonality**: Eliminate coupling between unrelated modules. Changing one component must not cascade unexpected side effects into another.
 - **Broken Windows Theory**: Never leave bad code, failing lint checks, or out-of-date documentation unfixed. Fix defects immediately before entropy normalizes.
 - **Design by Contract (DbC)**: Define explicit preconditions (runtime boundary validation), postconditions (guaranteed response envelopes), and domain invariants.
+
+---
+
+## 3. Evolutionary Architecture & Architectural Tipping Points (Ford, Parsons & Fowler)
+
+Architecture is not a static Day 1 monument; it evolves incrementally as complexity grows. AI coding tools naturally take the path of least resistance (local token minimization), repeatedly appending code to simple files until they rot into a Big Ball of Mud. To eliminate **AI-Accelerated Architectural Drift**, the agent must pause and execute an architectural upgrade whenever code hits a **Deterministic Tipping Point**:
+
+| Simple Baseline (Day 1) | Tipping Point / Mutation Trigger | Required Architectural Upgrade |
+|---|---|---|
+| **Flat Script / Single File** | File exceeds **250 lines**, or coordinates **>2 distinct I/O resources**, or is imported by **>3 distinct callers**. | **Extract Modular Subsystems:** Decouple domain logic from platform I/O; split into dedicated, focused submodules. |
+| **Inline `if/else` or `switch` Cascades** | **Rule of Three:** The 3rd branching variant, payment provider, or protocol format is introduced. | **Strategy Pattern / Registry:** Replace conditional branching with a polymorphic Strategy interface or handler registry; update `memory.md`. |
+| **In-Memory Store / Global State** | State requires **concurrent mutations**, **persistence across process restarts**, or **transactional rollback**. | **Repository Pattern & Persistence Port:** Introduce an explicit storage port contract; swap in-memory mock for a persistent database adapter. |
+| **Direct Platform / Third-Party Calls** | External SDK or platform API is called from **>2 places**, or SDK throws untyped exceptions across boundaries. | **Adapter Pattern (Anti-Corruption Layer):** Wrap external SDK inside an application-owned port interface; mock only the owned interface in tests. |
+| **Monolithic Domain Model** | The same business noun represents divergent lifecycles or definitions across workflows (e.g. `User` in Auth vs `User` in Billing). | **Bounded Context Split:** Separate into isolated domain contexts with explicit DTO / Anti-Corruption translation between them. |
+
+---
+
+## 4. The "Refactor-Before-Add" Protocol (Kent Beck's Rule)
+
+> *"Make the change easy (warning: this may be hard), then make the easy change."* — Kent Beck
+
+Before writing production code for any new feature or user story, the agent must execute the **Refactor-Before-Add Check**:
+1. **Assess Tipping Points**: Will adding this requirement cause any module, function, or data structure to cross an architectural tipping point?
+2. **Phase A — Structural Refactoring (Under Green)**: If yes, refactor the existing architecture *first* while existing test suites remain 100% green. Zero behavioral changes; purely structural evolution.
+3. **Phase B — ADR Mutation**: When an architectural tipping point is crossed, log a Lightweight Architectural Decision Record in `memory.md` summarizing the new structural boundary and trade-off.
+4. **Phase C — Feature Implementation (Inner TDD)**: Only once the architecture cleanly accommodates the new capability, write the failing micro-test and implement the feature.
+
+---
+
+## 5. Architectural Fitness Functions (Automated Tripwires)
+
+Prevent AI-generated code rot using automated fitness functions integrated into linting and continuous verification:
+- **File Length Gates**: Maximum 250–300 lines per file (ESLint `max-lines`).
+- **Function Length Gates**: Maximum 20–30 lines per function (ESLint `max-lines-per-function`).
+- **Dependency Direction Gates**: Enforce unidirectional import rules (e.g. `import/no-restricted-paths`, `dependency-cruiser`, `ArchUnit`) ensuring domain core never imports infrastructure or transport adapters.
+- **Complexity Budgets**: Enforce cyclomatic complexity limits (maximum 10 per function).
+If an AI attempt to add code violates any fitness function, the build fails immediately, blocking completion until the architecture is refactored.

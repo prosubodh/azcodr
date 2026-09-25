@@ -83,24 +83,46 @@ Deviating from this lifecycle introduces catastrophic defects and architectural 
 | **Skipping Outer Acceptance Tests** | In-memory unit tests pass, but user interactions and network routing fail. | "The In-Memory Supertest Illusion": App says "Offline/Connecting" while 100% unit tests pass. |
 | **Skipping the Refactor Phase** | Technical debt accumulates immediately behind green tests. | Code rot, duplicated logic, bloated monolithic functions (> 30 lines), violated DRY/SLAP. |
 
-### The Immutable Laws of TDD Execution:
-1. **No Production Code Without a Failing Test:** You are not allowed to write any production code unless it is to make a failing unit or acceptance test pass.
-2. **No Test Without Prior Domain Understanding:** You are not allowed to write a test without knowing the Ubiquitous Language, Aggregate Root, and business invariants it asserts.
-3. **Minimal Code Only:** Write only the minimal amount of code necessary to turn the failing test green. Do not anticipate speculative future requirements.
-4. **Refactor Under Green Only:** Never alter production code structure while tests are red. Refactor only when all existing assertions are green.
+### The Immutable Three Laws of TDD (Uncle Bob & Kent Beck):
+1. **First Law:** You are not allowed to write any production code unless it is to make a single failing unit or acceptance test pass.
+2. **Second Law (Strict Incremental Boundary):** You are not allowed to write any more of a unit test than is sufficient to fail; and compilation failures are failures.
+3. **Third Law (Minimal Production Code):** You are not allowed to write any more production code than is sufficient to pass the one currently failing test.
 
-### DO's:
-- **DO:** Strictly adhere to the 5-Phase Agile Domain Lifecycle: Requirements ➔ Domain Analysis ➔ Outer Acceptance Test (RED) ➔ Inner Unit Test (RED-GREEN-REFACTOR) ➔ Outer Verification (GREEN).
-- **DO:** Follow Outside-In TDD (London School): Outer acceptance test ➔ collaborator discovery ➔ unit tests with test doubles.
-- **DO:** Maintain 100.00% line, branch, statement, and function coverage across all backend, contract, and frontend suites.
-- **DO:** Verify cross-package integration boundaries (Vite dev server reverse proxy, real network sockets, HTTP client JSON parsing) with automated full-stack smoke tests (`scripts/smoke_test.sh`).
-- **DO:** Keep functions small (under 20–30 lines) adhering to Single Level of Abstraction (SLAP) and Command-Query Separation (CQS).
+---
 
-### DONT's:
-- **DONT:** Never write a single line of production code without an existing failing test driving it.
-- **DONT:** Never write a test without prior domain analysis (Ubiquitous Language and invariant definition). Tests must assert domain invariants, not arbitrary syntax.
-- **DONT:** Never mock types you do not own; always wrap third-party dependencies in application-owned adapters.
-- **DONT:** Never equate in-memory test double passes (e.g. Supertest against in-memory Express instances) with real network transport, reverse proxying, or end-to-end user connectivity.
-- **DONT:** Never skip the Refactor phase under green; technical debt must not accumulate behind green tests.
-- **DONT:** Never use arbitrary `setTimeout()` or `sleep()` in tests; use deterministic event polling (`waitFor`).
+## 4. The Batch-Test Anti-Pattern & The Incremental Nano-Cycle
+
+### The "Test-First Waterfall" Anti-Pattern (BANNED)
+A rampant anti-pattern in AI coding is dumping 10–20 test cases in a single test file, and then writing a 300-line implementation file in one shot so all tests pass simultaneously. **This is strictly prohibited.**
+- **Why It Fails:** Writing all tests upfront is Waterfall in disguise. It forces the AI to hallucinate and lock in speculative method signatures and class structures before any code runs. If test #3 reveals a design flaw, tests #4–20 are broken legacy code before running.
+- **Falsifiability Failure:** When 20 tests fail at once, you never prove that each individual assertion would catch its specific regression. Many batch tests are tautologies that pass by coincidence.
+
+### The Mandatory Incremental Nano-Cycle
+Every collaborator discovered in Phase 4 must progress through micro-cycles of one behavior at a time:
+1. **RED (Micro-Assertion):** Write **ONE** test asserting a single micro-behavior (e.g. `expect(cart.total()).toBe(0)`).
+2. **VERIFY RED:** Run the test suite (`npm test`). **Inspect and verify the specific failure message** (e.g. "method not defined" or "expected 0, got undefined"). Never skip running the test while RED.
+3. **GREEN (Minimal Implementation):** Write the **absolute minimum production code** required to pass the single failing assertion (even hardcoding `return 0` if appropriate).
+4. **VERIFY GREEN:** Run the test suite. Confirm the test turns green with zero side effects.
+5. **REFACTOR (Under Green):** Clean up names, eliminate duplication (DRY), enforce SLAP and Clean Code standards while tests remain 100% green.
+6. **REPEAT:** Move to the next micro-behavior (e.g. `cart with 1 item returns item price`).
+
+---
+
+## 5. Ping-Pong Pair Programming Protocol with AI
+
+When pairing with the human developer, operate in true **Ping-Pong TDD**:
+```
+  ┌─────────────────────────────────────────────────────────────┐
+  │                 PING-PONG PAIR PROGRAMMING                  │
+  │                                                             │
+  │  Turn 1 [Partner A]: Writes ONE micro-test assertion (RED)  │
+  │  Turn 2 [System]:    Runs test & displays verified failure  │
+  │  Turn 3 [Partner B]: Writes MINIMAL code to pass (GREEN)    │
+  │  Turn 4 [System]:    Runs test & displays verified pass     │
+  │  Turn 5 [Both]:      Refactors under green (REFACTOR)       │
+  │  Turn 6:             Roles swap; repeat for next behavior   │
+  └─────────────────────────────────────────────────────────────┘
+```
+- **Collaborative Steering**: The human developer can write the test while the AI writes the minimal pass, or the AI can present each micro-test and await confirmation before implementing.
+- **Continuous Alignment**: Design and data structures emerge organically through mutual feedback rather than monolithic code dumps.
 

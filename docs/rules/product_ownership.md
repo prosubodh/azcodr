@@ -130,21 +130,3 @@ Following Gunther Verheyen's backlog topology, the Product Backlog serves as an 
 1. **Single & Ordered:** Exactly one backlog exists per product.
 2. **Dynamic Splitting:** As coarse items approach the top of the backlog, they must be split into fine, sprintable INVEST slices.
 3. **Continuous Pruning:** Items may be reordered, added, split, or permanently deleted at any time based on empirical learning. If an item lingers at the bottom of the backlog for months without business justification, remove it.
-
----
-
-## 6. Invariants, DO's & DONT's
-
-### DO's:
-- **DO:** Formulate a clear, inspiring Product Goal that guides all backlog prioritization.
-- **DO:** Ground prioritization in quantitative models (RICE, Kano, MoSCoW) rather than executive opinion.
-- **DO:** Measure outcomes (satisfaction gap closure, conversion, retention) instead of pure output (story points, lines of code).
-- **DO:** Explicitly state what will NOT be done (Won't Have this time) to preserve engineering focus.
-- **DO:** Ensure every sprint increment complies 100% with the Definition of Done.
-
-### DONT's:
-- **DONT:** Never confuse output (features shipped) with outcome (value realized).
-- **DONT:** Never treat OKRs as a task checklist; Key Results must be measurable outcomes.
-- **DONT:** Never prioritize speculative features when core "Must-be" baseline capabilities are unfulfilled.
-- **DONT:** Never maintain separate, disconnected backlogs for the same product.
-- **DONT:** Never deliver "un-done" work carrying forward technical debt.

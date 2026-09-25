@@ -139,30 +139,9 @@ Per [`docs/rules/ui_navigation.md`](./ui_navigation.md), all view state that rep
 4. **Pagination**: `?page=2&pageSize=25`
 5. **Drawers / Modals**: `?drawer=resource-102` or `?modal=create-order`
 
----
+## 7. Production UI Hygiene & Resilience Standards
 
-## 7. Invariants, DO's & DONT's
-
-### DO:
-- **DO** execute the 7-Pillar Design Architecture Triage before writing any UI code.
-- **DO** provide a collapsible left sidebar for operators that transitions into a slim 64px icon rail with hover tooltips and persists state in `localStorage`.
-- **DO** provide a dedicated, consumer-focused `/portal` layout for Members/Consumers with top and mobile-bottom navigation.
-- **DO** provide a public `/catalog` view for unauthenticated visitors to discover resources.
-- **DO** isolate developer demo personas into a dedicated dev-only floating toolbar (`import.meta.env.DEV`), completely decoupled from the real sign-in form.
-- **DO** enforce route guards on all routes, automatically redirecting users according to their authenticated role.
-- **DO** synchronize tabs, search terms, and pagination with URL search parameters.
-- **DO** use accessible Radix UI dialogs (`<ConfirmDialog>`) for destructive actions and ARIA live regions for status alerts.
-- **DO** synchronize authentication and tenant selection across browser tabs via `window.addEventListener('storage')`, and isolate complex subcomponents or page outlets using accessible `<ErrorBoundary>` components to prevent unhandled render exceptions from crashing the application shell.
-- **DO** decouple all technical internal telemetry (API gateway connection states, hexagonal port health, database adapter indicators, and active security roles) from user-facing screens and confine them exclusively to development tools and harnesses gated by `import.meta.env.DEV`.
-- **DO** centralize all user interface copy, status labels, error notifications, action titles, and templated messages into configuration constants (`UI_STRINGS`) to eliminate scattered hardcoded strings.
-
-### DONT:
-- **DONT** build UI views on assumptions without completing the Design Architecture Triage Gate.
-- **DONT** embed mock/demo personas inside user-facing login or registration forms.
-- **DONT** force Member/Consumer users to navigate the enterprise operator sidebar with disabled buttons.
-- **DONT** expose multi-tenant organization switchers or system audit fields to consumer roles.
-- **DONT** expose internal architecture jargon (e.g. "ACID ledger", "Hexagonal ports", "API Connected", "Active Role") in production user-facing or administrator views.
-- **DONT** hardcode error messages, status labels, or button copy directly in page components; reference centralized configuration constants.
-- **DONT** use browser-native `window.alert()` or `window.confirm()` popups.
-- **DONT** rely solely on hiding UI buttons to enforce authorization; always wrap routes in `<ProtectedRoute>`.
-- **DONT** lose search queries or active tab states upon page reload; always sync to URL search params.
+- **Multi-Tab State Synchronization**: Synchronize authentication and tenant selection across browser tabs using native `window.addEventListener('storage')`.
+- **Fault-Tolerant Error Boundaries**: Wrap complex widgets, charts, and page outlets in accessible `<ErrorBoundary>` components to prevent runtime render exceptions from crashing the persistent application shell.
+- **Strict Decoupling of Diagnostics & Telemetry**: Never expose internal architectural diagnostics (port health, connection badges, active role indicators) in production user-facing screens; gate diagnostic widgets strictly behind `import.meta.env.DEV`.
+- **Centralized UI Copy (`UI_STRINGS`)**: Centralize all user interface copy, status labels, error notifications, and action button labels into configuration constants (`UI_STRINGS`) rather than scattering hardcoded strings across templates.

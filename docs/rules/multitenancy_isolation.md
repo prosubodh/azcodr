@@ -14,6 +14,8 @@ Resolve tenant identity dynamically in an inbound gateway or middleware pipeline
 
 *Validation:* If the resolved tenant does not exist or is in `SUSPENDED` status, immediately return **`403 Forbidden`** (`TENANT_SUSPENDED` or `TENANT_INVALID`). Propagate `TenantContext` across service calls using standard W3C Baggage headers or request contexts.
 
+- **Fail-Closed Multi-Tenancy Invariant**: Never trust client-supplied tenant headers (`X-Tenant-ID`) without cryptographically verifying that the authenticated session actor actually belongs to the requested tenant organization/workspace. Mismatched tenant headers must immediately fail closed with HTTP 403 `FORBIDDEN_TENANT_ACCESS`.
+
 ---
 
 ## 2. Four Universal Data Isolation Models

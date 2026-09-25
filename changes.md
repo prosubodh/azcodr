@@ -48,3 +48,15 @@ When an AI agent or engineer discovers a generic architectural improvement, bug 
 - **Rationale:** Ensure flawless cross-platform and multi-version Node execution across macOS, Windows, and Linux on Node 18, 20, 22, 24.
 - **Description:** Untracked agents.md from Git to prevent cyclic symlink overwrite on case-insensitive filesystems; hardened ensureSymlink with isSameCaseInsensitiveFile check; added cross-version test coverage runner script; updated npm test runner to use native discovery.
 - **Domain Filter Verification:** Verified 100% generic; purged of all project-specific business entities and models.
+
+### [2026-09-25] Problem-First Architecture, Evolutionary Tipping Points, and Incremental Nano-Cycle TDD
+- **Category:** Architecture, Rule & Skill
+- **Target File(s):** `AGENTS.md`, `docs/rules/clean_code.md`, `docs/rules/domain_driven_design.md`, `docs/rules/test_driven_development.md`, `.agents/skills/lets-build/SKILL.md`, `.agents/skills/lets-build/references/architecture_interview_matrix.md`, `.agents/skills/lets-build/scripts/bootstrap_workspace.sh`, `memory.md`
+- **Rationale:** Eliminate tool-first bias ("Solution-in-Search-of-a-Problem"), stop accidental complexity (as seen in `force-dark-light` where Chrome extension received Kubernetes and OpenAPI specs), prevent AI-accelerated architectural drift, and halt the "Test-First Waterfall" batch-test anti-pattern.
+- **Description:** 
+  1. Enforced Problem Space vs Solution Space decoupling with zero tool bias.
+  2. Made scaffolding strictly topology-aware (Web SaaS, Browser Extension, Game/Engine, CLI, Library) with zero speculative bloat.
+  3. Codified Evolutionary Architecture, the 5 Architectural Tipping Points, and Kent Beck's "Refactor-Before-Add" protocol.
+  4. Codified Uncle Bob's Three Laws of TDD, banned batch-test dumps, and introduced the Incremental Nano-Cycle and Ping-Pong Pair Programming protocol.
+- **Domain Filter Verification:** Verified 100% generic; applicable across any language, stack, and project topology.
+

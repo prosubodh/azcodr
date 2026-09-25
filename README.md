@@ -34,11 +34,8 @@
 │       ├── product-analyst/          # INVEST user stories & Gherkin criteria
 │       └── relentless-questioner/    # Context-aware dynamic interrogation loop
 ├── docs/
-│   ├── knowledge/                    # Institutional knowledge & token economy
-│   │   ├── dos_and_donts.md          # Consolidated DO's and DONT's directory
-│   │   ├── issue_log.md              # Defect post-mortems & preventing rules
+│   ├── knowledge/                    # Institutional knowledge & domain contracts
 │   │   ├── knowledge_graph.md        # Visual topologies & fast-lookup matrices
-│   │   ├── lessons_learned.md        # Strategic architectural takeaways
 │   │   └── ubiquitous_language.md    # Living Ubiquitous Language glossary template
 │   └── rules/                        # 47 atomic single-responsibility domain rules
 ├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
@@ -177,8 +174,6 @@ Once confirmed, the agent automatically executes:
 ## 🏛️ Workspace Memory & Knowledge Hub
 
 - 🗺️ **[System Knowledge Graph](./docs/knowledge/knowledge_graph.md)**: Visual subsystem topologies and entity-relationship models.
-- 📋 **[Consolidated DO's & DONT's](./docs/knowledge/dos_and_donts.md)**: High-impact engineering invariants and anti-patterns to avoid.
-- 🐛 **[Coding Issue Log](./docs/knowledge/issue_log.md)**: Defect post-mortems and preventative rules.
-- 💡 **[Institutional Lessons Learned](./docs/knowledge/lessons_learned.md)**: Strategic engineering insights.
-- 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records.
+- 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative domain vocabulary contract.
+- 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records and governing rules.
 - 📝 **[Upstream Changes Ledger](./changes.md)**: Record candidate improvements and generic patterns for the upstream azcodr template.

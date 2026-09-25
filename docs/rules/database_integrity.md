@@ -69,20 +69,12 @@ Pure financial ledgers (e.g. `PaymentLedgerEntry`, `JournalEntry`) and event out
 
 ---
 
-## 6. Invariants, DO's & DONT's
+## 6. Semi-Structured Evolution & Cryptographic Audit Trails
 
-### DO's:
-- **DO:** Include the canonical total audit fields (`createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`) on every mutable entity model.
-- **DO:** Populate `createdBy`, `updatedBy`, and `deletedBy` from the verified session actor (`req.user.id`), falling back explicitly to `'SYSTEM'` only for background daemons or public bootstrap.
-- **DO:** Default foreign keys to `RESTRICT` for root aggregates and financial ledgers to prevent accidental cascading data loss.
-- **DO:** Enforce foreign key validation in use cases before persistence, returning RFC 7807 problem details if referenced records do not exist.
-- **DO:** Render foreign key associations using relational selectors (`shadcn/ui` `<Select>`) showing human-readable business metadata (names, labels, numbers, emails).
-- **DO:** Ensure every entity/feature implements full lifecycle CRUD (Create, Read/Detail, Update/Status Transition, Delete/Archive) before considering it complete.
-- **DO:** Filter active records with `WHERE deleted_at IS NULL` and pair uniqueness with partial indexes (`WHERE deleted_at IS NULL`).
-
-### DONT's:
-- **DONT:** Never create a database table or entity without `createdAt` and `createdBy`.
-- **DONT:** Never omit `updatedBy` or `deletedBy` on mutable tables. Every mutation and deletion must have an accountable actor.
-- **DONT:** Never expose raw string text inputs for foreign key identifiers in the user interface.
-- **DONT:** Never consider a feature complete if it only implements creation or listing without update, transition, or deletion capabilities.
-- **DONT:** Never allow cascading deletes on master entities with dependent transactional history.
+- **Non-Destructive Schema Evolution via JSON**: For contractual covenants, dynamic conditions, or variable metadata subject to rapid domain iteration, employ semi-structured JSON fields (`termsJson`, `metadataJson`) validated against JSON Schema rather than premature table migrations.
+- **Cryptographic Electronic Signatures & Execution Auditing**: Legal agreements and execution records require defensible evidence beyond a boolean `isSigned` flag. All executed agreements must capture:
+  1. Typed signer legal name and designated role.
+  2. ISO 8601 UTC execution timestamp.
+  3. Authenticated actor ID (`userId`).
+  4. Client network IP address and User-Agent string.
+  5. Deterministic cryptographic checksum / hash of the executed terms.

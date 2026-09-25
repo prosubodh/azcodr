@@ -1,6 +1,6 @@
 # Error Handling, Request Tracing & Schema Validation
 
-> **Core Mandate:** Enforce fail-fast schema validation at startup, structured OpenTelemetry/JSON request tracing, and standardized RFC 7807 / REST error envelopes.
+> **Core Mandate:** Enforce fail-fast schema validation at startup, structured OpenTelemetry/JSON request tracing, standardized RFC 7807 problem details, and an explicit canonical DomainError hierarchy.
 
 ---
 
@@ -37,3 +37,16 @@ Enforce a uniform error envelope across all external HTTP/REST endpoints conform
 ```
 
 - **Production Masking Invariant**: Strictly mask internal database error codes, raw SQL queries, file system paths, and stack traces from external client responses in non-local environments.
+
+---
+
+## 4. Canonical Domain Error Hierarchy & Type-Safe Narrowing
+
+- **Canonical DomainError Hierarchy**: Model operational domain failures using an explicit `DomainError` base class with canonical subclasses:
+  - `ValidationError` (maps to HTTP 400 / 422)
+  - `UnauthorizedError` (maps to HTTP 401)
+  - `ForbiddenError` (maps to HTTP 403)
+  - `NotFoundError` (maps to HTTP 404)
+  - `ConflictError` (maps to HTTP 409)
+  - `ExpiredError` (maps to HTTP 410)
+- **Eliminate Untyped Error Monkey-Patching**: Strictly prohibit monkey-patching arbitrary properties onto error objects at catch sites (e.g. `(err as any).statusCode = 404`). Use clean `instanceof` narrowing in HTTP error middleware to map domain errors deterministically to RFC 7807 status codes with full compiler type safety.

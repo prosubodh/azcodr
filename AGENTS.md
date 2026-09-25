@@ -4,7 +4,7 @@
 > **Rule Zero:** Assume nothing. Every action must be grounded in verified evidence from this workspace or direct instructions from the user.  
 > **Open-Source Mandate:** Always utilize 100% open-source tools, frameworks, libraries, and packages across all architectural domains.  
 > **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, and composable with full ACID safety).  
-> **Agnostic Mandate:** Decouple domain core from transient technologies, languages, and stacks (Hexagonal Ports & Adapters; zero language bias).
+> **Architecture Mandate:** Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero tool/platform bias). Match architectural style to problem topology (Hexagonal for enterprise backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, Game Loop for canvas games). Never force premature abstractions or universal templates.
 
 ---
 
@@ -14,10 +14,12 @@
 2. **Ground Truth Only:** A statement is only true if proven by a workspace file, verified command output, or direct user instruction.
 3. **Unknown Until Verified:** If something is not explicitly written in the workspace or stated by the user, treat it as unknown.
 4. **Strict Open Standards:** Standardize on open-source solutions and open specs (Semgrep, Trivy, Gitleaks, OpenTelemetry, OPA, OCI, Wasm, CloudEvents).
-5. **Universal Agnosticism:** Core business rules are technology-, language-, and stack-agnostic; runtimes connect via swappable adapters with zero language bias.
-6. **Systemic Atomicity:** Every skill, rule, database transaction, and refactoring step must be atomic (Single Responsibility, zero side-effects, full rollback).
-7. **Workspace Sovereignty:** Total containment within the local workspace root (`./`). Zero interference from global configs, tools, or sibling projects.
-8. **Continuous Learning:** Log all defects, DO's/DONT's, and lessons into `docs/knowledge/` and `memory.md`, dynamically updating atomic rules.
+5. **Problem-First & Topology Alignment:** Problem domain and operational constraints (latency budget, GC tolerance, memory, execution environment) strictly dictate the architectural style and toolchain. Never select tools before defining the problem space.
+6. **Evolutionary Architecture & Refactor-Before-Add:** As complexity grows, code must graduate across explicit architectural tipping points. Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
+7. **True Incremental TDD & Nano-Cycles:** Never dump test suites in batches ("Test-First Waterfall"). Follow Uncle Bob's Three Laws: write one micro-assertion at a time, verify RED failure output, write minimal code to turn GREEN, and refactor under green.
+8. **Systemic Atomicity:** Every skill, rule, database transaction, and refactoring step must be atomic (Single Responsibility, zero side-effects, full rollback).
+9. **Workspace Sovereignty:** Total containment within the local workspace root (`./`). Zero interference from global configs, tools, or sibling projects.
+10. **Continuous Learning:** Ingest all verified defects, lessons, and architectural invariants directly into domain rules and `memory.md`.
 
 ### The 5 Core Branch Questions
 Before acting on any decision branch, answer:
@@ -40,10 +42,10 @@ Before acting on any decision branch, answer:
 
 Progress all tasks systematically through the unified **Agent Cognitive & Agile Domain Lifecycle**, seamlessly interlocking the 5 agent operational disciplines with the 5-phase domain engineering pipeline:
 ```
-1. DISCOVER / REQUIREMENTS   ──► Read-only inspection; INVEST user stories & executable Gherkin scenarios.
-2. INTERROGATE / DOMAIN     ──► Relentless questioning; Ubiquitous Language & domain invariants.
+1. DISCOVER / REQUIREMENTS   ──► Read-only inspection; Problem Space & operational constraints; INVEST stories & Gherkin.
+2. INTERROGATE / DOMAIN     ──► Relentless questioning; Ubiquitous Language, Aggregate invariants & state machines.
 3. PLAN / OUTER TDD         ──► Minimal blast radius; failing Outer Acceptance Test (UI/API RED).
-4. EXECUTE / INNER TDD      ──► Surgical edits; Inner TDD collaborator discovery (RED-GREEN-REFACTOR).
+4. EXECUTE / INNER TDD      ──► Incremental nano-cycles (Uncle Bob's 3 Laws: 1 micro-assertion RED ➔ MINIMAL pass GREEN ➔ REFACTOR).
 5. VERIFY / DoD & PROOF     ──► Outer test turns GREEN; boundary smoke tests & 100.00% test coverage.
 ```
 ---
@@ -99,7 +101,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Domain Modeling** | [docs/rules/domain_expertise.md](./docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, Ubiquitous Language. |
 | **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [docs/rules/workspace_isolation.md](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
-| **Continuous Learning** | [docs/rules/continuous_learning.md](./docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's logging, dynamic rule updates. |
+| **Continuous Learning** | [docs/rules/continuous_learning.md](./docs/rules/continuous_learning.md) | Direct rule ingestion, root-cause analysis, dynamic invariant updates. |
 | **Upstream Sync** | [docs/rules/upstream_synchronization.md](./docs/rules/upstream_synchronization.md) | Logging generic architecture improvements to changes.md; zero baseline pollution. |
 ---
 
@@ -114,5 +116,5 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
   - [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
   - [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
 - **Relentless Skill Architecture Inquiry:** Never author or update skills on assumptions. Interrogate all 7 inquiry branches (placement, trigger intent, domain truth, gotchas/anti-patterns, determinism, progressive bloat, verification loop) defined in [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) before writing `SKILL.md`.
-- **Workspace Memory & Knowledge Hub:** Consult [`memory.md`](./memory.md) for ADRs, and [`docs/knowledge/`](./docs/knowledge/knowledge_graph.md) for system topologies, issue logs, and DO's/DONT's.
+- **Workspace Memory & Knowledge Hub:** Consult [`memory.md`](./memory.md) for ADRs, and [`docs/knowledge/`](./docs/knowledge/knowledge_graph.md) for system topologies and domain glossaries.
 - **Harness Parity & Symlinks:** `AGENTS.md`, `CLAUDE.md`, and `agents.md` must remain identical via filesystem symbolic links to eliminate configuration divergence across different agent harnesses.

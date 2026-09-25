@@ -111,18 +111,3 @@ specs/
 │       └── openapi.yaml
 ```
 
----
-
-## 5. Invariants, DO's & DONT's
-
-### DO's:
-- **DO:** Prefix all public REST endpoints with major version identifiers (`/api/v1/`, `/api/v2/`).
-- **DO:** Bump MAJOR and cut a new `/api/v2/` prefix whenever request or response breaking changes occur.
-- **DO:** Inject RFC 8594 `Sunset` and `Deprecation` headers on all retired endpoints and provide a 90-day grace period.
-- **DO:** Organize specs into versioned folders (`specs/openapi/v1/`, `v2/`) with an interactive Swagger selector.
-
-### DONT's:
-- **DONT:** Never expose minor or patch numbers in the URL path (e.g. `/api/v1.2/`).
-- **DONT:** Never introduce breaking schema or status code changes within an existing major version.
-- **DONT:** Never delete an active endpoint without a formal deprecation lifecycle.
-

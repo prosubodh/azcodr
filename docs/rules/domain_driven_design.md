@@ -1,10 +1,35 @@
 # Domain-Driven Design (DDD) & Ubiquitous Language
 
-> **Core Mandate:** Establish unambiguous Ubiquitous Language definitions, isolate Bounded Contexts, guarantee Domain-Code Language Agreement across all architectural layers, and separate Value Objects, Entities, and Aggregates.
+> **Core Mandate:** Separate Problem Space from Solution Space, establish unambiguous Ubiquitous Language definitions, isolate Bounded Contexts, guarantee Domain-Code Language Agreement, and protect Aggregate invariants.
 
 ---
 
-## 1. Domain-Code Language Agreement
+## 1. Problem Space vs. Solution Space (Evans & Vernon)
+
+Software engineering fails when teams jump directly into the **Solution Space** (choosing languages, frameworks, databases, and microservices) before fully defining the **Problem Space**.
+
+```
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │                           THE PROBLEM SPACE                            │
+  │  Business Problem ➔ Subdomains (Core/Supporting/Generic) ➔ Invariants  │
+  │  Operational Constraints: Execution target, Latency budget, GC limits  │
+  └───────────────────────────────────┬────────────────────────────────────┘
+                                      │ Shapes & Dictates
+                                      ▼
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │                           THE SOLUTION SPACE                           │
+  │  Bounded Contexts ➔ Architectural Style (DOD, Hexagonal, Pipeline)      │
+  │  Emergent Toolchain: Programming Language, Runtime, Persistence        │
+  └────────────────────────────────────────────────────────────────────────┘
+```
+
+- **The Problem Space (The Essence - Fred Brooks):** Concerns *what* problem is being solved, the entities, state transitions, and operational constraints (e.g. 16.6ms frame budget for games, zero-install browser sandbox for extensions, or ACID compliance for banking). **Zero technology, stack, or database choices are permitted in the Problem Space.**
+- **The Solution Space (The Accidents):** Concerns *how* the system is realized. Runtimes, programming languages (C, Rust, TS, Go, Java), and storage engines are **emergent outputs** derived strictly from Problem Space constraints.
+- **The Golden Hammer Anti-Pattern:** Selecting tools (e.g., "Let's use Next.js and PostgreSQL") before mapping problem constraints forces the domain to fit the tool, creating massive accidental complexity.
+
+---
+
+## 2. Domain-Code Language Agreement
 
 The fundamental premise of Domain-Driven Design (Eric Evans) is that **the code is the model, and the model is the code**. Any divergence between the mental model of domain experts and the source code is called **Linguistic Drift**.
 
@@ -16,7 +41,7 @@ The fundamental premise of Domain-Driven Design (Eric Evans) is that **the code 
 
 ---
 
-## 2. Living Ubiquitous Language Glossary
+## 3. Living Ubiquitous Language Glossary
 
 Every project must maintain an authoritative, version-controlled **Living Ubiquitous Language Glossary** at [`docs/knowledge/ubiquitous_language.md`](../knowledge/ubiquitous_language.md).
 
@@ -30,7 +55,7 @@ Each entry must define:
 
 ---
 
-## 3. Automated Enforcement & Linters
+## 4. Automated Enforcement & Linters
 
 To prevent linguistic drift over time, teams must employ mechanical enforcement:
 
@@ -60,25 +85,10 @@ Acceptance criteria must be written strictly in Ubiquitous Language, serving as 
 
 ---
 
-## 4. Tactical Patterns & Invariants
+## 5. Tactical Patterns & Invariants
 
 1. **Entities**: Objects defined by identity that persists across state changes (e.g. `User`, `Order`, `Invoice`).
 2. **Value Objects**: Immutable objects defined strictly by their attributes with no identity (e.g. `Money`, `DateRange`, `EmailAddress`).
 3. **Aggregates & Aggregate Roots**: Clusters of domain objects treated as a single transactional consistency boundary. All mutations must pass through explicit methods on the Aggregate Root.
 4. **Anti-Corruption Layer (ACL)**: When integrating with third-party APIs or legacy systems that use different terminology, translate external payloads into the internal Ubiquitous Language at the boundary adapter before they enter the domain core.
-
----
-
-## 5. Invariants (DO's & DONT's)
-
-### DO
-- **DO** use identical terminology in domain conversations, PRDs, code, database schemas, and user interfaces.
-- **DO** maintain an authoritative `ubiquitous_language.md` and treat it as a binding architectural contract.
-- **DO** use branded nominal types for IDs to catch cross-entity domain mixups at compile time.
-- **DO** translate foreign data structures at the perimeter using an Anti-Corruption Layer (ACL).
-
-### DONT
-- **DONT** use technical jargon (`dto`, `entity_row`, `table_item`) in domain business logic.
-- **DONT** allow competing synonyms for the same concept within the same Bounded Context.
-- **DONT** overload words with dual meanings across technical architecture and business domain.
-- **DONT** rename domain terms in code without updating the living glossary and recording an ADR.
+5. **Cross-Aggregate Coordination in Use Cases**: While an Aggregate Root guards its own internal invariants, business operations frequently span multiple aggregates (e.g. reserving an inventory item for an agreement). Application use cases or orchestrators must coordinate aggregate transitions atomically: asserting resource availability prior to state change, transitioning the constrained entity (e.g. `ALLOCATED`), and restoring state (`AVAILABLE`) upon cancellation, avoiding double-allocation race conditions without coupling aggregates directly.
