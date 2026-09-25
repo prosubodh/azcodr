@@ -6,7 +6,6 @@
 
 ## 1. Quick Navigation & Knowledge Repositories
 
-- 🗺️ **[System Knowledge Graph](./docs/knowledge/knowledge_graph.md)**: Architectural subsystems, Mermaid topologies, entity relationships, and fast-lookup matrices.
 - 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative, single-name domain vocabulary contract.
 - 📜 **[Lightweight ADR Master Index](#adr-master-index)**: Summary of all architectural decisions and direct links to governing rules.
 - 📝 **[Upstream Changes Ledger](./changes.md)**: Ledger of candidate improvements and generic patterns for upstream azcodr.
@@ -33,6 +32,9 @@
 | **ADR-013** | Design Architecture Triage, Persistent Shell & Dev Persona Isolation | 2026-09-20 | ACCEPTED | [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md), [`authentication.md`](./docs/rules/authentication.md) |
 | **ADR-014** | Product Ownership, Prioritization Models, SMART Tasks & INVEST Slicing | 2026-09-21 | ACCEPTED | [`product_ownership.md`](./docs/rules/product_ownership.md), [`requirements_engineering.md`](./docs/rules/requirements_engineering.md), [`project_management.md`](./docs/rules/project_management.md) |
 | **ADR-015** | Problem-First Architecture, Topology Scaffolding, Tipping Points & Nano-TDD | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md) |
+| **ADR-016** | Elimination of Static Markdown Knowledge Graph | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`continuous_learning.md`](./docs/rules/continuous_learning.md) |
+| **ADR-017** | Progressive Rules Consolidation (DDD & GoF Patterns) | 2026-09-25 | ACCEPTED | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`design_patterns.md`](./docs/rules/design_patterns.md) |
+
 
 ---
 
@@ -125,4 +127,19 @@
   3. Codify **Evolutionary Architecture & Architectural Tipping Points**: Enforce Kent Beck's "Refactor-Before-Add" protocol and 5 explicit tipping points to halt AI-generated code rot.
   4. Mandate **True Incremental TDD & Nano-Cycles**: Prohibit batch-test dumps ("Test-First Waterfall"); enforce Uncle Bob's Three Laws (especially Law #2) and Ping-Pong pair programming with verified RED failure proofs.
 - **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`clean_code.md`](./docs/rules/clean_code.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md), [`architecture_interview_matrix.md`](./.agents/skills/lets-build/references/architecture_interview_matrix.md).
+
+#### ADR-016: Elimination of Static Markdown Knowledge Graph in Favor of Code-as-Truth & Living Glossary
+- **Date:** 2026-09-25 | **Status:** ACCEPTED
+- **Context:** Template repositories often maintain static markdown files containing Mermaid diagrams, ERDs, and component topologies (`docs/knowledge/knowledge_graph.md`). In practice, these static artifacts suffer from rapid maintenance drift, violate the Problem-First mandate by pre-fabricating multi-tenant web backend models before the user defines their project, duplicate existing domain rules and memory records, and become stale tokens consumed on every context load.
+- **Decision:** Permanently delete `docs/knowledge/knowledge_graph.md`. Treat executable code, strict type definitions, and versioned database migrations as the sole source of truth for architectural topologies. Retain `docs/knowledge/ubiquitous_language.md` as the lightweight, living domain vocabulary contract.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`clean_code.md`](./docs/rules/clean_code.md), [`continuous_learning.md`](./docs/rules/continuous_learning.md), [`memory.md`](./memory.md).
+
+#### ADR-017: Progressive Rules Consolidation (DDD & GoF Design Patterns)
+- **Date:** 2026-09-25 | **Status:** ACCEPTED
+- **Context:** Multiple domain rules exhibited redundant overlaps: `domain_expertise.md` duplicated strategic capability mapping and tactical aggregate invariants already governed by `domain_driven_design.md`, while `gof_design_patterns_reference.md` artificially fragmented design patterns into a separate satellite file from `design_patterns.md`. This fragmentation caused token bloat in `AGENTS.md` and scattered domain invariants.
+- **Decision:**
+  1. Merge business capability tiering (Core/Supporting/Generic) and the Aggregate Root Gatekeeper invariant example into [`domain_driven_design.md`](./docs/rules/domain_driven_design.md). Delete redundant `domain_expertise.md`.
+  2. Consolidate the 23 Gang of Four patterns catalog directly into [`design_patterns.md`](./docs/rules/design_patterns.md). Delete redundant `gof_design_patterns_reference.md`.
+  3. Streamline rule catalog across `AGENTS.md` and `README.md` to 45 lean, single-responsibility, non-overlapping rules.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`design_patterns.md`](./docs/rules/design_patterns.md).
 

@@ -59,8 +59,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **TDD Double Loop** | [docs/rules/test_driven_development.md](./docs/rules/test_driven_development.md) | Outside-In TDD (London School), collaborator discovery, mock ownership. |
 | **Test Coverage & Isolation** | [docs/rules/test_isolation.md](./docs/rules/test_isolation.md) | 100.00% full-stack coverage, status codes, transactional DB rollback. |
 | **Clean Code** | [docs/rules/clean_code.md](./docs/rules/clean_code.md) | Naming, small functions, CQS, SLAP, DRY, DbC, zero side-effects. |
-| **Design Patterns** | [docs/rules/design_patterns.md](./docs/rules/design_patterns.md) | Adapter, Factory, Facade, Strategy, and Result `<T, E>` pattern. |
-| **GoF Design Patterns** | [docs/rules/gof_design_patterns_reference.md](./docs/rules/gof_design_patterns_reference.md) | Complete reference of all 23 GoF patterns across OOP and functional paradigms. |
+| **Design Patterns** | [docs/rules/design_patterns.md](./docs/rules/design_patterns.md) | Adapter, Factory, Strategy, Result `<T, E>`, and complete 23 GoF catalog. |
 | **Type Safety** | [docs/rules/typescript.md](./docs/rules/typescript.md) | Compiler strictness, branded nominal types, type safety, static sound invariants. |
 | **ADRs** | [docs/rules/architecture_decision_records.md](./docs/rules/architecture_decision_records.md) | Authoring Lightweight Architectural Decision Records in `memory.md`. |
 | **Authentication** | [docs/rules/authentication.md](./docs/rules/authentication.md) | In-memory access tokens, refresh token rotation (RTR), WebAuthn passkeys. |
@@ -93,12 +92,11 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **React & Frontend** | [docs/rules/react.md](./docs/rules/react.md) | Modern React, shadcn/ui, TanStack Query, React Hook Form, and Zod validation. |
 | **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
 | **Product Ownership** | [docs/rules/product_ownership.md](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
-| **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Value Objects, Aggregates. |
+| **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Aggregates, Capability Mapping. |
 | **Workflow State Machines** | [docs/rules/workflow_state_machines.md](./docs/rules/workflow_state_machines.md) | Configurable workflows, in-aggregate invariant FSMs, transition guards & audit logs. |
 | **Cloud-Native 12-Factor** | [docs/rules/cloud_native.md](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
 | **Agentic Config & Skills** | [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) | Progressive disclosure architecture, skill inquiry branches, refinement loop. |
 | **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), SMART developer tasks, Definition of Done. |
-| **Domain Modeling** | [docs/rules/domain_expertise.md](./docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, Ubiquitous Language. |
 | **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [docs/rules/workspace_isolation.md](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [docs/rules/continuous_learning.md](./docs/rules/continuous_learning.md) | Direct rule ingestion, root-cause analysis, dynamic invariant updates. |
@@ -116,5 +114,5 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
   - [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
   - [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
 - **Relentless Skill Architecture Inquiry:** Never author or update skills on assumptions. Interrogate all 7 inquiry branches (placement, trigger intent, domain truth, gotchas/anti-patterns, determinism, progressive bloat, verification loop) defined in [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) before writing `SKILL.md`.
-- **Workspace Memory & Knowledge Hub:** Consult [`memory.md`](./memory.md) for ADRs, and [`docs/knowledge/`](./docs/knowledge/knowledge_graph.md) for system topologies and domain glossaries.
+- **Workspace Memory & Knowledge Hub:** Consult [`memory.md`](./memory.md) for ADRs, and [`docs/knowledge/ubiquitous_language.md`](./docs/knowledge/ubiquitous_language.md) for domain glossaries.
 - **Harness Parity & Symlinks:** `AGENTS.md`, `CLAUDE.md`, and `agents.md` must remain identical via filesystem symbolic links to eliminate configuration divergence across different agent harnesses.

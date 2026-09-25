@@ -60,3 +60,20 @@ When an AI agent or engineer discovers a generic architectural improvement, bug 
   4. Codified Uncle Bob's Three Laws of TDD, banned batch-test dumps, and introduced the Incremental Nano-Cycle and Ping-Pong Pair Programming protocol.
 - **Domain Filter Verification:** Verified 100% generic; applicable across any language, stack, and project topology.
 
+### [2026-09-25] Permanent Removal of Static Markdown Knowledge Graph
+- **Category:** Architecture & Knowledge Hub
+- **Target File(s):** `docs/knowledge/knowledge_graph.md`, `AGENTS.md`, `memory.md`, `README.md`, `docs/rules/continuous_learning.md`
+- **Rationale:** Static markdown Mermaid diagrams and entity models in template repositories suffer from maintenance drift, duplicate state from code/migrations, violate Problem-First by assuming a multi-tenant web backend, and waste prompt token budget.
+- **Description:** Permanently eliminated `docs/knowledge/knowledge_graph.md`. Enforced code, type definitions, and versioned database migrations as the single source of truth for architectural topologies. Retained `docs/knowledge/ubiquitous_language.md` for lightweight living domain vocabulary contracts.
+- **Domain Filter Verification:** Verified 100% generic; purged of all speculative and duplicate static models.
+
+### [2026-09-25] Workspace Rules Consolidation & Redundancy Purge
+- **Category:** Rule & Knowledge Hub
+- **Target File(s):** `docs/rules/domain_driven_design.md`, `docs/rules/design_patterns.md`, `docs/rules/domain_expertise.md`, `docs/rules/gof_design_patterns_reference.md`, `AGENTS.md`, `README.md`, `memory.md`
+- **Rationale:** Eliminate duplicate and fragmented rules to optimize agent attention window, consolidate domain invariants, and uphold strict Single Responsibility across progressive disclosure documentation.
+- **Description:** 
+  1. Merged business capability mapping and Aggregate Root gatekeeper invariants from `domain_expertise.md` directly into `domain_driven_design.md`. Removed redundant `domain_expertise.md`.
+  2. Integrated the complete 23 Gang of Four patterns catalog from `gof_design_patterns_reference.md` directly into `design_patterns.md`. Removed redundant `gof_design_patterns_reference.md`.
+  3. Reduced active progressive disclosure rules from 47 to 45 while preserving 100% domain coverage.
+- **Domain Filter Verification:** Verified 100% generic; purged of all redundant files and circular links.
+

@@ -26,5 +26,4 @@ Whenever an error, test failure, build friction, or architectural anti-pattern o
 ## 2. Institutional Memory Maintenance
 
 - **Lightweight ADR Ledger**: Major technical decisions and invariant shifts are logged in [`memory.md`](../../memory.md) linking directly to the governing rule or skill.
-- **System Knowledge Graph**: Keep [`docs/knowledge/knowledge_graph.md`](../knowledge/knowledge_graph.md) synchronized with new services, ports, or adapters to avoid repetitive token-expensive codebase discovery in future sessions.
 - **Living Glossary**: Keep [`docs/knowledge/ubiquitous_language.md`](../knowledge/ubiquitous_language.md) updated with canonical domain terminology and forbidden synonyms.

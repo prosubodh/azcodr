@@ -27,6 +27,12 @@ Software engineering fails when teams jump directly into the **Solution Space** 
 - **The Solution Space (The Accidents):** Concerns *how* the system is realized. Runtimes, programming languages (C, Rust, TS, Go, Java), and storage engines are **emergent outputs** derived strictly from Problem Space constraints.
 - **The Golden Hammer Anti-Pattern:** Selecting tools (e.g., "Let's use Next.js and PostgreSQL") before mapping problem constraints forces the domain to fit the tool, creating massive accidental complexity.
 
+### Strategic Subdomain & Capability Mapping
+Structure enterprise business capabilities into three distinct tiers:
+1. **Core Subdomain / Capabilities**: Proprietary value drivers and business differentiators (e.g. specialized workflow engines, dynamic pricing algorithms). Allocate 80% of architectural effort here.
+2. **Supporting Subdomain / Capabilities**: Business functions specific to the domain but not competitive differentiators (e.g. order tracking, invoice rendering).
+3. **Generic Subdomain / Capabilities**: Standard commoditized software (e.g. authentication, audit logging, email transport). Rely exclusively on standard open-source libraries.
+
 ---
 
 ## 2. Domain-Code Language Agreement
@@ -89,6 +95,24 @@ Acceptance criteria must be written strictly in Ubiquitous Language, serving as 
 
 1. **Entities**: Objects defined by identity that persists across state changes (e.g. `User`, `Order`, `Invoice`).
 2. **Value Objects**: Immutable objects defined strictly by their attributes with no identity (e.g. `Money`, `DateRange`, `EmailAddress`).
-3. **Aggregates & Aggregate Roots**: Clusters of domain objects treated as a single transactional consistency boundary. All mutations must pass through explicit methods on the Aggregate Root.
+3. **Aggregates & Aggregate Roots**: Clusters of domain objects treated as a single transactional consistency boundary. All mutations must pass through explicit methods on the Aggregate Root that assert invariants before committing state:
+   - **Zero Anemic Domain Models**: Domain entities must encapsulate state and validation logic. Never expose public setters that allow outside code to corrupt business rules.
+   - **Aggregate Root Gatekeeper Pattern**:
+     ```typescript
+     export class OrderAggregate {
+       private constructor(private order: OrderState) {}
+
+       submit(): Result<void, DomainError> {
+         if (this.order.items.length === 0) {
+           return err(new DomainError('Cannot submit empty order'));
+         }
+         if (this.order.status !== 'DRAFT') {
+           return err(new DomainError('Order already submitted'));
+         }
+         this.order.status = 'SUBMITTED';
+         return ok(undefined);
+       }
+     }
+     ```
 4. **Anti-Corruption Layer (ACL)**: When integrating with third-party APIs or legacy systems that use different terminology, translate external payloads into the internal Ubiquitous Language at the boundary adapter before they enter the domain core.
 5. **Cross-Aggregate Coordination in Use Cases**: While an Aggregate Root guards its own internal invariants, business operations frequently span multiple aggregates (e.g. reserving an inventory item for an agreement). Application use cases or orchestrators must coordinate aggregate transitions atomically: asserting resource availability prior to state change, transitioning the constrained entity (e.g. `ALLOCATED`), and restoring state (`AVAILABLE`) upon cancellation, avoiding double-allocation race conditions without coupling aggregates directly.

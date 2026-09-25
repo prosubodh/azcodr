@@ -12,7 +12,7 @@ Regardless of language, all bootstrapped projects must follow this high-level se
 <project-root>/
 ├── .agents/skills/                   # Specialized agentic workflows (carried from azcodr template)
 ├── docs/
-│   ├── knowledge/                    # System knowledge graph, issue log, DO's/DONT's
+│   ├── knowledge/                    # Domain knowledge & living ubiquitous language glossary
 │   └── rules/                        # 41 atomic single-responsibility domain rules
 ├── specs/                            # Canonical contract specifications
 │   ├── protobuf/                     # gRPC service definitions (*.proto)

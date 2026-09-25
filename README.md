@@ -37,9 +37,8 @@
 │       └── relentless-questioner/    # Context-aware dynamic interrogation loop
 ├── docs/
 │   ├── knowledge/                    # Institutional knowledge & domain contracts
-│   │   ├── knowledge_graph.md        # Visual topologies & fast-lookup matrices
 │   │   └── ubiquitous_language.md    # Living Ubiquitous Language glossary template
-│   └── rules/                        # 47 atomic single-responsibility domain rules
+│   └── rules/                        # 45 atomic single-responsibility domain rules
 ├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
 ├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity
 ├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity
@@ -52,15 +51,14 @@
 
 ## 📋 Progressive Disclosure Rules Catalog (`docs/rules/`)
 
-The architecture enforces 47 atomic, single-responsibility domain rules. Read on demand to prevent prompt context bloat:
+The architecture enforces 45 atomic, single-responsibility domain rules. Read on demand to prevent prompt context bloat:
 
 | Domain | Rule Reference File | Key Focus & Invariants |
 |---|---|---|
 | **TDD Double Loop** | [`test_driven_development.md`](./docs/rules/test_driven_development.md) | Uncle Bob's 3 Laws, nano-cycles, Ping-Pong pairing, outside-in double loop. |
 | **Test Coverage & Isolation** | [`test_isolation.md`](./docs/rules/test_isolation.md) | 100.00% full-stack coverage, status codes, transactional DB rollback. |
 | **Clean Code** | [`clean_code.md`](./docs/rules/clean_code.md) | 5 evolutionary tipping points, Refactor-Before-Add, CQS, SLAP, DRY, fitness functions. |
-| **Design Patterns** | [`design_patterns.md`](./docs/rules/design_patterns.md) | Adapter, Factory, Facade, Strategy, and Result `<T, E>` pattern. |
-| **GoF Design Patterns** | [`gof_design_patterns_reference.md`](./docs/rules/gof_design_patterns_reference.md) | Complete reference of all 23 GoF patterns across OOP and functional paradigms. |
+| **Design Patterns** | [`design_patterns.md`](./docs/rules/design_patterns.md) | Adapter, Factory, Strategy, Result `<T, E>`, and complete 23 GoF catalog. |
 | **Type Safety** | [`typescript.md`](./docs/rules/typescript.md) | Compiler strictness, branded nominal types, type safety, static sound invariants. |
 | **ADRs** | [`architecture_decision_records.md`](./docs/rules/architecture_decision_records.md) | Authoring Lightweight Architectural Decision Records in `memory.md`. |
 | **Authentication** | [`authentication.md`](./docs/rules/authentication.md) | In-memory access tokens, refresh token rotation (RTR), WebAuthn passkeys. |
@@ -93,12 +91,11 @@ The architecture enforces 47 atomic, single-responsibility domain rules. Read on
 | **React & Frontend** | [`react.md`](./docs/rules/react.md) | Modern React, shadcn/ui, TanStack Query, React Hook Form, and Zod validation. |
 | **Requirements Engineering** | [`requirements_engineering.md`](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
 | **Product Ownership** | [`product_ownership.md`](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
-| **Domain-Driven Design** | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) | Problem Space vs Solution Space, Ubiquitous Language, Bounded Contexts, Aggregates. |
+| **Domain-Driven Design** | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) | Problem vs Solution Space, Ubiquitous Language, Aggregates, Capability Mapping. |
 | **Workflow State Machines** | [`workflow_state_machines.md`](./docs/rules/workflow_state_machines.md) | Configurable workflows, in-aggregate invariant FSMs, transition guards & audit logs. |
 | **Cloud-Native 12-Factor** | [`cloud_native.md`](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
 | **Agentic Config & Skills** | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) | Progressive disclosure architecture, skill inquiry branches, refinement loop. |
 | **Project Management** | [`project_management.md`](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), SMART developer tasks, Definition of Done. |
-| **Domain Modeling** | [`domain_expertise.md`](./docs/rules/domain_expertise.md) | Business capabilities, Aggregate Root invariants, Ubiquitous Language. |
 | **Relentless Questioning** | [`relentless_questioning.md`](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [`continuous_learning.md`](./docs/rules/continuous_learning.md) | Direct 4-step rule ingestion, root-cause analysis, dynamic invariant updates. |
@@ -168,7 +165,6 @@ Once confirmed, the agent automatically executes:
 
 ## 🏛️ Workspace Memory & Knowledge Hub
 
-- 🗺️ **[System Knowledge Graph](./docs/knowledge/knowledge_graph.md)**: Visual subsystem topologies and entity-relationship models.
 - 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative domain vocabulary contract.
 - 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records and governing rules.
 - 📝 **[Upstream Changes Ledger](./changes.md)**: Record candidate improvements and generic patterns for the upstream azcodr template.
