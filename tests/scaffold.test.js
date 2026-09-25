@@ -3,7 +3,18 @@ const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
-const { scaffold, validateTarget, copyTemplate, initGit, getTemplateDir } = require('../lib/scaffold.js');
+const childProcess = require('node:child_process');
+const {
+  scaffold,
+  validateTarget,
+  copyTemplate,
+  ensureSymlink,
+  makeScriptsExecutable,
+  initGit,
+  logChange,
+  getTemplateDir,
+  TEMPLATE_ITEMS
+} = require('../lib/scaffold.js');
 
 describe('Scaffold Core Unit Tests', () => {
   let tmpDir;
@@ -45,7 +56,13 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(fs.existsSync(nonExistent), true);
   });
 
-  test('copyTemplate copies essential template files', () => {
+  test('validateTarget does not create target directory if dryRun is true', () => {
+    const nonExistent = path.join(tmpDir, 'nested', 'dry-run-dir');
+    validateTarget(nonExistent, { templateDir, force: false, dryRun: true });
+    assert.strictEqual(fs.existsSync(nonExistent), false);
+  });
+
+  test('copyTemplate copies essential template files including .editorconfig', () => {
     copyTemplate(tmpDir, templateDir);
 
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), true);
@@ -55,6 +72,33 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'docs', 'rules')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'skills')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.gitignore')), true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.editorconfig')), true);
+  });
+
+  test('copyTemplate skips template items that do not exist in template directory', () => {
+    const customTemplateDir = path.join(tmpDir, 'custom-tpl');
+    fs.mkdirSync(customTemplateDir, { recursive: true });
+    // Only create AGENTS.md, others are missing
+    fs.writeFileSync(path.join(customTemplateDir, 'AGENTS.md'), '# Custom');
+
+    const destDir = path.join(tmpDir, 'dest-dir');
+    const actions = copyTemplate(destDir, customTemplateDir);
+
+    assert.strictEqual(fs.existsSync(path.join(destDir, 'AGENTS.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(destDir, 'memory.md')), false);
+    assert.strictEqual(actions.some(a => a.includes('AGENTS.md')), true);
+  });
+
+  test('copyTemplate supports dryRun mode without modifying destination', () => {
+    const dryRunDest = path.join(tmpDir, 'non-existent-dest');
+    const actions = copyTemplate(dryRunDest, templateDir, { dryRun: true });
+
+    assert.strictEqual(fs.existsSync(dryRunDest), false);
+    assert.strictEqual(actions.length > 0, true);
+    assert.strictEqual(actions.some(a => a.includes('copy: AGENTS.md')), true);
+    assert.strictEqual(actions.some(a => a.includes('copy: .editorconfig')), true);
+    assert.strictEqual(actions.some(a => a.includes('symlink: CLAUDE.md')), true);
+    assert.strictEqual(actions.some(a => a.includes('symlink: agents.md')), true);
   });
 
   test('copyTemplate creates valid symlinks for CLAUDE.md and agents.md', () => {
@@ -109,6 +153,25 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.git')), false);
   });
 
+  test('initGit simulates git initialization when dryRun is true', () => {
+    const initialized = initGit(tmpDir, { noGit: false, dryRun: true });
+    assert.strictEqual(initialized, true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.git')), false);
+  });
+
+  test('initGit returns false when child_process execSync fails', () => {
+    const originalExecSync = childProcess.execSync;
+    try {
+      childProcess.execSync = () => {
+        throw new Error('Command failed: git init');
+      };
+      const result = initGit(tmpDir, { noGit: false });
+      assert.strictEqual(result, false);
+    } finally {
+      childProcess.execSync = originalExecSync;
+    }
+  });
+
   test('scaffold orchestrates full project initialization successfully', () => {
     const result = scaffold({
       targetDir: tmpDir,
@@ -118,12 +181,37 @@ describe('Scaffold Core Unit Tests', () => {
     });
 
     assert.strictEqual(result.success, true);
+    assert.strictEqual(result.dryRun, false);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.editorconfig')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.git')), true);
+    assert.strictEqual(result.actions.includes('git: initialize repository'), true);
+  });
+
+  test('scaffold handles dryRun mode without modifying disk or initializing git', () => {
+    const dryRunDir = path.join(tmpDir, 'scaffold-dry-run');
+    const result = scaffold({
+      targetDir: dryRunDir,
+      force: false,
+      noGit: false,
+      dryRun: true
+    });
+
+    assert.strictEqual(result.success, true);
+    assert.strictEqual(result.dryRun, true);
+    assert.strictEqual(result.gitInitialized, true);
+    assert.strictEqual(fs.existsSync(dryRunDir), false);
+    assert.strictEqual(result.actions.some(a => a.includes('copy: AGENTS.md')), true);
+    assert.strictEqual(result.actions.includes('git: initialize repository'), true);
+  });
+
+  test('ensureSymlink returns true immediately when dryRun is true', () => {
+    const result = ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md', true);
+    assert.strictEqual(result, true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'CLAUDE.md')), false);
   });
 
   test('ensureSymlink replaces existing symlink gracefully', () => {
-    const { ensureSymlink } = require('../lib/scaffold.js');
     fs.writeFileSync(path.join(tmpDir, 'AGENTS.md'), '# Target');
     ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md');
     // Call again to ensure replacing works without error
@@ -132,7 +220,6 @@ describe('Scaffold Core Unit Tests', () => {
   });
 
   test('ensureSymlink falls back to copyFileSync when symlinkSync fails', () => {
-    const { ensureSymlink } = require('../lib/scaffold.js');
     fs.writeFileSync(path.join(tmpDir, 'AGENTS.md'), '# Test Fallback');
     const origSymlinkSync = fs.symlinkSync;
     try {
@@ -148,10 +235,27 @@ describe('Scaffold Core Unit Tests', () => {
   });
 
   test('makeScriptsExecutable handles non-existent or empty skills directory gracefully', () => {
-    const { makeScriptsExecutable } = require('../lib/scaffold.js');
     const emptyDir = path.join(tmpDir, 'empty');
     fs.mkdirSync(emptyDir);
     assert.doesNotThrow(() => makeScriptsExecutable(emptyDir));
+  });
+
+  test('makeScriptsExecutable handles chmodSync exceptions gracefully', () => {
+    const fakeSkillsDir = path.join(tmpDir, '.agents', 'skills', 'test-skill', 'scripts');
+    fs.mkdirSync(fakeSkillsDir, { recursive: true });
+    const fakeScript = path.join(fakeSkillsDir, 'test.sh');
+    fs.writeFileSync(fakeScript, '#!/bin/sh\necho test\n');
+
+    const origChmodSync = fs.chmodSync;
+    try {
+      fs.chmodSync = () => {
+        throw new Error('EPERM: not permitted');
+      };
+      const modified = makeScriptsExecutable(tmpDir, false);
+      assert.strictEqual(modified.length, 1);
+    } finally {
+      fs.chmodSync = origChmodSync;
+    }
   });
 
   test('initGit returns false when .git already exists', () => {
@@ -160,22 +264,26 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(initialized, false);
   });
 
-  test('index.js exports scaffold and helper methods', () => {
+  test('index.js exports scaffold, constants, and helper methods', () => {
     const api = require('../lib/index.js');
     assert.strictEqual(typeof api.scaffold, 'function');
     assert.strictEqual(typeof api.validateTarget, 'function');
     assert.strictEqual(typeof api.copyTemplate, 'function');
+    assert.strictEqual(typeof api.ensureSymlink, 'function');
+    assert.strictEqual(typeof api.makeScriptsExecutable, 'function');
+    assert.strictEqual(typeof api.initGit, 'function');
+    assert.strictEqual(typeof api.getTemplateDir, 'function');
     assert.strictEqual(typeof api.logChange, 'function');
+    assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
+    assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
   });
 
   test('logChange throws when title is missing or empty', () => {
-    const { logChange } = require('../lib/scaffold.js');
     assert.throws(() => logChange({ title: '' }), /A change title is required/);
     assert.throws(() => logChange({}), /A change title is required/);
   });
 
   test('logChange creates changes.md if not existing and logs entry', () => {
-    const { logChange } = require('../lib/scaffold.js');
     const res = logChange({
       title: 'Add support for SQLite WAL mode',
       category: 'Database',
@@ -194,7 +302,6 @@ describe('Scaffold Core Unit Tests', () => {
   });
 
   test('logChange appends to existing changes.md with defaults', () => {
-    const { logChange } = require('../lib/scaffold.js');
     fs.writeFileSync(path.join(tmpDir, 'changes.md'), '# Existing Header\n');
 
     const res = logChange({

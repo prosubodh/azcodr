@@ -3,13 +3,12 @@
 
 const path = require('node:path');
 const readline = require('node:readline');
+const fs = require('node:fs');
 const { scaffold, logChange, getTemplateDir } = require('../lib/scaffold.js');
 const pkg = require('../package.json');
 
-const args = process.argv.slice(2);
-
-function printHelp() {
-  console.log(`
+function printHelp(out = console.log) {
+  out(`
 azcodr v${pkg.version}
 Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
 
@@ -22,208 +21,282 @@ Commands:
   change <title>  Log a generic architectural change to changes.md
 
 Scaffold Options:
+  -d, --dry-run   Simulate scaffolding without modifying filesystem
+  -s, --silent    Suppress console output messages
   -f, --force     Overwrite existing files in target directory without confirmation
   --no-git        Do not initialize a git repository
   -v, --version   Display version number
   -h, --help      Display this help message
 
 Change Options:
-  -c, --category  Category (Rule | Skill | Infrastructure | CLI | Knowledge Hub)
+  -c, --category  Category (Architecture | Rule | Skill | Infrastructure | CLI | Knowledge Hub)
   -f, --files     Target file(s) affected (e.g. "docs/rules/caching.md")
   -r, --rationale Rationale for upstream template incorporation
   -d, --desc      Detailed description of the change
 
 Examples:
   npx azcodr my-project
+  npx azcodr . --dry-run
   npx azcodr . --force
   npx azcodr change "Add Wasm plugin interface" -c Architecture
 `);
 }
 
-function printVersion() {
-  console.log(pkg.version);
+function printVersion(out = console.log) {
+  out(pkg.version);
 }
 
-function askQuestion(query) {
-  const rl = readline.createInterface({
-    input: process.stdin,
-    output: process.stdout
-  });
+function askQuestion(query, { input = process.stdin, output = process.stdout } = {}) {
+  const rl = readline.createInterface({ input, output });
 
   return new Promise((resolve) => {
+    let resolved = false;
     rl.question(query, (answer) => {
-      rl.close();
-      resolve(answer.trim());
+      if (!resolved) {
+        resolved = true;
+        rl.close();
+        resolve(answer.trim());
+      }
+    });
+    rl.on('close', () => {
+      if (!resolved) {
+        resolved = true;
+        resolve('');
+      }
     });
   });
 }
 
-async function handleLogChange() {
+async function handleLogChange(rawArgs = process.argv.slice(2), io = {}) {
+  const {
+    out = console.log,
+    err = console.error,
+    exit = process.exit,
+    stdin = process.stdin,
+    stdout = process.stdout,
+    cwd = process.cwd(),
+    logChange: logChangeFn = logChange
+  } = io;
+
   let title = null;
   let category = 'Architecture';
   let targetFiles = 'docs/rules/';
   let rationale = 'Generic architectural enhancement';
   let description = '';
 
-  for (let i = 1; i < args.length; i++) {
-    const a = args[i];
+  for (let i = 1; i < rawArgs.length; i++) {
+    const a = rawArgs[i];
     if (a === '-c' || a === '--category') {
-      category = args[++i] || category;
+      category = rawArgs[++i] || category;
     } else if (a === '-f' || a === '--files') {
-      targetFiles = args[++i] || targetFiles;
+      targetFiles = rawArgs[++i] || targetFiles;
     } else if (a === '-r' || a === '--rationale') {
-      rationale = args[++i] || rationale;
+      rationale = rawArgs[++i] || rationale;
     } else if (a === '-d' || a === '--desc' || a === '--description') {
-      description = args[++i] || description;
-    } else if (!a.startsWith('-')) {
-      if (!title) {
-        title = a;
-      }
+      description = rawArgs[++i] || description;
+    } else if (a.startsWith('-')) {
+      err(`❌ Error: Unknown argument '${a}'. Run 'npx azcodr --help' for available options.`);
+      return exit(1);
+    } else if (!title) {
+      title = a;
     }
   }
 
   if (!title) {
-    if (process.stdin.isTTY) {
-      title = await askQuestion('? Change title: ');
+    if (stdin.isTTY) {
+      title = await askQuestion('? Change title: ', { input: stdin, output: stdout });
     }
   }
 
   if (!title) {
-    console.error('❌ Error: A title is required to log an upstream change.');
-    console.error('Usage: npx azcodr change "<title>" [-c Category] [-f Files] [-r Rationale] [-d Description]');
-    process.exit(1);
+    err('❌ Error: A title is required to log an upstream change.');
+    err('Usage: npx azcodr change "<title>" [-c Category] [-f Files] [-r Rationale] [-d Description]');
+    return exit(1);
   }
 
   try {
-    const res = logChange({
+    const res = logChangeFn({
       title,
       category,
       targetFiles,
       rationale,
       description,
-      targetDir: process.cwd()
+      targetDir: cwd
     });
-    console.log(`\n✅ Upstream change logged to ${res.filePath}\n`);
-    process.exit(0);
-  } catch (err) {
-    console.error(`\n❌ Failed to log change: ${err.message}\n`);
-    process.exit(1);
+    out(`\n✅ Upstream change logged to ${res.filePath}\n`);
+    return exit(0);
+  } catch (error) {
+    err(`\n❌ Failed to log change: ${error.message}\n`);
+    return exit(1);
   }
 }
 
-async function main() {
-  if (args.length > 0 && (args[0] === '-h' || args[0] === '--help')) {
-    printHelp();
-    process.exit(0);
-  }
+async function runCli(rawArgs = process.argv.slice(2), io = {}) {
+  const {
+    out = console.log,
+    err = console.error,
+    exit = process.exit,
+    stdin = process.stdin,
+    stdout = process.stdout,
+    cwd = process.cwd(),
+    templateDir = getTemplateDir(),
+    scaffold: scaffoldFn = scaffold
+  } = io;
 
-  if (args.length > 0 && (args[0] === '-v' || args[0] === '--version')) {
-    printVersion();
-    process.exit(0);
-  }
-
-  if (args.length > 0 && (args[0] === 'change' || args[0] === 'log-change')) {
-    await handleLogChange();
-    return;
+  if (rawArgs[0] === 'change' || rawArgs[0] === 'log-change') {
+    return handleLogChange(rawArgs, io);
   }
 
   let targetDir = null;
   let force = false;
   let noGit = false;
+  let dryRun = false;
+  let silent = false;
 
-  for (let i = 0; i < args.length; i++) {
-    const arg = args[i];
+  for (let i = 0; i < rawArgs.length; i++) {
+    const arg = rawArgs[i];
     if (arg === '-h' || arg === '--help') {
-      printHelp();
-      process.exit(0);
+      printHelp(out);
+      return exit(0);
     } else if (arg === '-v' || arg === '--version') {
-      printVersion();
-      process.exit(0);
+      printVersion(out);
+      return exit(0);
     } else if (arg === '-f' || arg === '--force') {
       force = true;
     } else if (arg === '--no-git') {
       noGit = true;
-    } else if (!arg.startsWith('-')) {
-      if (!targetDir) {
-        targetDir = arg;
-      }
+    } else if (arg === '-d' || arg === '--dry-run') {
+      dryRun = true;
+    } else if (arg === '-s' || arg === '--silent') {
+      silent = true;
+    } else if (arg.startsWith('-')) {
+      err(`❌ Error: Unknown argument '${arg}'. Run 'npx azcodr --help' for available options.`);
+      return exit(1);
+    } else if (!targetDir) {
+      targetDir = arg;
     }
   }
 
-  console.log('\n🚀 azcodr - Enterprise Multi-Tenant Architecture & Agentic Engineering\n');
+  if (!silent) {
+    out('\n🚀 azcodr - Enterprise Multi-Tenant Architecture & Agentic Engineering\n');
+  }
 
   if (!targetDir) {
-    if (process.stdin.isTTY) {
-      const answer = await askQuestion('? Where would you like to initialize your project? (./) ');
+    if (stdin.isTTY) {
+      const answer = await askQuestion('? Where would you like to initialize your project? (./) ', {
+        input: stdin,
+        output: stdout
+      });
       targetDir = answer || '.';
     } else {
       targetDir = '.';
     }
   }
 
-  const resolvedTarget = path.resolve(process.cwd(), targetDir);
-  const templateDir = getTemplateDir();
+  const resolvedTarget = path.resolve(cwd, targetDir);
 
   if (resolvedTarget === templateDir) {
-    console.error(`❌ Error: Cannot scaffold into the template directory itself: ${resolvedTarget}`);
-    process.exit(1);
+    err(`❌ Error: Cannot scaffold into the template directory itself: ${resolvedTarget}`);
+    return exit(1);
   }
 
-  const fs = require('node:fs');
   if (fs.existsSync(resolvedTarget)) {
+    const stat = fs.statSync(resolvedTarget);
+    if (!stat.isDirectory()) {
+      err(`❌ Error: Target '${resolvedTarget}' already exists and is not a directory.`);
+      return exit(1);
+    }
     const entries = fs.readdirSync(resolvedTarget);
     if (entries.length > 0 && !force) {
-      if (process.stdin.isTTY) {
+      if (stdin.isTTY) {
         const confirm = await askQuestion(
-          `⚠️  Target directory '${targetDir}' is not empty (${entries.length} items). Continue? (y/N) `
+          `⚠️  Target directory '${targetDir}' is not empty (${entries.length} items). Continue? (y/N) `,
+          { input: stdin, output: stdout }
         );
         if (confirm.toLowerCase() !== 'y' && confirm.toLowerCase() !== 'yes') {
-          console.log('Scaffolding aborted.');
-          process.exit(0);
+          out('Scaffolding aborted.');
+          return exit(0);
         }
         force = true;
       } else {
-        console.error(
-          `❌ Error: Target directory '${resolvedTarget}' is not empty. Use --force to proceed.`
-        );
-        process.exit(1);
+        err(`❌ Error: Target directory '${resolvedTarget}' is not empty. Use --force to proceed.`);
+        return exit(1);
       }
     }
   }
 
-  console.log(`📦 Scaffolding azcodr into: ${resolvedTarget}`);
+  if (dryRun) {
+    if (!silent) {
+      out(`🔍 DRY RUN: Simulating azcodr scaffolding into: ${resolvedTarget}\n`);
+    }
+  } else if (!silent) {
+    out(`📦 Scaffolding azcodr into: ${resolvedTarget}`);
+  }
 
   try {
-    const result = scaffold({
+    const result = scaffoldFn({
       targetDir: resolvedTarget,
       force,
       noGit,
-      templateDir
+      templateDir,
+      dryRun,
+      silent
     });
 
-    console.log('  ✅ Progressive disclosure rules copied (docs/rules/)');
-    console.log('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
-    console.log('  ✅ Specialized agentic skills copied (.agents/skills/)');
-    console.log('  ✅ Upstream changes ledger initialized (changes.md)');
-    console.log('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md)');
-    if (result.gitInitialized) {
-      console.log('  ✅ Git repository initialized');
+    if (dryRun) {
+      if (!silent) {
+        for (const action of result.actions) {
+          out(`  [preview] ${action}`);
+        }
+        out('\n🎉 Dry run completed. 0 files modified on disk.\n');
+      }
+      return exit(0);
     }
 
-    console.log('\n🎉 azcodr initialized successfully!\n');
-    console.log('Next steps:');
-    if (targetDir !== '.' && targetDir !== './') {
-      console.log(`  1. cd ${targetDir}`);
+    if (!silent) {
+      out('  ✅ Progressive disclosure rules copied (docs/rules/)');
+      out('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
+      out('  ✅ Specialized agentic skills copied (.agents/skills/)');
+      out('  ✅ Upstream changes ledger initialized (changes.md)');
+      out('  ✅ Editor formatting standards initialized (.editorconfig)');
+      out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md)');
+      if (result.gitInitialized) {
+        out('  ✅ Git repository initialized');
+      }
+
+      out('\n🎉 azcodr initialized successfully!\n');
+      out('Next steps:');
+      if (targetDir !== '.' && targetDir !== './') {
+        out(`  1. cd ${targetDir}`);
+      }
+      out('  2. Open the project in your AI coding assistant (Antigravity, Claude Code, Cursor, OpenHands)');
+      out('  3. Run /lets-build to start the architectural interview and scaffold your application stack!\n');
     }
-    console.log('  2. Open the project in your AI coding assistant (Antigravity, Claude Code, Cursor, OpenHands)');
-    console.log('  3. Run /lets-build to start the architectural interview and scaffold your application stack!\n');
+    return exit(0);
+  } catch (error) {
+    err(`\n❌ Scaffolding failed: ${error.message}\n`);
+    return exit(1);
+  }
+}
+
+async function main() {
+  try {
+    await runCli(process.argv.slice(2));
   } catch (err) {
-    console.error(`\n❌ Scaffolding failed: ${err.message}\n`);
+    console.error('Unexpected error:', err);
     process.exit(1);
   }
 }
 
-main().catch((err) => {
-  console.error('Unexpected error:', err);
-  process.exit(1);
-});
+if (require.main === module) {
+  main();
+}
+
+module.exports = {
+  runCli,
+  handleLogChange,
+  askQuestion,
+  printHelp,
+  printVersion,
+  main
+};

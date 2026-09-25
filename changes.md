@@ -34,3 +34,10 @@ When an AI agent or engineer discovers a generic architectural improvement, bug 
 - **Rationale:** Remove fragile git repo resolution and merge scripts; replace with atomic change logging in `changes.md`.
 - **Description:** Retired `merge-ai` skill and removed machine-specific hardcoded paths. All upstream improvements are now recorded atomically in `changes.md`.
 - **Domain Filter Verification:** Verified 100% generic.
+
+### [2026-09-25] Harden CLI, achieve 100% test coverage gates, add multi-OS CI workflow, and TypeScript declarations
+- **Category:** CLI
+- **Target File(s):** bin/azcodr.js, lib/scaffold.js, lib/index.d.ts, .github/workflows/ci.yml
+- **Rationale:** Fulfill 100.00% test coverage mandate, cross-platform CI matrix, and library type safety
+- **Description:** Remediate gap assessment findings: add --dry-run and --silent flags, enforce 100.00% line/branch/function coverage gates, add GitHub Actions CI matrix across Node 18/20/22/24 and Linux/macOS/Windows, add .editorconfig template item, and export ambient TypeScript typings.
+- **Domain Filter Verification:** Verified 100% generic; purged of all project-specific business entities and models.

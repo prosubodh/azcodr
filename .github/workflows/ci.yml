@@ -1,0 +1,44 @@
+name: CI
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  test:
+    name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
+    runs-on: ${{ matrix.os }}
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [ ubuntu-latest, macos-latest, windows-latest ]
+        node-version: [ 18.x, 20.x, 22.x, 24.x ]
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js ${{ matrix.node-version }}
+        uses: actions/setup-node@v4
+        with:
+          node-version: ${{ matrix.node-version }}
+
+      - name: Verify Environment
+        run: |
+          node --version
+          npm --version
+
+      - name: Run Syntax & Lint Checks
+        run: npm run lint
+
+      - name: Validate Agentic Architecture
+        shell: bash
+        run: npm run validate
+
+      - name: Run Test Suite
+        run: npm test
+
+      - name: Verify 100.00% Test Coverage Gates
+        run: npm run test:coverage
