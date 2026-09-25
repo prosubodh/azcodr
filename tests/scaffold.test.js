@@ -137,8 +137,10 @@ describe('Scaffold Core Unit Tests', () => {
         for (const script of scripts) {
           const scriptPath = path.join(scriptDir, script);
           const stat = fs.statSync(scriptPath);
-          const isExecutable = (stat.mode & 0o111) !== 0;
-          assert.strictEqual(isExecutable, true, `Script ${scriptPath} must be executable`);
+          if (process.platform !== 'win32') {
+            const isExecutable = (stat.mode & 0o111) !== 0;
+            assert.strictEqual(isExecutable, true, `Script ${scriptPath} must be executable`);
+          }
           scriptChecked = true;
         }
       }
@@ -244,16 +246,22 @@ describe('Scaffold Core Unit Tests', () => {
     // 2. Matching names when files do not exist
     assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
 
-    // 3. Target exists, link does not exist
+    // 3. Target exists
     fs.writeFileSync(path.join(tmpDir, 'AGENTS.md'), '# Target');
-    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
+    const isCaseInsensitiveFs = fs.existsSync(path.join(tmpDir, 'agents.md'));
+    assert.strictEqual(
+      isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'),
+      isCaseInsensitiveFs
+    );
 
     // 4. Target exists, link exists as a symlink (case-sensitive system)
     ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md');
     assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'claude.md', 'CLAUDE.md'), false);
 
     // 5. Target exists and link exists as a regular file (simulating case-insensitive filesystem)
-    fs.writeFileSync(path.join(tmpDir, 'agents.md'), '# Target 2');
+    if (!isCaseInsensitiveFs) {
+      fs.writeFileSync(path.join(tmpDir, 'agents.md'), '# Target 2');
+    }
     assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), true);
 
     // 6. Error handling in try/catch
