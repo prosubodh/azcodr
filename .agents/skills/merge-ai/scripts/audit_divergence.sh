@@ -1,7 +1,7 @@
 #!/usr/bin/env bash
 set -euo pipefail
 
-BASELINE_DIR="${1:-/home/prosubodh/projects/mvp}"
+BASELINE_DIR="${1:-/home/prosubodh/projects/azcodr}"
 CURRENT_DIR="$(pwd)"
 
 echo "=================================================================="

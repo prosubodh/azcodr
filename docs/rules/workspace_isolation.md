@@ -15,7 +15,7 @@
 ## 2. Dependency & Tooling Isolation
 
 - **Local Package Manager**: Standardize strictly on local workspace dependencies managed via `npm` within this workspace. Never rely on global npm packages (`npm install -g`).
-- **Container Network Containment**: All Docker containers and bridge networks must be named and scoped specifically to this project (e.g. `mvp_network`, `mvp_postgres`) to prevent port collisions or cross-project data leakage.
+- **Container Network Containment**: All Docker containers and bridge networks must be named and scoped specifically to this project (e.g. `azcodr_network`, `azcodr_postgres`) to prevent port collisions or cross-project data leakage.
 
 ---
 

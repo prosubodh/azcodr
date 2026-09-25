@@ -1,17 +1,17 @@
 ---
 name: merge-ai
-description: Use when the user invokes /merge-ai or asks to merge generic AI rules, skills, lessons learned, and post-mortems from the current workspace back into the generic mvp baseline repository. Do not use for merging application business logic or routine Git branches.
+description: Use when the user invokes /merge-ai or asks to merge generic AI rules, skills, lessons learned, and post-mortems from the current workspace back into the generic azcodr baseline repository. Do not use for merging application business logic or routine Git branches.
 ---
 
 # Merge AI Knowledge, Rules & Skills Skill (`/merge-ai`)
 
-> **Core Philosophy:** Upstream baseline repositories (e.g. `https://github.com/org/mvp`) must remain pristine, generic, and untouched until the user explicitly triggers `/merge-ai`. When triggered from any project workspace (e.g. `https://github.com/org/my-project`), detect if the baseline repo is already cloned locally (apply directly) or clone it first, purge all project-specific domain models, colocate DOs and DONTs into atomic rules, and synchronize the generic baseline.
+> **Core Philosophy:** Upstream baseline repositories (e.g. `https://github.com/org/azcodr`) must remain pristine, generic, and untouched until the user explicitly triggers `/merge-ai`. When triggered from any project workspace (e.g. `https://github.com/org/my-project`), detect if the baseline repo is already cloned locally (apply directly) or clone it first, purge all project-specific domain models, colocate DOs and DONTs into atomic rules, and synchronize the generic baseline.
 
 ---
 
 ## 1. When to Use This Skill
 - The user issues `/merge-ai` or requests syncing AI rules, skills, issue logs, and lessons learned back into the generic baseline repository.
-- User references repository URLs (e.g. Source: `https://github.com/org/my-project`, Target: `https://github.com/org/mvp`).
+- User references repository URLs (e.g. Source: `https://github.com/org/my-project`, Target: `https://github.com/org/azcodr`).
 - Auditing divergences between the current project workspace and the generic baseline repository.
 - Exporting newly discovered architectural patterns, defect post-mortems, or reusable skills to the generic starter.
 - **DO NOT USE** during routine project feature development or bug fixes.
@@ -23,13 +23,13 @@ description: Use when the user invokes /merge-ai or asks to merge generic AI rul
 ## 2. Step-by-Step Execution Workflow
 
 ### Phase 1: Target Baseline Repository Resolution (URL or Local)
-When `/merge-ai` is triggered with repository URLs (e.g. `/merge-ai https://github.com/org/my-project https://github.com/org/mvp`):
+When `/merge-ai` is triggered with repository URLs (e.g. `/merge-ai https://github.com/org/my-project https://github.com/org/azcodr`):
 1. **Execute Repo Resolver Script:**
    ```bash
    # Discovers existing local clone or automatically clones fresh
    eval $(bash .agents/skills/merge-ai/scripts/resolve_repo.sh "$TARGET_REPO_URL")
    ```
-   - **If already cloned locally:** Discovers its directory, verifies clean working tree, and exports `STATUS=ALREADY_CLONED` and `LOCAL_PATH` (e.g. `/path/to/mvp`).
+   - **If already cloned locally:** Discovers its directory, verifies clean working tree, and exports `STATUS=ALREADY_CLONED` and `LOCAL_PATH` (e.g. `/path/to/azcodr`).
    - **If not cloned locally:** Automatically executes `git clone "$TARGET_REPO_URL"` to `$HOME/projects/<name>` and exports `STATUS=CLONED_FRESH` and `LOCAL_PATH`.
 2. Set `$BASELINE_DIR="$LOCAL_PATH"`.
 3. If `STATUS=ALREADY_CLONED`, ensure the repository is on branch `main` (`git -C "$BASELINE_DIR" pull --ff-only`).
@@ -83,7 +83,7 @@ Upon user confirmation:
 
 ## 3. Gotchas & What NOT to Do
 
-- **MAJOR DONT: Never touch, edit, or commit to the baseline repository (`mvp`) during routine feature development.** The baseline must be left completely alone until `/merge-ai` is explicitly invoked.
+- **MAJOR DONT: Never touch, edit, or commit to the baseline repository (`azcodr`) during routine feature development.** The baseline must be left completely alone until `/merge-ai` is explicitly invoked.
 - **DO NOT** copy application domain models, database tables, or framework-specific configs to the baseline.
 - **DO NOT** create monolithic DO/DONT lists. Always colocate directives in atomic rules.
 - **DO NOT** execute the merge without presenting a dry-run summary and receiving explicit approval.

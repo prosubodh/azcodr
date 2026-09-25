@@ -1,4 +1,4 @@
-# MVP: Enterprise Multi-Tenant Architecture & Agentic Engineering
+# azcodr: Enterprise Multi-Tenant Architecture & Agentic Engineering
 
 > **Production-ready, battle-tested multi-tenant enterprise architecture governed by strict systemic atomicity, 100% open-source standards, universal technology and language agnosticism, progressive disclosure agentic directives, and zero-downtime database patterns.**
 
@@ -126,7 +126,7 @@ This repository serves as an **enterprise architectural starter template**. When
 ### Step 1: Copy Workspace to New Project Folder
 Copy all files and directories from this template into your target project directory:
 ```bash
-cp -r /path/to/mvp /path/to/my-new-project
+cp -r /path/to/azcodr /path/to/my-new-project
 cd /path/to/my-new-project
 ```
 
