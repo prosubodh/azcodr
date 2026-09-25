@@ -1,6 +1,6 @@
 {
   "name": "azcodr",
-  "version": "1.0.0",
+  "version": "1.0.1",
   "description": "Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template",
   "bin": {
     "azcodr": "bin/azcodr.js"
@@ -11,6 +11,7 @@
     "lib",
     "AGENTS.md",
     "memory.md",
+    "changes.md",
     "README.md",
     "docs",
     ".agents",

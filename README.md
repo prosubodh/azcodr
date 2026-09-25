@@ -31,7 +31,6 @@
 │       ├── clean-code-refactor/      # Refactoring code smells with GoF & Clean Code
 │       ├── compliance-audit/         # SOC 2, ISO 27001 & OWASP open-source audits
 │       ├── lets-build/               # Architecture interview & project bootstrapper
-│       ├── merge-ai/                 # Auditing & merging generic AI knowledge to upstream
 │       ├── product-analyst/          # INVEST user stories & Gherkin criteria
 │       └── relentless-questioner/    # Context-aware dynamic interrogation loop
 ├── docs/
@@ -45,6 +44,7 @@
 ├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
 ├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity
 ├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity
+├── changes.md                        # Upstream changes ledger
 ├── memory.md                         # Master memory hub & Lightweight ADR ledger
 └── README.md                         # Project documentation
 ```
@@ -103,7 +103,7 @@ The architecture enforces 47 atomic, single-responsibility domain rules. Read on
 | **Relentless Questioning** | [`relentless_questioning.md`](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [`continuous_learning.md`](./docs/rules/continuous_learning.md) | Automated defect post-mortems, DO's/DONT's logging, dynamic rule updates. |
-| **Upstream Sync** | [`upstream_synchronization.md`](./docs/rules/upstream_synchronization.md) | Syncing generic AI knowledge to upstream baselines; zero domain contamination. |
+| **Upstream Sync** | [`upstream_synchronization.md`](./docs/rules/upstream_synchronization.md) | Logging generic architecture improvements to changes.md; zero baseline pollution. |
 
 ---
 
@@ -113,7 +113,6 @@ The architecture enforces 47 atomic, single-responsibility domain rules. Read on
 - [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and modern design patterns.
 - [`compliance-audit`](.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
 - [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
-- [`merge-ai`](.agents/skills/merge-ai/SKILL.md): Auditing, filtering, and merging generic rules and skills to upstream baseline.
 - [`product-analyst`](.agents/skills/product-analyst/SKILL.md): Aligning OKRs, backlog ordering (Kano/MoSCoW/RICE), INVEST stories, and Gherkin criteria.
 - [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
 
@@ -182,3 +181,4 @@ Once confirmed, the agent automatically executes:
 - 🐛 **[Coding Issue Log](./docs/knowledge/issue_log.md)**: Defect post-mortems and preventative rules.
 - 💡 **[Institutional Lessons Learned](./docs/knowledge/lessons_learned.md)**: Strategic engineering insights.
 - 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records.
+- 📝 **[Upstream Changes Ledger](./changes.md)**: Record candidate improvements and generic patterns for the upstream azcodr template.

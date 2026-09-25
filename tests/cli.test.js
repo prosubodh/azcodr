@@ -51,6 +51,7 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'CLAUDE.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'agents.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'changes.md')), true);
 
     // Run validate_agentic_configs.sh inside the newly scaffolded project!
     const validatorScript = path.join(
@@ -101,5 +102,24 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.match(output, /initialized successfully/i);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'foo.txt')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
+  });
+
+  test('CLI logs an upstream change into changes.md via change command', () => {
+    const output = execFileSync(
+      process.execPath,
+      [CLI_PATH, 'change', 'Add gRPC streaming rule', '-c', 'Rule', '-r', 'Support bidirectional streams'],
+      {
+        cwd: tmpDir,
+        encoding: 'utf-8'
+      }
+    );
+
+    assert.match(output, /Upstream change logged to/i);
+    const changesFile = path.join(tmpDir, 'changes.md');
+    assert.strictEqual(fs.existsSync(changesFile), true);
+    const content = fs.readFileSync(changesFile, 'utf-8');
+    assert.match(content, /Add gRPC streaming rule/);
+    assert.match(content, /Category:\*\* Rule/);
+    assert.match(content, /Support bidirectional streams/);
   });
 });

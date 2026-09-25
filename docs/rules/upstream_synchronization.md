@@ -1,40 +1,37 @@
-# Upstream Baseline Synchronization & AI Knowledge Merging
+# Upstream Baseline Synchronization & changes.md Ledger
 
-> **Core Mandate:** Upstream template/baseline workspaces (`azcodr`) must remain strictly untouched until the user explicitly requests merging. When merging via `/merge-ai`, strictly filter out all domain-specific entities, stacks, and models, keeping the baseline 100% generic.
+> **Core Mandate:** Upstream template/baseline workspaces (`azcodr`) must remain strictly untouched during project development. When generic architectural improvements, rule refinements, or post-mortems are identified, record them solely into the `changes.md` ledger with zero automated repo merging or baseline contamination.
 
 ---
 
 ## 1. The Baseline-Project Decoupling Principle
 
-Workspaces operate under a strict unidirectional and on-demand bidirectional flow:
+Workspaces operate under a clean, decoupled flow:
 
 ```
 [Upstream Generic Baseline: azcodr]
                │
-               ▼  (One-time fork / clone at project inception)
+               ▼  (Scaffolded via npx azcodr)
 [Derived Project Workspace: my-app / others]
                │
                │  (Accumulates project code, specificities, and institutional lessons)
                │
-               ▼  (ONLY when user explicitly triggers /merge-ai)
-[Distillation & Filter: Purge Domain Specificities, Colocate DOs/DONTs]
-               │
-               ▼
-[Clean Merge into Upstream Baseline: azcodr]
+               ▼  (Record reusable improvements)
+[Upstream Changes Ledger: changes.md]
 ```
 
-- **Pristine Upstream Mandate:** Never edit, commit, or push changes to an upstream baseline repository (`azcodr`) during routine project development, feature implementation, or bug fixes.
-- **Explicit Trigger Requirement:** Synchronization into the baseline template may occur **only and exclusively** when the user explicitly issues the `/merge-ai` slash command or direct merge directive.
+- **Pristine Upstream Mandate:** Never edit, commit, or attempt automated git merges to an upstream baseline repository during routine project development, feature implementation, or bug fixes.
+- **Ledger-Only Synchronization:** When generic architectural discoveries or defect post-mortems occur, document them cleanly in `changes.md` at the workspace root. No automated merge AI or remote repo synchronization is executed.
 
 ---
 
 ## 2. Zero-Contamination Invariant (Generic vs. Specific)
 
-When merging knowledge, rules, or skills back to the baseline, enforce strict domain filtering:
+When logging proposed changes into `changes.md`, enforce strict domain filtering:
 
-| Element Category | Keep in Specific Project Workspace | Allow in Generic Baseline (`azcodr`) |
+| Element Category | Keep in Specific Project Workspace | Allow in changes.md for Upstream (`azcodr`) |
 |---|---|---|
-| **Domain Entities** | Concrete business models (`Order`, `Customer`, `Invoice`, `Account`, etc.) | Abstract archetypes (`Entity`, `Aggregate`, `ValueObject`, `Resource`) |
+| **Domain Entities** | Concrete business models (`Order`, `Customer`, `Invoice`, etc.) | Abstract archetypes (`Entity`, `Aggregate`, `ValueObject`, `Resource`) |
 | **Tech Stack / Adapters** | Concrete choices (Prisma, SQLite dev, PostgreSQL prod, Vite React) | Hexagonal Ports, abstract repository contracts, polyglot adapter guidance |
 | **Architectural Rules** | Specific entity validation, specific route paths | Universal invariants (5-Phase Agile Lifecycle, SemVer trigger matrix, FK dropdowns) |
 | **ADRs** | Stack decisions (`ADR-006: Target Tech Stack for Project`) | Generic architecture patterns (`ADR-007` to `ADR-010`) |
@@ -42,25 +39,30 @@ When merging knowledge, rules, or skills back to the baseline, enforce strict do
 
 ---
 
-## 3. Direct Rule Colocation Protocol
+## 3. Atomic changes.md Entry Protocol
 
-To prevent token bloat and documentation rot:
-1. **Never Duplicate in a Consolidated List:** Never dump merged rules into a monolithic `dos_and_donts.md`.
-2. **Colocate at Source:** Embed DO's and DONT's directly into the relevant atomic rule (`docs/rules/<domain>.md`) and skill (`.agents/skills/<skill>/SKILL.md`).
-3. **Index-Only Directory:** Maintain `docs/knowledge/dos_and_donts.md` strictly as a clean reference table pointing to atomic rules.
+Every upstream-bound proposal logged to `changes.md` must follow the standardized format:
+
+```markdown
+### [YYYY-MM-DD] <Title of Change>
+- **Category:** Rule | Skill | Infrastructure | CLI | Knowledge Hub
+- **Target File(s):** `docs/rules/...`, `.agents/skills/...`, etc.
+- **Rationale:** Why this improvement is necessary or valuable across all enterprise projects.
+- **Description:** Concise summary of the mutation or invariant added.
+- **Domain Filter Verification:** Verified 100% generic; purged of all project-specific business entities and models.
+```
 
 ---
 
 ## 4. Invariants, DO's & DONT's
 
 ### DO's:
-- **DO:** Leave the upstream baseline repository (`azcodr`) completely alone during regular development.
-- **DO:** Require an explicit `/merge-ai` command before proposing or executing any upstream synchronization.
-- **DO:** Distill all lessons and post-mortems into generic, domain-agnostic language before merging.
+- **DO:** Record candidate generic architectural improvements in `changes.md`.
+- **DO:** Distill all lessons and post-mortems into generic, domain-agnostic language before logging.
 - **DO:** Colocate DOs and DONTs directly inside the relevant atomic rules and skills.
-- **DO:** Run `validate_agentic_configs.sh` on the upstream baseline before and after any merge.
+- **DO:** Verify that all entries in `changes.md` are 100% stack- and domain-agnostic.
 
 ### DONT's:
-- **DONT:** Never touch or edit the upstream baseline template automatically without explicit user command.
-- **DONT:** Never contaminate the baseline template with project-specific domain models, entity names, or framework setups.
-- **DONT:** Never overwrite upstream baseline files with raw project copies; merge generic concepts surgically.
+- **DONT:** Never execute automated upstream git cloning or merge AI workflows during project work.
+- **DONT:** Never contaminate `changes.md` with project-specific business logic, schemas, or customer requirements.
+- **DONT:** Never leave machine-specific or absolute user paths in scripts or documentation.

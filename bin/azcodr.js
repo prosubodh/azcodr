@@ -3,7 +3,7 @@
 
 const path = require('node:path');
 const readline = require('node:readline');
-const { scaffold, getTemplateDir } = require('../lib/scaffold.js');
+const { scaffold, logChange, getTemplateDir } = require('../lib/scaffold.js');
 const pkg = require('../package.json');
 
 const args = process.argv.slice(2);
@@ -15,19 +15,28 @@ Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
 
 Usage:
   npx azcodr [directory] [options]
+  npx azcodr change <title> [options]
 
-Arguments:
-  directory       Target directory to scaffold (default: current directory)
+Commands:
+  [directory]     Scaffold azcodr template into directory (default: current directory)
+  change <title>  Log a generic architectural change to changes.md
 
-Options:
+Scaffold Options:
   -f, --force     Overwrite existing files in target directory without confirmation
   --no-git        Do not initialize a git repository
   -v, --version   Display version number
   -h, --help      Display this help message
 
+Change Options:
+  -c, --category  Category (Rule | Skill | Infrastructure | CLI | Knowledge Hub)
+  -f, --files     Target file(s) affected (e.g. "docs/rules/caching.md")
+  -r, --rationale Rationale for upstream template incorporation
+  -d, --desc      Detailed description of the change
+
 Examples:
   npx azcodr my-project
   npx azcodr . --force
+  npx azcodr change "Add Wasm plugin interface" -c Architecture
 `);
 }
 
@@ -49,7 +58,75 @@ function askQuestion(query) {
   });
 }
 
+async function handleLogChange() {
+  let title = null;
+  let category = 'Architecture';
+  let targetFiles = 'docs/rules/';
+  let rationale = 'Generic architectural enhancement';
+  let description = '';
+
+  for (let i = 1; i < args.length; i++) {
+    const a = args[i];
+    if (a === '-c' || a === '--category') {
+      category = args[++i] || category;
+    } else if (a === '-f' || a === '--files') {
+      targetFiles = args[++i] || targetFiles;
+    } else if (a === '-r' || a === '--rationale') {
+      rationale = args[++i] || rationale;
+    } else if (a === '-d' || a === '--desc' || a === '--description') {
+      description = args[++i] || description;
+    } else if (!a.startsWith('-')) {
+      if (!title) {
+        title = a;
+      }
+    }
+  }
+
+  if (!title) {
+    if (process.stdin.isTTY) {
+      title = await askQuestion('? Change title: ');
+    }
+  }
+
+  if (!title) {
+    console.error('❌ Error: A title is required to log an upstream change.');
+    console.error('Usage: npx azcodr change "<title>" [-c Category] [-f Files] [-r Rationale] [-d Description]');
+    process.exit(1);
+  }
+
+  try {
+    const res = logChange({
+      title,
+      category,
+      targetFiles,
+      rationale,
+      description,
+      targetDir: process.cwd()
+    });
+    console.log(`\n✅ Upstream change logged to ${res.filePath}\n`);
+    process.exit(0);
+  } catch (err) {
+    console.error(`\n❌ Failed to log change: ${err.message}\n`);
+    process.exit(1);
+  }
+}
+
 async function main() {
+  if (args.length > 0 && (args[0] === '-h' || args[0] === '--help')) {
+    printHelp();
+    process.exit(0);
+  }
+
+  if (args.length > 0 && (args[0] === '-v' || args[0] === '--version')) {
+    printVersion();
+    process.exit(0);
+  }
+
+  if (args.length > 0 && (args[0] === 'change' || args[0] === 'log-change')) {
+    await handleLogChange();
+    return;
+  }
+
   let targetDir = null;
   let force = false;
   let noGit = false;
@@ -127,6 +204,7 @@ async function main() {
     console.log('  ✅ Progressive disclosure rules copied (docs/rules/)');
     console.log('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
     console.log('  ✅ Specialized agentic skills copied (.agents/skills/)');
+    console.log('  ✅ Upstream changes ledger initialized (changes.md)');
     console.log('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md)');
     if (result.gitInitialized) {
       console.log('  ✅ Git repository initialized');
