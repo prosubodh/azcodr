@@ -41,3 +41,10 @@ When an AI agent or engineer discovers a generic architectural improvement, bug 
 - **Rationale:** Fulfill 100.00% test coverage mandate, cross-platform CI matrix, and library type safety
 - **Description:** Remediate gap assessment findings: add --dry-run and --silent flags, enforce 100.00% line/branch/function coverage gates, add GitHub Actions CI matrix across Node 18/20/22/24 and Linux/macOS/Windows, add .editorconfig template item, and export ambient TypeScript typings.
 - **Domain Filter Verification:** Verified 100% generic; purged of all project-specific business entities and models.
+
+### [2026-09-25] Resolve macOS/Windows Git Case-Collision and Cross-Version CI Matrix Coverage
+- **Category:** Infrastructure & CI
+- **Target File(s):** .gitignore, lib/scaffold.js, scripts/test_coverage.js, validate_agentic_configs.sh
+- **Rationale:** Ensure flawless cross-platform and multi-version Node execution across macOS, Windows, and Linux on Node 18, 20, 22, 24.
+- **Description:** Untracked agents.md from Git to prevent cyclic symlink overwrite on case-insensitive filesystems; hardened ensureSymlink with isSameCaseInsensitiveFile check; added cross-version test coverage runner script; updated npm test runner to use native discovery.
+- **Domain Filter Verification:** Verified 100% generic; purged of all project-specific business entities and models.

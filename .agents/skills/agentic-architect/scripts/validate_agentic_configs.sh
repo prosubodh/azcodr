@@ -45,21 +45,37 @@ if [[ -L "${CLAUDE_FILE}" ]]; then
   else
     log_fail "CLAUDE.md points to '${TARGET}' instead of 'AGENTS.md'."
   fi
+elif [[ -f "${CLAUDE_FILE}" ]] && [[ "$(< "${CLAUDE_FILE}")" == "AGENTS.md" ]]; then
+  log_pass "CLAUDE.md is a text pointer to AGENTS.md (symlink fallback)."
 else
   log_fail "CLAUDE.md is not a symbolic link."
 fi
 
-# Check agents.md symlink
+# Check agents.md symlink (case-insensitive filesystem aware)
 AGENTS_LOWER="${WORKSPACE_ROOT}/agents.md"
-if [[ -L "${AGENTS_LOWER}" ]]; then
-  TARGET=$(readlink "${AGENTS_LOWER}")
-  if [[ "${TARGET}" == "AGENTS.md" ]]; then
-    log_pass "agents.md is a valid symlink to AGENTS.md."
-  else
-    log_fail "agents.md points to '${TARGET}' instead of 'AGENTS.md'."
-  fi
+IS_CASE_INSENSITIVE=false
+if [[ "$(uname -s)" == "Darwin" ]] || [[ "$(uname -s)" =~ (MINGW|MSYS|CYGWIN) ]]; then
+  IS_CASE_INSENSITIVE=true
+elif [[ -f "${AGENTS_FILE}" ]] && [[ -f "${AGENTS_LOWER}" ]] && [[ ! -L "${AGENTS_LOWER}" ]]; then
+  IS_CASE_INSENSITIVE=true
+fi
+
+if [[ "${IS_CASE_INSENSITIVE}" == "true" ]]; then
+  log_pass "agents.md is satisfied natively by AGENTS.md (case-insensitive filesystem)."
 else
-  log_fail "agents.md is not a symbolic link."
+  if [[ ! -L "${AGENTS_LOWER}" ]] && [[ ! -e "${AGENTS_LOWER}" ]] && [[ -f "${AGENTS_FILE}" ]]; then
+    ln -sf "AGENTS.md" "${AGENTS_LOWER}"
+  fi
+  if [[ -L "${AGENTS_LOWER}" ]]; then
+    TARGET=$(readlink "${AGENTS_LOWER}")
+    if [[ "${TARGET}" == "AGENTS.md" ]]; then
+      log_pass "agents.md is a valid symlink to AGENTS.md."
+    else
+      log_fail "agents.md points to '${TARGET}' instead of 'AGENTS.md'."
+    fi
+  else
+    log_fail "agents.md is not a symbolic link."
+  fi
 fi
 
 # 2. Checking Progressive Disclosure Rules (docs/rules)

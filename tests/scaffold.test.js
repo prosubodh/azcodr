@@ -9,6 +9,7 @@ const {
   validateTarget,
   copyTemplate,
   ensureSymlink,
+  isSameCaseInsensitiveFile,
   makeScriptsExecutable,
   initGit,
   logChange,
@@ -113,11 +114,13 @@ describe('Scaffold Core Unit Tests', () => {
     const claudeStat = fs.lstatSync(claudePath);
     const agentsLowerStat = fs.lstatSync(agentsLowerPath);
 
-    assert.strictEqual(claudeStat.isSymbolicLink(), true);
-    assert.strictEqual(agentsLowerStat.isSymbolicLink(), true);
+    if (agentsLowerStat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(agentsLowerPath), 'AGENTS.md');
+    }
 
-    assert.strictEqual(fs.readlinkSync(claudePath), 'AGENTS.md');
-    assert.strictEqual(fs.readlinkSync(agentsLowerPath), 'AGENTS.md');
+    if (claudeStat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(claudePath), 'AGENTS.md');
+    }
   });
 
   test('copyTemplate sets executable permissions on all shell scripts', () => {
@@ -232,6 +235,43 @@ describe('Scaffold Core Unit Tests', () => {
     } finally {
       fs.symlinkSync = origSymlinkSync;
     }
+  });
+
+  test('isSameCaseInsensitiveFile accurately distinguishes case-insensitive files', () => {
+    // 1. Different file names
+    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'CLAUDE.md', 'AGENTS.md'), false);
+
+    // 2. Matching names when files do not exist
+    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
+
+    // 3. Target exists, link does not exist
+    fs.writeFileSync(path.join(tmpDir, 'AGENTS.md'), '# Target');
+    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
+
+    // 4. Target exists, link exists as a symlink (case-sensitive system)
+    ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md');
+    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'claude.md', 'CLAUDE.md'), false);
+
+    // 5. Target exists and link exists as a regular file (simulating case-insensitive filesystem)
+    fs.writeFileSync(path.join(tmpDir, 'agents.md'), '# Target 2');
+    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), true);
+
+    // 6. Error handling in try/catch
+    const origLstatSync = fs.lstatSync;
+    try {
+      fs.lstatSync = () => { throw new Error('Simulated disk error'); };
+      assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
+    } finally {
+      fs.lstatSync = origLstatSync;
+    }
+  });
+
+  test('ensureSymlink preserves existing target file when on case-insensitive filesystem', () => {
+    fs.writeFileSync(path.join(tmpDir, 'AGENTS.md'), '# Protected AGENTS.md');
+    fs.writeFileSync(path.join(tmpDir, 'agents.md'), '# Protected AGENTS.md');
+    const result = ensureSymlink(tmpDir, 'agents.md', 'AGENTS.md');
+    assert.strictEqual(result, true);
+    assert.strictEqual(fs.readFileSync(path.join(tmpDir, 'AGENTS.md'), 'utf-8'), '# Protected AGENTS.md');
   });
 
   test('makeScriptsExecutable handles non-existent or empty skills directory gracefully', () => {

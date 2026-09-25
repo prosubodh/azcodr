@@ -109,6 +109,15 @@ export function ensureSymlink(
 ): boolean;
 
 /**
+ * Detects whether linkName and targetFileName refer to the same entry on a case-insensitive filesystem.
+ */
+export function isSameCaseInsensitiveFile(
+  targetDir: string,
+  linkName: string,
+  targetFileName: string
+): boolean;
+
+/**
  * Ensures all bash scripts in skill directories have executable permissions (0o755).
  */
 export function makeScriptsExecutable(targetDir: string, dryRun?: boolean): string[];
@@ -134,6 +143,7 @@ declare const defaultExport: {
   validateTarget: typeof validateTarget;
   copyTemplate: typeof copyTemplate;
   ensureSymlink: typeof ensureSymlink;
+  isSameCaseInsensitiveFile: typeof isSameCaseInsensitiveFile;
   makeScriptsExecutable: typeof makeScriptsExecutable;
   initGit: typeof initGit;
   getTemplateDir: typeof getTemplateDir;

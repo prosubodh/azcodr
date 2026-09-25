@@ -18,3 +18,6 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+
+# Case-insensitive filesystem parity (agents.md is generated/symlinked on Linux, native on macOS/Windows)
+agents.md
