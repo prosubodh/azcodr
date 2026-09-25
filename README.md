@@ -38,11 +38,10 @@
 ├── docs/
 │   ├── knowledge/                    # Institutional knowledge & domain contracts
 │   │   └── ubiquitous_language.md    # Living Ubiquitous Language glossary template
-│   └── rules/                        # 45 atomic single-responsibility domain rules
+│   └── rules/                        # 44 atomic single-responsibility domain rules
 ├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
 ├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity
 ├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity
-├── changes.md                        # Upstream changes ledger
 ├── memory.md                         # Master memory hub & Lightweight ADR ledger
 └── README.md                         # Project documentation
 ```
@@ -51,7 +50,7 @@
 
 ## 📋 Progressive Disclosure Rules Catalog (`docs/rules/`)
 
-The architecture enforces 45 atomic, single-responsibility domain rules. Read on demand to prevent prompt context bloat:
+The architecture enforces 44 atomic, single-responsibility domain rules. Read on demand to prevent prompt context bloat:
 
 | Domain | Rule Reference File | Key Focus & Invariants |
 |---|---|---|
@@ -99,7 +98,6 @@ The architecture enforces 45 atomic, single-responsibility domain rules. Read on
 | **Relentless Questioning** | [`relentless_questioning.md`](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [`continuous_learning.md`](./docs/rules/continuous_learning.md) | Direct 4-step rule ingestion, root-cause analysis, dynamic invariant updates. |
-| **Upstream Sync** | [`upstream_synchronization.md`](./docs/rules/upstream_synchronization.md) | Logging generic architecture improvements to changes.md; zero baseline pollution. |
 
 ---
 
@@ -167,4 +165,3 @@ Once confirmed, the agent automatically executes:
 
 - 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative domain vocabulary contract.
 - 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records and governing rules.
-- 📝 **[Upstream Changes Ledger](./changes.md)**: Record candidate improvements and generic patterns for the upstream azcodr template.

@@ -4,7 +4,7 @@
 const path = require('node:path');
 const readline = require('node:readline');
 const fs = require('node:fs');
-const { scaffold, logChange, getTemplateDir } = require('../lib/scaffold.js');
+const { scaffold, getTemplateDir } = require('../lib/scaffold.js');
 const pkg = require('../package.json');
 
 function printHelp(out = console.log) {
@@ -14,13 +14,11 @@ Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
 
 Usage:
   npx azcodr [directory] [options]
-  npx azcodr change <title> [options]
 
 Commands:
   [directory]     Scaffold azcodr template into directory (default: current directory)
-  change <title>  Log a generic architectural change to changes.md
 
-Scaffold Options:
+Options:
   -d, --dry-run   Simulate scaffolding without modifying filesystem
   -s, --silent    Suppress console output messages
   -f, --force     Overwrite existing files in target directory without confirmation
@@ -28,17 +26,10 @@ Scaffold Options:
   -v, --version   Display version number
   -h, --help      Display this help message
 
-Change Options:
-  -c, --category  Category (Architecture | Rule | Skill | Infrastructure | CLI | Knowledge Hub)
-  -f, --files     Target file(s) affected (e.g. "docs/rules/caching.md")
-  -r, --rationale Rationale for upstream template incorporation
-  -d, --desc      Detailed description of the change
-
 Examples:
   npx azcodr my-project
   npx azcodr . --dry-run
   npx azcodr . --force
-  npx azcodr change "Add Wasm plugin interface" -c Architecture
 `);
 }
 
@@ -67,70 +58,6 @@ function askQuestion(query, { input = process.stdin, output = process.stdout } =
   });
 }
 
-async function handleLogChange(rawArgs = process.argv.slice(2), io = {}) {
-  const {
-    out = console.log,
-    err = console.error,
-    exit = process.exit,
-    stdin = process.stdin,
-    stdout = process.stdout,
-    cwd = process.cwd(),
-    logChange: logChangeFn = logChange
-  } = io;
-
-  let title = null;
-  let category = 'Architecture';
-  let targetFiles = 'docs/rules/';
-  let rationale = 'Generic architectural enhancement';
-  let description = '';
-
-  for (let i = 1; i < rawArgs.length; i++) {
-    const a = rawArgs[i];
-    if (a === '-c' || a === '--category') {
-      category = rawArgs[++i] || category;
-    } else if (a === '-f' || a === '--files') {
-      targetFiles = rawArgs[++i] || targetFiles;
-    } else if (a === '-r' || a === '--rationale') {
-      rationale = rawArgs[++i] || rationale;
-    } else if (a === '-d' || a === '--desc' || a === '--description') {
-      description = rawArgs[++i] || description;
-    } else if (a.startsWith('-')) {
-      err(`❌ Error: Unknown argument '${a}'. Run 'npx azcodr --help' for available options.`);
-      return exit(1);
-    } else if (!title) {
-      title = a;
-    }
-  }
-
-  if (!title) {
-    if (stdin.isTTY) {
-      title = await askQuestion('? Change title: ', { input: stdin, output: stdout });
-    }
-  }
-
-  if (!title) {
-    err('❌ Error: A title is required to log an upstream change.');
-    err('Usage: npx azcodr change "<title>" [-c Category] [-f Files] [-r Rationale] [-d Description]');
-    return exit(1);
-  }
-
-  try {
-    const res = logChangeFn({
-      title,
-      category,
-      targetFiles,
-      rationale,
-      description,
-      targetDir: cwd
-    });
-    out(`\n✅ Upstream change logged to ${res.filePath}\n`);
-    return exit(0);
-  } catch (error) {
-    err(`\n❌ Failed to log change: ${error.message}\n`);
-    return exit(1);
-  }
-}
-
 async function runCli(rawArgs = process.argv.slice(2), io = {}) {
   const {
     out = console.log,
@@ -142,10 +69,6 @@ async function runCli(rawArgs = process.argv.slice(2), io = {}) {
     templateDir = getTemplateDir(),
     scaffold: scaffoldFn = scaffold
   } = io;
-
-  if (rawArgs[0] === 'change' || rawArgs[0] === 'log-change') {
-    return handleLogChange(rawArgs, io);
-  }
 
   let targetDir = null;
   let force = false;
@@ -257,7 +180,6 @@ async function runCli(rawArgs = process.argv.slice(2), io = {}) {
       out('  ✅ Progressive disclosure rules copied (docs/rules/)');
       out('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
       out('  ✅ Specialized agentic skills copied (.agents/skills/)');
-      out('  ✅ Upstream changes ledger initialized (changes.md)');
       out('  ✅ Editor formatting standards initialized (.editorconfig)');
       out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md)');
       if (result.gitInitialized) {
@@ -294,7 +216,6 @@ if (require.main === module) {
 
 module.exports = {
   runCli,
-  handleLogChange,
   askQuestion,
   printHelp,
   printVersion,

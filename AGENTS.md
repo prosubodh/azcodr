@@ -100,7 +100,6 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
 | **Workspace Isolation** | [docs/rules/workspace_isolation.md](./docs/rules/workspace_isolation.md) | Strict workspace sovereignty, zero global contamination, local ground truth. |
 | **Continuous Learning** | [docs/rules/continuous_learning.md](./docs/rules/continuous_learning.md) | Direct rule ingestion, root-cause analysis, dynamic invariant updates. |
-| **Upstream Sync** | [docs/rules/upstream_synchronization.md](./docs/rules/upstream_synchronization.md) | Logging generic architecture improvements to changes.md; zero baseline pollution. |
 ---
 
 ## 4. Agent Configuration & Workspace Architecture

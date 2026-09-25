@@ -8,7 +8,6 @@
 
 - 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative, single-name domain vocabulary contract.
 - 📜 **[Lightweight ADR Master Index](#adr-master-index)**: Summary of all architectural decisions and direct links to governing rules.
-- 📝 **[Upstream Changes Ledger](./changes.md)**: Ledger of candidate improvements and generic patterns for upstream azcodr.
 
 ---
 
@@ -34,6 +33,7 @@
 | **ADR-015** | Problem-First Architecture, Topology Scaffolding, Tipping Points & Nano-TDD | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`lets-build`](./.agents/skills/lets-build/SKILL.md) |
 | **ADR-016** | Elimination of Static Markdown Knowledge Graph | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`continuous_learning.md`](./docs/rules/continuous_learning.md) |
 | **ADR-017** | Progressive Rules Consolidation (DDD & GoF Patterns) | 2026-09-25 | ACCEPTED | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`design_patterns.md`](./docs/rules/design_patterns.md) |
+| **ADR-018** | Elimination of Upstream Changes Ledger and Sync Tooling | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) |
 
 
 ---
@@ -142,4 +142,14 @@
   2. Consolidate the 23 Gang of Four patterns catalog directly into [`design_patterns.md`](./docs/rules/design_patterns.md). Delete redundant `gof_design_patterns_reference.md`.
   3. Streamline rule catalog across `AGENTS.md` and `README.md` to 45 lean, single-responsibility, non-overlapping rules.
 - **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`design_patterns.md`](./docs/rules/design_patterns.md).
+
+#### ADR-018: Elimination of Upstream Changes Ledger and Upstream Sync Tooling
+- **Date:** 2026-09-25 | **Status:** ACCEPTED
+- **Context:** Maintaining a manual `changes.md` ledger duplicated state already captured across Git commit history and formal ADR records in `memory.md`. Furthermore, scaffolding `changes.md` into downstream derived projects contaminated them with meta-tooling baggage about the upstream template, violating Problem-First Architecture and Workspace Sovereignty. Accompanying CLI subcommands (`npx azcodr change`) and rule files (`upstream_synchronization.md`) added over 200 lines of accidental maintenance complexity.
+- **Decision:**
+  1. Permanently delete `changes.md` and retire `docs/rules/upstream_synchronization.md`.
+  2. Remove `changes.md` from scaffolded `TEMPLATE_ITEMS` and package manifests.
+  3. Purge `logChange` functions, types, and CLI subcommands, restoring `azcodr` CLI as a clean, single-purpose project bootstrapper.
+  4. Standardize exclusively on Git commits for historical revision logs and `memory.md` for architectural decision records.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`lib/scaffold.js`](./lib/scaffold.js), [`bin/azcodr.js`](./bin/azcodr.js), [`memory.md`](./memory.md).
 

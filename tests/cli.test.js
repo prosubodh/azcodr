@@ -10,7 +10,6 @@ const CLI_PATH = path.resolve(__dirname, '..', 'bin', 'azcodr.js');
 const PKG_PATH = path.resolve(__dirname, '..', 'package.json');
 const {
   runCli,
-  handleLogChange,
   askQuestion,
   printHelp,
   printVersion,
@@ -43,7 +42,6 @@ function createMockIo(options = {}) {
     cwd: options.cwd || process.cwd(),
     templateDir: options.templateDir,
     scaffold: options.scaffold,
-    logChange: options.logChange,
     get stdoutLogs() { return stdoutLogs; },
     get stderrLogs() { return stderrLogs; },
     get exitCode() { return exitCode; }
@@ -102,7 +100,6 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'CLAUDE.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'agents.md')), true);
-    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'changes.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.editorconfig')), true);
 
     const validatorScript = path.join(
@@ -197,69 +194,6 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'foo.txt')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
   });
-
-  test('CLI logs an upstream change into changes.md via change command', () => {
-    const output = execFileSync(
-      process.execPath,
-      [
-        CLI_PATH,
-        'change',
-        'Add gRPC streaming rule',
-        '-c', 'Rule',
-        '-f', 'docs/rules/grpc.md',
-        '-r', 'Support bidirectional streams',
-        '-d', 'Comprehensive bidirectional gRPC streaming guidelines'
-      ],
-      {
-        cwd: tmpDir,
-        encoding: 'utf-8'
-      }
-    );
-
-    assert.match(output, /Upstream change logged to/i);
-    const changesFile = path.join(tmpDir, 'changes.md');
-    assert.strictEqual(fs.existsSync(changesFile), true);
-    const content = fs.readFileSync(changesFile, 'utf-8');
-    assert.match(content, /Add gRPC streaming rule/);
-    assert.match(content, /Category:\*\* Rule/);
-    assert.match(content, /Target File\(s\):\*\* docs\/rules\/grpc\.md/);
-    assert.match(content, /Rationale:\*\* Support bidirectional streams/);
-    assert.match(content, /Description:\*\* Comprehensive bidirectional gRPC/);
-  });
-
-  test('CLI change command rejects unknown arguments with exit code 1', () => {
-    assert.throws(
-      () => {
-        execFileSync(process.execPath, [CLI_PATH, 'change', 'Some Title', '--bogus'], {
-          cwd: tmpDir,
-          encoding: 'utf-8',
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
-      },
-      (error) => {
-        assert.match(error.stderr || error.stdout, /Unknown argument '--bogus'/);
-        assert.strictEqual(error.status, 1);
-        return true;
-      }
-    );
-  });
-
-  test('CLI change command fails when title is missing in non-interactive mode', () => {
-    assert.throws(
-      () => {
-        execFileSync(process.execPath, [CLI_PATH, 'change'], {
-          cwd: tmpDir,
-          encoding: 'utf-8',
-          stdio: ['pipe', 'pipe', 'pipe']
-        });
-      },
-      (error) => {
-        assert.match(error.stderr || error.stdout, /A title is required/);
-        assert.strictEqual(error.status, 1);
-        return true;
-      }
-    );
-  });
 });
 
 describe('CLI In-Process Unit Tests & Branch Coverage', () => {
@@ -302,71 +236,6 @@ describe('CLI In-Process Unit Tests & Branch Coverage', () => {
     assert.strictEqual(answer, '');
   });
 
-  test('handleLogChange prompts for title in TTY when title argument is omitted', async () => {
-    const io = createMockIo({
-      cwd: tmpDir,
-      isTTY: true,
-      stdin: Readable.from(['Interactive Title\n'])
-    });
-
-    await handleLogChange(['change', '--category', 'Skill'], io);
-    assert.strictEqual(io.exitCode, 0);
-    const content = fs.readFileSync(path.join(tmpDir, 'changes.md'), 'utf-8');
-    assert.match(content, /Interactive Title/);
-    assert.match(content, /Category:\*\* Skill/);
-  });
-
-  test('handleLogChange fails when title prompt produces empty string in TTY', async () => {
-    const io = createMockIo({
-      cwd: tmpDir,
-      isTTY: true,
-      stdin: Readable.from(['   \n'])
-    });
-
-    await handleLogChange(['change'], io);
-    assert.strictEqual(io.exitCode, 1);
-    assert.match(io.stderrLogs[0], /A title is required/);
-  });
-
-  test('handleLogChange supports --description flag', async () => {
-    const io = createMockIo({ cwd: tmpDir });
-    await handleLogChange(['change', 'Title with desc', '--description', 'Long detailed description'], io);
-    assert.strictEqual(io.exitCode, 0);
-    const content = fs.readFileSync(path.join(tmpDir, 'changes.md'), 'utf-8');
-    assert.match(content, /Long detailed description/);
-  });
-
-  test('handleLogChange supports --desc, --files, --category, and --rationale flags', async () => {
-    const io = createMockIo({ cwd: tmpDir });
-    await handleLogChange(
-      [
-        'change',
-        'Title with all flags',
-        '--category', 'Infrastructure',
-        '--files', 'docs/rules/cloud_native.md',
-        '--rationale', '12-factor alignment',
-        '--desc', 'Detailed desc'
-      ],
-      io
-    );
-    assert.strictEqual(io.exitCode, 0);
-    const content = fs.readFileSync(path.join(tmpDir, 'changes.md'), 'utf-8');
-    assert.match(content, /Category:\*\* Infrastructure/);
-    assert.match(content, /docs\/rules\/cloud_native\.md/);
-    assert.match(content, /12-factor alignment/);
-    assert.match(content, /Detailed desc/);
-  });
-
-  test('handleLogChange handles logChange failure gracefully', async () => {
-    const io = createMockIo({
-      cwd: '/root/forbidden-dir-test-' + Date.now()
-    });
-
-    await handleLogChange(['change', 'Will Fail'], io);
-    assert.strictEqual(io.exitCode, 1);
-    assert.match(io.stderrLogs[0], /Failed to log change:/);
-  });
-
   test('runCli responds to -h and -v', async () => {
     const ioHelp = createMockIo();
     await runCli(['-h'], ioHelp);
@@ -378,14 +247,6 @@ describe('CLI In-Process Unit Tests & Branch Coverage', () => {
     assert.strictEqual(ioVersion.exitCode, 0);
     const pkg = JSON.parse(fs.readFileSync(PKG_PATH, 'utf-8'));
     assert.strictEqual(ioVersion.stdoutLogs[0], pkg.version);
-  });
-
-  test('runCli delegates to logChange via log-change alias', async () => {
-    const io = createMockIo({ cwd: tmpDir });
-    await runCli(['log-change', 'Alias change test'], io);
-    assert.strictEqual(io.exitCode, 0);
-    const content = fs.readFileSync(path.join(tmpDir, 'changes.md'), 'utf-8');
-    assert.match(content, /Alias change test/);
   });
 
   test('runCli prompts for target directory in TTY when not supplied', async () => {

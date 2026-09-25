@@ -12,7 +12,6 @@ const {
   isSameCaseInsensitiveFile,
   makeScriptsExecutable,
   initGit,
-  logChange,
   getTemplateDir,
   TEMPLATE_ITEMS
 } = require('../lib/scaffold.js');
@@ -68,7 +67,6 @@ describe('Scaffold Core Unit Tests', () => {
 
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'memory.md')), true);
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'changes.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'README.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'docs', 'rules')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'skills')), true);
@@ -321,46 +319,7 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(typeof api.makeScriptsExecutable, 'function');
     assert.strictEqual(typeof api.initGit, 'function');
     assert.strictEqual(typeof api.getTemplateDir, 'function');
-    assert.strictEqual(typeof api.logChange, 'function');
     assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
-  });
-
-  test('logChange throws when title is missing or empty', () => {
-    assert.throws(() => logChange({ title: '' }), /A change title is required/);
-    assert.throws(() => logChange({}), /A change title is required/);
-  });
-
-  test('logChange creates changes.md if not existing and logs entry', () => {
-    const res = logChange({
-      title: 'Add support for SQLite WAL mode',
-      category: 'Database',
-      targetFiles: 'docs/rules/database_transactions.md',
-      rationale: 'Prevent database lockups under concurrent reads',
-      description: 'Document SQLite WAL pragma invariant',
-      targetDir: tmpDir
-    });
-
-    assert.strictEqual(res.success, true);
-    const content = fs.readFileSync(path.join(tmpDir, 'changes.md'), 'utf-8');
-    assert.match(content, /# Upstream Changes Ledger/);
-    assert.match(content, /Add support for SQLite WAL mode/);
-    assert.match(content, /Category:\*\* Database/);
-    assert.match(content, /docs\/rules\/database_transactions\.md/);
-  });
-
-  test('logChange appends to existing changes.md with defaults', () => {
-    fs.writeFileSync(path.join(tmpDir, 'changes.md'), '# Existing Header\n');
-
-    const res = logChange({
-      title: 'Generic Event Sourcing Pattern',
-      targetDir: tmpDir
-    });
-
-    assert.strictEqual(res.success, true);
-    const content = fs.readFileSync(path.join(tmpDir, 'changes.md'), 'utf-8');
-    assert.match(content, /# Existing Header/);
-    assert.match(content, /Generic Event Sourcing Pattern/);
-    assert.match(content, /Category:\*\* Architecture/);
   });
 });

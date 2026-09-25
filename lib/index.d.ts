@@ -31,30 +31,6 @@ export interface ScaffoldResult {
   actions: string[];
 }
 
-export interface LogChangeOptions {
-  /** Short title describing the architectural change */
-  title: string;
-  /** Category of change (Architecture | Rule | Skill | Infrastructure | CLI | Knowledge Hub) */
-  category?: string;
-  /** Target file(s) affected by the change */
-  targetFiles?: string;
-  /** Architectural rationale for upstream template incorporation */
-  rationale?: string;
-  /** Detailed description of the change */
-  description?: string;
-  /** Working directory containing changes.md (default: process.cwd()) */
-  targetDir?: string;
-}
-
-export interface LogChangeResult {
-  /** Whether the log entry was successfully recorded */
-  success: boolean;
-  /** Absolute path to changes.md */
-  filePath: string;
-  /** Markdown entry text that was appended */
-  entry: string;
-}
-
 export interface ValidateTargetOptions {
   /** Custom template root directory */
   templateDir?: string;
@@ -78,11 +54,6 @@ export interface CopyTemplateOptions {
  * High-level orchestration function to scaffold the azcodr workspace into targetDir.
  */
 export function scaffold(options?: ScaffoldOptions): ScaffoldResult;
-
-/**
- * Appends a standardized upstream change entry to changes.md.
- */
-export function logChange(options: LogChangeOptions): LogChangeResult;
 
 /**
  * Validates the target directory to ensure it is suitable for scaffolding.
@@ -139,7 +110,6 @@ export const TEMPLATE_ITEMS: readonly string[];
 
 declare const defaultExport: {
   scaffold: typeof scaffold;
-  logChange: typeof logChange;
   validateTarget: typeof validateTarget;
   copyTemplate: typeof copyTemplate;
   ensureSymlink: typeof ensureSymlink;
