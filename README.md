@@ -123,12 +123,13 @@ The architecture enforces 47 atomic, single-responsibility domain rules. Read on
 
 This repository serves as an **enterprise architectural starter template**. When beginning a new software project:
 
-### Step 1: Copy Workspace to New Project Folder
-Copy all files and directories from this template into your target project directory:
+### Step 1: Initialize Workspace with npx
+Pull and scaffold the complete enterprise architectural template into your project directory using `npx`:
 ```bash
-cp -r /path/to/azcodr /path/to/my-new-project
-cd /path/to/my-new-project
+npx azcodr my-new-project
+cd my-new-project
 ```
+*(Or run `npx azcodr` directly inside your target directory).*
 
 ### Step 2: Invoke the `/lets-build` Skill
 In your AI coding assistant (Google Antigravity, Claude Code, Cursor, or OpenHands), trigger the workflow:

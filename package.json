@@ -1,0 +1,49 @@
+{
+  "name": "azcodr",
+  "version": "1.0.0",
+  "description": "Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template",
+  "bin": {
+    "azcodr": "bin/azcodr.js"
+  },
+  "main": "./lib/index.js",
+  "files": [
+    "bin",
+    "lib",
+    "AGENTS.md",
+    "memory.md",
+    "README.md",
+    "docs",
+    ".agents",
+    ".gitignore",
+    "LICENSE"
+  ],
+  "keywords": [
+    "starter-template",
+    "agentic",
+    "multi-tenant",
+    "enterprise-architecture",
+    "scaffolding",
+    "ai-coding",
+    "agents",
+    "npx"
+  ],
+  "author": "Subodh Khanal <prosubodh+git@gmail.com>",
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/prosubodh/azcodr.git"
+  },
+  "bugs": {
+    "url": "https://github.com/prosubodh/azcodr/issues"
+  },
+  "homepage": "https://github.com/prosubodh/azcodr#readme",
+  "engines": {
+    "node": ">=18.0.0"
+  },
+  "scripts": {
+    "test": "node --test tests/**/*.test.js",
+    "test:coverage": "node --test --experimental-test-coverage tests/**/*.test.js",
+    "validate": "bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh",
+    "prepublishOnly": "npm test && npm run validate"
+  }
+}
