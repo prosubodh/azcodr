@@ -48,7 +48,7 @@ A MAJOR version bump and a new URI prefix (`/api/v2/`) are triggered whenever ex
 ### B. MINOR Bump (`1.0.x` ➔ `1.1.0`) — Additive, Backward-Compatible
 A MINOR version bump preserves the `/api/v1/` URI path and updates the contract specification:
 
-1. Adding completely new endpoints or resources (e.g., adding `POST /api/v1/leases/:id/signatures`).
+1. Adding completely new endpoints or resources (e.g., adding `POST /api/v1/documents/:id/signatures`).
 2. Adding new optional query parameters, headers, or request body fields.
 3. Adding new fields to response payloads (clients must follow Postel's Law / Tolerant Reader pattern).
 4. Adding new enum values to input requests if the service handles them gracefully without breaking old clients.

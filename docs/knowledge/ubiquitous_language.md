@@ -1,6 +1,6 @@
 # Living Ubiquitous Language Glossary Template
 
-> **Source of Truth:** Authoritative terminology dictionary binding domain concepts, business definitions, and exact code identifiers. Customize this glossary per project or import from a domain profile under `variants/`.
+> **Source of Truth:** Authoritative terminology dictionary binding domain concepts, business definitions, and exact code identifiers. Customize this glossary per project.
 
 ---
 

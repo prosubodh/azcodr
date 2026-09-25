@@ -99,7 +99,7 @@ Coding tasks and agentic skills exhibit an explicit **Many-to-Many ($M:N$) Relat
    - `product-analyst` (decomposes into INVEST user stories and executable Gherkin criteria).
    - `compliance-audit` (verifies OWASP, SOC 2, and data isolation controls).
    - `clean-code-refactor` (applies GoF patterns, CQS, SLAP, and eliminates code smells during the TDD inner loop).
-2. **Single Skill in Multiple Scenarios:** An atomic skill functions as a reusable capability across completely different business problems (e.g. `clean-code-refactor` applies equally to financial ledgers, lease lifecycle state machines, and authentication middleware).
+2. **Single Skill in Multiple Scenarios:** An atomic skill functions as a reusable capability across completely different business problems (e.g. `clean-code-refactor` applies equally to financial ledgers, order lifecycle state machines, and authentication middleware).
 
 #### The 3 Composition Patterns:
 - **Pattern 1: Sequential Pipeline Chaining (Workflow Composition):** Skill $A$ produces a structured artifact (e.g. Feature Alignment Spec) that serves as the direct input contract for Skill $B$ (e.g. Gherkin test suite generation).

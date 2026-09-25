@@ -4,15 +4,6 @@
 
 ---
 
-## Dimension 0: Project Baseline Archetype & Domain Variant Profile
-- **Architecture Profile:**
-  - **Generic Clean Baseline:** 100% domain-agnostic Hexagonal chassis with standard archetypes (`Entity`, `Aggregate`, `Resource`).
-  - **Domain Variant Profiles (`variants/`):** Pre-configured domain Ubiquitous Language, entity models, and specialized invariants:
-    - `variants/property-management/`: Multi-tenant property, unit, lease, renter, and ledger archetypes.
-    - Custom / User-Defined Variant: Author a new profile under `variants/<name>/`.
-
----
-
 ## Dimension 1: Architectural Paradigm & Monolith-to-Service Boundary
 - **System Topology:** Modular Monolith (Modulith), Event-Driven Architecture (EDA), Service-Oriented (SOA), or Microservices?
 - **Domain Decoupling:** Hexagonal Ports & Adapters, Clean Architecture, Onion Architecture, or Pragmatic Layered?

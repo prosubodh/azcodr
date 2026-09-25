@@ -12,7 +12,7 @@ Workspaces operate under a strict unidirectional and on-demand bidirectional flo
 [Upstream Generic Baseline: mvp]
                │
                ▼  (One-time fork / clone at project inception)
-[Derived Project Workspace: sthanori / others]
+[Derived Project Workspace: my-app / others]
                │
                │  (Accumulates project code, specificities, and institutional lessons)
                │
@@ -32,13 +32,13 @@ Workspaces operate under a strict unidirectional and on-demand bidirectional flo
 
 When merging knowledge, rules, or skills back to the baseline, enforce strict domain filtering:
 
-| Element Category | Keep in Specific Project (`sthanori`) | Allow in Generic Baseline (`mvp`) |
+| Element Category | Keep in Specific Project Workspace | Allow in Generic Baseline (`mvp`) |
 |---|---|---|
-| **Domain Entities** | Concrete business models (`Property`, `Unit`, `Lease`, `Payment`, etc.) | Abstract archetypes (`Entity`, `Aggregate`, `ValueObject`, `Resource`) |
+| **Domain Entities** | Concrete business models (`Order`, `Customer`, `Invoice`, `Account`, etc.) | Abstract archetypes (`Entity`, `Aggregate`, `ValueObject`, `Resource`) |
 | **Tech Stack / Adapters** | Concrete choices (Prisma, SQLite dev, PostgreSQL prod, Vite React) | Hexagonal Ports, abstract repository contracts, polyglot adapter guidance |
 | **Architectural Rules** | Specific entity validation, specific route paths | Universal invariants (5-Phase Agile Lifecycle, SemVer trigger matrix, FK dropdowns) |
-| **ADRs** | Stack decisions (`ADR-006: Target Tech Stack for RPMS`) | Generic architecture patterns (`ADR-007` to `ADR-010`) |
-| **Test Suites** | Concrete domain tests (`lease_domain.test.ts`, 64 RPMS tests) | Boundary smoke test pattern (`scripts/smoke_test.sh`), 100% coverage gate |
+| **ADRs** | Stack decisions (`ADR-006: Target Tech Stack for Project`) | Generic architecture patterns (`ADR-007` to `ADR-010`) |
+| **Test Suites** | Concrete domain tests (`order_domain.test.ts`, domain-specific suites) | Boundary smoke test pattern (`scripts/smoke_test.sh`), 100% coverage gate |
 
 ---
 

@@ -42,36 +42,35 @@ Progress through five mandatory stages:
 ### Phase 2: Interrogate (The Relentless Architecture Interview)
 Do NOT guess or assume any technology or stack choice. Execute the relentless interrogation using [references/architecture_interview_matrix.md](./references/architecture_interview_matrix.md). Group questions logically into digestible batches:
 
-#### Batch 1: Archetype, Domain, Scale & Language
-1. **Baseline Archetype vs Variant Profile (Dimension 0):** Initialize from a Generic Clean Baseline, or select an existing domain profile from `variants/` (e.g. `property-management`), or author a custom domain variant?
-2. **Domain & Problem Statement:** What is the business problem, expected scale (RPS, active tenants), and compliance requirements (SOC 2, ISO 27001, GDPR)?
-3. **Primary Programming Language & Runtime:** Go, Rust, Python, TypeScript, Java/Kotlin, C#, or Polyglot microservices?
-4. **Package Manager & Toolchain:** Specific package manager (e.g. `uv` vs `poetry`, `cargo`, `pnpm`, `go modules`) and task runner?
+#### Batch 1: Domain, Performance & Language
+1. **Domain & Problem Statement:** What is the business problem, expected scale (RPS, active tenants), and compliance requirements (SOC 2, ISO 27001, GDPR)?
+2. **Primary Programming Language & Runtime:** Go, Rust, Python, TypeScript, Java/Kotlin, C#, or Polyglot microservices?
+3. **Package Manager & Toolchain:** Specific package manager (e.g. `uv` vs `poetry`, `cargo`, `pnpm`, `go modules`) and task runner?
 
 #### Batch 2: Transports, Protocols & Persistence
-5. **Transport & Network:** REST (OpenAPI 3.1), gRPC (Protobuf v3 via `buf`), GraphQL, or Event-Driven? Which web/transport framework?
-6. **Database & Storage Engine:** Relational (PostgreSQL, MySQL, CockroachDB, SQLite) vs Document (MongoDB) vs Hybrid? ORM vs Query Builder vs raw SQL? Canonical 6 Total Audit Fields?
-7. **Database Migration Tooling:** Declarative migrations (**Atlas**) vs versioned SQL (**Flyway**, **Liquibase**, **Goose**)?
-8. **Multi-Tenancy Isolation Model:** AST query interceptor, Database RLS, Schema-per-tenant, or Database-per-tenant?
-9. **Dynamic Schemas & Extensibility:** Universal **JSON Schema Draft 2020-12** in semi-structured columns, EAV, or virtual columns?
+4. **Transport & Network:** REST (OpenAPI 3.1), gRPC (Protobuf v3 via `buf`), GraphQL, or Event-Driven? Which web/transport framework?
+5. **Database & Storage Engine:** Relational (PostgreSQL, MySQL, CockroachDB, SQLite) vs Document (MongoDB) vs Hybrid? ORM vs Query Builder vs raw SQL? Canonical 6 Total Audit Fields?
+6. **Database Migration Tooling:** Declarative migrations (**Atlas**) vs versioned SQL (**Flyway**, **Liquibase**, **Goose**)?
+7. **Multi-Tenancy Isolation Model:** AST query interceptor, Database RLS, Schema-per-tenant, or Database-per-tenant?
+8. **Dynamic Schemas & Extensibility:** Universal **JSON Schema Draft 2020-12** in semi-structured columns, EAV, or virtual columns?
 
 #### Batch 3: Pluggable Logic, Security & Identity
-10. **Dynamic Business Logic:** Common Expression Language (CEL), GoF Strategy registries, or WebAssembly (Extism) sandboxes?
-11. **Workflow Orchestration:** Temporal.io durable execution vs Camunda/Zeebe (BPMN 2.0) vs statecharts?
-12. **Authentication & Identity:** OIDC, OAuth 2.1 with PKCE, Passkeys (FIDO2/WebAuthn), PASETO, or JWT with JWKS rotation?
-13. **Authorization Engine:** Open Policy Agent (OPA Rego via HTTP/Wasm), OpenFGA (Zanzibar ReBAC), or Cerbos?
+9. **Dynamic Business Logic:** Common Expression Language (CEL), GoF Strategy registries, or WebAssembly (Extism) sandboxes?
+10. **Workflow Orchestration:** Temporal.io durable execution vs Camunda/Zeebe (BPMN 2.0) vs statecharts?
+11. **Authentication & Identity:** OIDC, OAuth 2.1 with PKCE, Passkeys (FIDO2/WebAuthn), PASETO, or JWT with JWKS rotation?
+12. **Authorization Engine:** Open Policy Agent (OPA Rego via HTTP/Wasm), OpenFGA (Zanzibar ReBAC), or Cerbos?
 
 #### Batch 4: Presentation, Infrastructure & Quality
-14. **Frontend & Presentation:** Web (React/Vue/Svelte/Web Components), Mobile (Flutter/Native), Server-Driven UI (SDUI), and W3C DTCG Design Tokens?
-15. **Caching & Locks:** Redis, Valkey, Dragonfly, Memcached, or local LRU with XFetch stampede defense?
-16. **Event Streaming:** Apache Kafka, NATS JetStream, RabbitMQ, SQS, with Transactional Outbox?
-17. **Observability:** OpenTelemetry OTLP traces/metrics/logs over gRPC/HTTP with W3C trace context?
-18. **DevSecOps & Verification:** Semgrep SAST, Gitleaks, Trivy scanning, CycloneDX SBOM, Cosign, and Outside-In TDD (London School) with 100% coverage gates?
-19. **Containerization & Deployment:** Minimal OCI Distroless/Scratch, Docker Compose, Kubernetes, and OpenTofu IaC?
+13. **Frontend & Presentation:** Web (React/Vue/Svelte/Web Components), Mobile (Flutter/Native), Server-Driven UI (SDUI), and W3C DTCG Design Tokens?
+14. **Caching & Locks:** Redis, Valkey, Dragonfly, Memcached, or local LRU with XFetch stampede defense?
+15. **Event Streaming:** Apache Kafka, NATS JetStream, RabbitMQ, SQS, with Transactional Outbox?
+16. **Observability:** OpenTelemetry OTLP traces/metrics/logs over gRPC/HTTP with W3C trace context?
+17. **DevSecOps & Verification:** Semgrep SAST, Gitleaks, Trivy scanning, CycloneDX SBOM, Cosign, and Outside-In TDD (London School) with 100% coverage gates?
+18. **Containerization & Deployment:** Minimal OCI Distroless/Scratch, Docker Compose, Kubernetes, and OpenTofu IaC?
 
 #### Batch 5: Lifecycles, State Machines & Ubiquitous Language
-20. **State Invariant Separation:** Core Invariant States (Hard FSM in Aggregate Root) vs Tenant-Configurable Operational Workflow Stages (Soft FSM via transition matrices and CEL guards)?
-21. **Ubiquitous Language Agreement:** Living glossary contract (`ubiquitous_language.md`) with AST linter denylists and branded nominal types?
+19. **State Invariant Separation:** Core Invariant States (Hard FSM in Aggregate Root) vs Tenant-Configurable Operational Workflow Stages (Soft FSM via transition matrices and CEL guards)?
+20. **Ubiquitous Language Agreement:** Living glossary contract (`ubiquitous_language.md`) with AST linter denylists and branded nominal types?
 
 ---
 
