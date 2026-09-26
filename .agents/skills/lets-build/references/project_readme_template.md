@@ -74,6 +74,6 @@ cp .env.example .env
 
 ## 🏛️ Architecture Governance & Decisions
 
-This project is governed by the **28 Cohesive Domain Rules** located in [`docs/rules/`](./docs/rules/) and Architectural Decision Records in [`memory.md`](./memory.md):
-- **ADR Ledger:** See [`memory.md`](./memory.md) for ADR-001 through ADR-006.
-- **Architectural Rules:** See [`docs/rules/`](./docs/rules/) for TDD, Clean Code, Multi-Tenancy, Database Integrity, and DevSecOps directives.
+This project is governed by the **28 Cohesive Domain Rules** located in `docs/rules/` and Architectural Decision Records in `memory.md`:
+- **ADR Ledger:** See `memory.md` for project-specific Architectural Decision Records.
+- **Architectural Rules:** See `docs/rules/` for TDD, Clean Code, Multi-Tenancy, Database Design, and DevSecOps directives.

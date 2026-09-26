@@ -167,7 +167,74 @@ else
   log_pass "Validated ${SKILL_COUNT} skills in .agents/skills/."
 fi
 
-# 4. Summary Output
+# 4. Checking Markdown Internal Links & Cross-References
+echo ""
+echo "4. Checking Markdown Internal Links & Cross-References..."
+LINK_CHECK_RAW=$(node -e '
+const fs = require("fs");
+const path = require("path");
+
+const root = process.argv[1];
+const broken = [];
+let totalLinks = 0;
+
+function walk(dir) {
+  const entries = fs.readdirSync(dir, { withFileTypes: true });
+  for (const entry of entries) {
+    if (entry.name === ".git" || entry.name === "node_modules") continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) {
+      walk(full);
+    } else if (entry.isFile() && entry.name.endsWith(".md")) {
+      checkFile(full);
+    }
+  }
+}
+
+function checkFile(filePath) {
+  const content = fs.readFileSync(filePath, "utf8");
+  const dir = path.dirname(filePath);
+  const regex = /\[([^\]]+)\]\(([^)]+)\)/g;
+  let match;
+  while ((match = regex.exec(content)) !== null) {
+    const target = match[2].trim();
+    if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("mailto:") || target.startsWith("#") || target.startsWith("conversation://")) {
+      continue;
+    }
+    const cleanTarget = target.split("#")[0];
+    if (!cleanTarget) continue;
+    totalLinks++;
+    const resolved = path.normalize(path.join(dir, cleanTarget));
+    if (!fs.existsSync(resolved)) {
+      broken.push(`${path.relative(root, filePath)} -> ${target}`);
+    }
+  }
+}
+
+walk(root);
+if (broken.length > 0) {
+  console.log("BROKEN:" + broken.join("|"));
+  process.exit(1);
+} else {
+  console.log("OK:" + totalLinks);
+  process.exit(0);
+}
+' "${WORKSPACE_ROOT}" 2>&1) || true
+
+if [[ "${LINK_CHECK_RAW}" =~ ^OK:([0-9]+) ]]; then
+  TOTAL_LINKS="${BASH_REMATCH[1]}"
+  log_pass "Validated ${TOTAL_LINKS} internal links across workspace (0 broken links)."
+elif [[ "${LINK_CHECK_RAW}" =~ ^BROKEN:(.*) ]]; then
+  BROKEN_LIST="${BASH_REMATCH[1]}"
+  IFS='|' read -ra BROKEN_ITEMS <<< "${BROKEN_LIST}"
+  for item in "${BROKEN_ITEMS[@]}"; do
+    log_fail "Broken markdown link: ${item}"
+  done
+else
+  log_fail "Markdown link validation failed unexpectedly: ${LINK_CHECK_RAW}"
+fi
+
+# 5. Summary Output
 echo ""
 echo "--------------------------------------------------------------"
 if [[ ${ERRORS} -eq 0 ]]; then

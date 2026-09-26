@@ -54,6 +54,6 @@
     "test:coverage": "node scripts/test_coverage.js",
     "lint": "node --check bin/azcodr.js lib/index.js lib/scaffold.js tests/cli.test.js tests/scaffold.test.js scripts/test_coverage.js",
     "validate": "bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh",
-    "prepublishOnly": "npm run test:coverage && npm run validate"
+    "prepublishOnly": "npm run lint && npm run test:coverage && npm run validate"
   }
 }

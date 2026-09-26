@@ -79,7 +79,7 @@ Inquire *only* into the dimensions relevant to the selected topology:
 
 ### Phase 3: Synthesize (Architecture Blueprint & User Sign-Off)
 1. Consolidate the user's answers into a formal **Consolidated Architectural Blueprint** (using Section 4 template).
-2. Author an Architectural Decision Record in `memory.md` (e.g. `ADR-006: Target Technology Stack & Scaffolding Baseline`).
+2. Author an Architectural Decision Record in `memory.md` (e.g. `ADR-025: Target Technology Stack & Scaffolding Baseline` or next sequential ADR).
 3. **STOP AND ASK FOR EXPLICIT CONFIRMATION**: Present the blueprint and ADR to the user. Do NOT write scaffolding code until the user approves the blueprint.
 
 ---
