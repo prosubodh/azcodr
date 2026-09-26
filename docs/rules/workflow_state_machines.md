@@ -4,7 +4,37 @@
 
 ---
 
-## 1. The Fallacy of Universal Configurability
+## 1. The YAGNI Gate: Simple Enums vs. State Machines
+
+State machine libraries, declarative transition matrices, and workflow orchestration engines introduce significant cognitive and operational weight. **Never build a state machine when a simple enum or boolean flag suffices.**
+
+```
+                     STATE MACHINE YAGNI GATE
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 1. SIMPLE BASELINE (Day 1)                                             │
+  │    • Discriminated union or enum column (e.g. status: 'PENDING'|'DONE')│
+  │    • Simple guard clause in aggregate method (`if (status !== 'A')`).  │
+  │    • Zero external state-machine libraries (no XState, Temporal, BPMN).│
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 2. ANTI-TRIGGERS (When State Machines are Strictly Forbidden)          │
+  │    • Binary lifecycle flags (`is_active`, `is_verified`, `archived`).   │
+  │    • Strict linear forward-only progressions without branching/rollback│
+  │    • Synchronous single-table mutations within one ACID transaction.   │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 3. THE TIPPING POINT (Graduation Threshold to Formal State Machines)   │
+  │    • Entity has 3+ non-linear states with branching transitions,       │
+  │      cancellations, or conditional rollbacks.                          │
+  │    • Transitions require multi-step side-effects (emitting domain      │
+  │      events, releasing authorizations, triggering webhooks).           │
+  │    • Business/regulatory rules mandate an immutable transition audit.  │
+  │    • Durable orchestration (Temporal) justified ONLY when transitions   │
+  │      depend on asynchronous multi-day human or external API callbacks. │
+  └────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. The Fallacy of Universal Configurability
 
 A common architectural anti-pattern is the **"Universal Workflow Fallacy"** (a variant of the *Inner Platform Effect*), which presumes that *every* status and state transition in a system should be dynamically configurable by end-users or tenants.
 
@@ -25,7 +55,7 @@ A common architectural anti-pattern is the **"Universal Workflow Fallacy"** (a v
 
 ---
 
-## 2. State Machine Architectural Patterns
+## 3. State Machine Architectural Patterns
 
 ### Pattern A: In-Aggregate State Machine (Hard Invariants)
 Model states as **Discriminated Unions** or the GoF **State Pattern** encapsulated inside the domain entity. Public mutations must be explicit domain actions:
@@ -82,7 +112,7 @@ When a state transition requires coordination across multiple aggregates or asyn
 
 ---
 
-## 3. Mandatory State Transition Audit Trail
+## 4. Mandatory State Transition Audit Trail
 
 Every state change across any entity or workflow MUST be immutably recorded in a transition log:
 

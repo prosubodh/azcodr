@@ -4,9 +4,36 @@
 
 ---
 
-## 1. Multi-Tenant Context Resolution
+## 1. The YAGNI Gate: Single-Tenant Baseline vs. Multi-Tenancy
 
-Resolve tenant identity dynamically in an inbound gateway or middleware pipeline in strict priority order:
+Multi-tenancy isolation introduces tenant context middleware, connection pool session variables, complex indexing, and severe cross-tenant data leak risks. **Never implement multi-tenancy isolation when the target system is single-tenant by topology or design.**
+
+```
+                 MULTI-TENANCY YAGNI GATE
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 1. SIMPLE BASELINE (Day 1)                                             │
+  │    • Standard single-tenant relational schema (no `tenant_id` column). │
+  │    • Zero context middleware, RLS policies, or tenant routers.         │
+  │    • Clean database transactions without session setting gymnastics.   │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 2. ANTI-TRIGGERS (When Multi-Tenancy Isolation is Forbidden)           │
+  │    • Local CLI tools, browser extensions, desktop apps, or games.      │
+  │    • Dedicated single-tenant deployments (isolated cloud container/DB).│
+  │    • Speculatively adding `tenant_id` to internal non-SaaS utilities.  │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 3. THE TIPPING POINT (Graduation Threshold to Multi-Tenancy)           │
+  │    • Cloud SaaS where multiple customer organizations or enterprise    │
+  │      accounts share the same underlying compute and database tier.     │
+  │    • Legal, SOC 2, or regulatory data isolation mandates across        │
+  │      multiple commercial tenants sharing a persistence layer.          │
+  └────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Multi-Tenant Context Resolution
+
+When the tipping point is reached, resolve tenant identity dynamically in an inbound gateway or middleware pipeline in strict priority order:
 1. **Host Subdomain**: `subdomain.app.com` (extracted via hostname regex).
 2. **Explicit Headers**: `X-Tenant-ID: <uuid>` or `X-Tenant-Slug: <slug>`.
 3. **Path Prefix**: `/t/:tenantSlug/...`.
@@ -18,7 +45,7 @@ Resolve tenant identity dynamically in an inbound gateway or middleware pipeline
 
 ---
 
-## 2. Four Universal Data Isolation Models
+## 3. Four Universal Data Isolation Models
 
 Never rely solely on application developers remembering to manually append `WHERE tenant_id = ?`. Standardize on one of four architectural isolation strategies:
 
@@ -62,7 +89,7 @@ Dedicated physical database instances per enterprise tenant, selected by a dynam
 
 ---
 
-## 3. Polyglot Adapter Interceptor Contract
+## 4. Polyglot Adapter Interceptor Contract
 
 Adapters in any language (Go, Rust, Python, Java, TypeScript) must expose an interceptor wrapping the data access layer:
 
@@ -82,7 +109,7 @@ Adapters in any language (Go, Rust, Python, Java, TypeScript) must expose an int
 
 ---
 
-## 4. Tenant Lifecycle Management
+## 5. Tenant Lifecycle Management
 
 - **Atomic Provisioning**: Tenant creation must run inside an atomic transaction (provision tenant record, seed default RBAC roles `ADMIN`/`MEMBER`, assign subscription tier).
 - **GDPR Cascading Deletion**: Deleting a tenant triggers an asynchronous job that cascade purges or pseudonymizes all tenant records, ensuring zero orphaned data.

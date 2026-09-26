@@ -23,7 +23,7 @@ description: Use when creating, modularizing, auditing, or updating agentic conf
 ### Step 1: Relentless Skill Architecture Inquiry (Question Everything)
 Before writing a single line of a skill or rule, execute the **7 Core Inquiry Branches**:
 1. **Placement & Scope:** Does this belong in root `AGENTS.md` (all prompts), nested `AGENTS.md` (one package), a continuous rule in `docs/rules/`, or an on-demand skill in `.agents/skills/`?
-2. **Trigger Boundaries:** What is the exact user intent? What is the explicit imperative trigger (`Use when...`) and the anti-triggers (`Do NOT use for...`)?
+2. **Trigger Boundaries & YAGNI Gate:** What is the explicit imperative trigger (`Use when...`), the anti-triggers (`Do NOT use for...`), and the empirical tipping points that justify unlocking this capability?
 3. **Domain Ground Truth:** Have all generic textbook tutorials been purged? Is this grounded in verified codebase evidence?
 4. **Gotchas & Anti-Patterns:** What exact mistakes has the AI repeatedly made in this domain that must be forbidden?
 5. **Determinism vs. LLM:** Can brittle tasks be converted into deterministic scripts under `scripts/`?
@@ -87,6 +87,8 @@ ln -sf AGENTS.md agents.md
 ## 3. Gotchas & What NOT to Do
 
 - **DO NOT** guess what a skill should do. Run the Relentless Skill Architecture Inquiry first.
+- **DO NOT** author architectural rules or skills without a YAGNI Gate (Simple Baseline, Anti-Triggers, Empirical Tipping Point).
+- **DO NOT** confuse battle-tested open-source libraries (shadcn, Tailwind, Zod, Lombok) with speculative custom over-engineering.
 - **DO NOT** let root `AGENTS.md` exceed 120–150 lines. Every extra token degrades LLM attention.
 - **DO NOT** write passive skill descriptions like `"Tanstack query documentation"`. Use `"Use when implementing Tanstack Query caches..."`.
 - **DO NOT** include human "Getting Started" guides. Agents already have the workspace open.
@@ -100,6 +102,7 @@ ln -sf AGENTS.md agents.md
 
 Before finalizing any agent configuration update, verify:
 - [ ] Relentless Skill Architecture Inquiry completed for all 7 branches.
+- [ ] Architectural pattern rules and skills enforce the YAGNI Gate Triad (Baseline, Anti-Triggers, Tipping Point).
 - [ ] Root `AGENTS.md` is under 120 lines and loads within minimal tokens.
 - [ ] Specialized domain instructions are decoupled into `docs/rules/`.
 - [ ] Progressive disclosure table in `AGENTS.md` contains valid, clickable markdown links.

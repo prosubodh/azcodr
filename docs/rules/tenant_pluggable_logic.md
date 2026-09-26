@@ -4,7 +4,34 @@
 
 ---
 
-## 1. Strategy Pattern & Dynamic Strategy Registry
+## 1. The YAGNI Gate: Native Code vs. Sandboxed / Declarative Logic
+
+Dynamic expression engines (CEL) and WebAssembly (Wasm) sandboxes introduce compilation latency, sandboxing overhead, and complex debugging surfaces. **Never embed Wasm or dynamic expression interpreters for internal business logic that changes via normal Git commits.**
+
+```
+                 PLUGGABLE LOGIC YAGNI GATE
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 1. SIMPLE BASELINE (Day 1)                                             │
+  │    • Standard Strategy Pattern in native compiled code (TypeScript).   │
+  │    • Single unified business rule set for all users.                   │
+  │    • Zero Wasm runtimes, CEL compilers, or script sandboxes.           │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 2. ANTI-TRIGGERS (When Sandboxes & CEL are Strictly Forbidden)         │
+  │    • Internal application logic authored and reviewed by your team.    │
+  │    • Performance-critical low-latency hot loops (< 1ms budget).        │
+  │    • Systems where all tenants share the same pricing/business rules.  │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 3. THE TIPPING POINT (Graduation Threshold to CEL / Wasm)              │
+  │    • CEL: Enterprise tenants or ops teams require configuring dynamic  │
+  │      approval thresholds or discount rules in database metadata.       │
+  │    • Wasm / Extism: Untrusted external third parties or end-users      │
+  │      upload arbitrary executable scripts (plugins) to your server.     │
+  └────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Strategy Pattern & Dynamic Strategy Registry
 
 Encapsulate diverging tenant algorithms into discrete strategies conforming to a unified domain port:
 
@@ -28,9 +55,9 @@ discount = strategy.calculateDiscount(order)
 
 ---
 
-## 2. Declarative Rule Evaluation: Common Expression Language (CEL)
+## 3. Declarative Rule Evaluation: Common Expression Language (CEL)
 
-Allow tenants or administrators to configure dynamic conditional logic stored as declarative text or JSON without redeploying binaries. Standardize on **Common Expression Language (CEL)**:
+When the tipping point is reached, allow tenants or administrators to configure dynamic conditional logic stored as declarative text or JSON without redeploying binaries. Standardize on **Common Expression Language (CEL)**:
 
 ```cel
 // Example Tenant Rule Expression:
@@ -42,7 +69,7 @@ order.total >= 500 && order.shipping_country == "US" && tenant.tier == "ENTERPRI
 
 ---
 
-## 3. Durable Workflows & Orchestration (Temporal / BPMN 2.0)
+## 4. Durable Workflows & Orchestration (Temporal / BPMN 2.0)
 
 For tenants with diverging multi-step approval, fulfillment, or refund lifecycles:
 - **Durable Execution Engines**: Standardize on **Temporal.io** or **Camunda 8 / Zeebe (BPMN 2.0)**.
@@ -51,7 +78,7 @@ For tenants with diverging multi-step approval, fulfillment, or refund lifecycle
 
 ---
 
-## 4. Secure Script Sandboxing: WebAssembly (Wasm / Extism)
+## 5. Secure Script Sandboxing: WebAssembly (Wasm / Extism)
 
 Never execute untrusted tenant strings via host runtime evaluation (`eval()`, dynamic reflection, or unshielded isolates).
 - **Universal Sandboxing with Extism / Wasmtime**: Tenants compile custom logic (in Rust, Go, Python, or TypeScript) to portable `.wasm` bytecode.

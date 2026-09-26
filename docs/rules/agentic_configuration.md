@@ -111,9 +111,27 @@ Coding tasks and agentic skills exhibit an explicit **Many-to-Many ($M:N$) Relat
 - **Zero Cross-Contamination:** No skill may write code or modify files outside its declared functional boundary.
 - **Pure Function Semantics:** Analysis skills must remain read-only and side-effect free.
 
+## 6. The Mandatory YAGNI Gate Triad (Rules & Skills)
+
+LLM coding agents have a natural statistical bias toward **Instruction Creep** and **Eager Pattern Application**: when provided with a rule explaining an advanced pattern, agents reflexively apply it everywhere, causing severe architectural bloat.
+
+To prevent premature abstraction, every architectural pattern rule and skill must enforce the **YAGNI Gate Triad**:
+
+1. **The Simple Baseline (Day 1 Default):**
+   - The zero-overhead, default implementation that solves the immediate requirement without indirection (e.g. single database model before CQRS, relational indexes before Redis, standard React components before Server-Driven UI).
+2. **The Anti-Triggers (Strictly Forbidden Scenarios):**
+   - Explicit, negative conditions where applying the pattern or skill is forbidden as premature over-engineering (e.g. no caching for low-throughput queries, no state machines for 2-state boolean flags, no skills for routine typo fixes).
+3. **The Empirical Tipping Point (Graduation Threshold):**
+   - Measurable, verified criteria that MUST be breached before graduating to the pattern (e.g. p99 latency > 200ms after indexing, 3+ non-linear lifecycle states with transition guards, untrusted third-party user scripts).
+
+### Foundational Leverage vs. Speculative Over-Engineering
+A common misunderstanding is that YAGNI forbids using external libraries. **This is completely false**:
+- **YAGNI Attacks:** Speculative custom code, home-grown frameworks, custom wheel reinvention, and premature multi-tier distributed architectures.
+- **YAGNI Mandates:** Adopting battle-tested, open-source building blocks (`shadcn/ui`, `Tailwind CSS`, `Zod`, `TanStack Query`, `Lombok`) to solve concrete, present requirements with the minimum amount of custom code (preventing Not-Invented-Here / NIH syndrome).
+
 ---
 
-## 6. The Relentless Skill Architecture Inquiry
+## 7. The Relentless Skill Architecture Inquiry
 
 Never architect or modify a skill based on assumptions. Before authoring any `SKILL.md`, run the **7 Core Skill Inquiry Branches**:
 
@@ -159,7 +177,7 @@ Never architect or modify a skill based on assumptions. Before authoring any `SK
 
 ---
 
-## 7. The Continuous Refinement Loop
+## 8. The Continuous Refinement Loop
 
 When an AI produces suboptimal code or documentation:
 1. Preserve the original AI output draft.

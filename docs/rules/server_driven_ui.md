@@ -4,7 +4,36 @@
 
 ---
 
-## 1. Declarative Client-Agnostic SDUI Schema
+## 1. The YAGNI Gate: Static Client Components vs. Server-Driven UI
+
+Server-Driven UI requires building and maintaining a JSON schema specification, schema versioning, validation, and multi-platform component interpreters. **Never build a Server-Driven UI when standard client-side components and modern web deployments solve the problem.**
+
+```
+                     SERVER-DRIVEN UI YAGNI GATE
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 1. SIMPLE BASELINE (Day 1)                                             │
+  │    • Standard React/JSX components styled with Tailwind CSS.           │
+  │    • Instant web deployments via continuous delivery (Vercel/Cloudflare│
+  │    • Zero dynamic layout interpreters or backend schema JSONs.         │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 2. ANTI-TRIGGERS (When Server-Driven UI is Strictly Forbidden)         │
+  │    • Web-only SaaS dashboards, internal admin tools, or landing pages. │
+  │    • Early-stage products iterating on UI layouts (SDUI slows down UX).│
+  │    • Teams without multi-platform client parity requirements.          │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 3. THE TIPPING POINT (Graduation Threshold to Server-Driven UI)        │
+  │    • Native mobile applications (iOS / Android) where Apple App Store  │
+  │      and Google Play review cycles delay urgent UI/flow mutations.     │
+  │    • Multi-tenant white-label products where external customers        │
+  │      dynamically construct custom form layouts and section orders.     │
+  │    • Cross-platform feature parity where 1 backend team drives layout  │
+  │      across Web, iOS SwiftUI, and Android Jetpack Compose concurrently.│
+  └────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Declarative Client-Agnostic SDUI Schema
 
 The backend provides a declarative UI layout schema describing fields, layouts, dynamic visibility rules (via Common Expression Language or JSON expressions), and allowed actions (`_actions`):
 
@@ -38,7 +67,7 @@ The backend provides a declarative UI layout schema describing fields, layouts, 
 
 ---
 
-## 2. Multi-Platform Component Registries
+## 3. Multi-Platform Component Registries
 
 Frontend clients (Web, Mobile, Desktop) never contain hardcoded tenant branching. Each platform implements a local **Component Registry** mapping backend descriptors to native platform primitives:
 
@@ -48,7 +77,7 @@ Frontend clients (Web, Mobile, Desktop) never contain hardcoded tenant branching
 
 ---
 
-## 3. Universal Design Tokens (W3C DTCG Standard)
+## 4. Universal Design Tokens (W3C DTCG Standard)
 
 Manage tenant white-label branding and design systems via the **W3C Design Tokens Community Group (DTCG)** specification:
 

@@ -26,7 +26,7 @@
 | **ADR-007** | Decoupling Project Bootstrapping from Domain Analysis | 2026-09-18 | ACCEPTED | [`lets-build`](./.agents/skills/lets-build/SKILL.md), [`product-analyst`](./.agents/skills/product-analyst/SKILL.md) |
 | **ADR-008** | Non-Negotiable 5-Phase Agile Domain Lifecycle & Outside-In TDD | 2026-09-18 | ACCEPTED | [`test_driven_development.md`](./docs/rules/test_driven_development.md), [`test_isolation.md`](./docs/rules/test_isolation.md) |
 | **ADR-009** | Many-to-Many Skill Composability & Orthogonal Pipelines | 2026-09-18 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`agentic-architect`](./.agents/skills/agentic-architect/SKILL.md) |
-| **ADR-011** | Canonical 6 Total Audit Fields Architecture & Modern React Stack | 2026-09-19 | ACCEPTED | [`database_integrity.md`](./docs/rules/database_integrity.md), [`react.md`](./docs/rules/react.md) |
+| **ADR-011** | Canonical 6 Total Audit Fields Architecture & Modern React Stack | 2026-09-19 | ACCEPTED | [`database_integrity.md`](./docs/rules/database_integrity.md), [`frontend_architecture.md`](./docs/rules/frontend_architecture.md) |
 | **ADR-012** | State Machine Lifecycle Configurability & Ubiquitous Language Contract | 2026-09-19 | ACCEPTED | [`workflow_state_machines.md`](./docs/rules/workflow_state_machines.md), [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) |
 | **ADR-013** | Design Architecture Triage, Persistent Shell & Dev Persona Isolation | 2026-09-20 | ACCEPTED | [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md), [`authentication.md`](./docs/rules/authentication.md) |
 | **ADR-014** | Product Ownership, Prioritization Models, SMART Tasks & INVEST Slicing | 2026-09-21 | ACCEPTED | [`product_ownership.md`](./docs/rules/product_ownership.md), [`requirements_engineering.md`](./docs/rules/requirements_engineering.md), [`project_management.md`](./docs/rules/project_management.md) |
@@ -98,7 +98,7 @@
 - **Date:** 2026-09-19 | **Status:** ACCEPTED
 - **Context:** Inconsistent audit tracking risks SOC 2 / ISO 27001 non-compliance. Frontend `useEffect` fetch loops cause stale states and race conditions.
 - **Decision:** Every mutable stateful table must implement the Canonical 6 Total Audit Fields (`createdAt`, `createdBy`, `updatedAt`, `updatedBy`, `deletedAt`, `deletedBy`), with append-only ledgers omitting update/delete fields. Standardize frontend on TanStack Query, React Hook Form + Zod, and headless Radix primitives.
-- **Enforced In:** [`database_integrity.md`](./docs/rules/database_integrity.md), [`react.md`](./docs/rules/react.md).
+- **Enforced In:** [`database_integrity.md`](./docs/rules/database_integrity.md), [`frontend_architecture.md`](./docs/rules/frontend_architecture.md).
 
 #### ADR-012: State Machine Lifecycle Configurability & Living Ubiquitous Language Contract
 - **Date:** 2026-09-19 | **Status:** ACCEPTED
@@ -152,4 +152,41 @@
   3. Purge `logChange` functions, types, and CLI subcommands, restoring `azcodr` CLI as a clean, single-purpose project bootstrapper.
   4. Standardize exclusively on Git commits for historical revision logs and `memory.md` for architectural decision records.
 - **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`lib/scaffold.js`](./lib/scaffold.js), [`bin/azcodr.js`](./bin/azcodr.js), [`memory.md`](./memory.md).
+
+#### ADR-019: CQRS (Command Query Responsibility Segregation) & YAGNI Defense
+- **Date:** 2026-09-25 | **Status:** ACCEPTED
+- **Context:** Command Query Responsibility Segregation (CQRS) is frequently adopted prematurely across whole applications, violating the YAGNI (You Aren't Gonna Need It) principle and introducing immense accidental complexity: eventual consistency lag, dual schema maintenance, projection drift, loss of ACID transactions, and distributed outbox pipelines. However, segregating read projections from write aggregates is essential for high-contention or high read/write asymmetry bounded contexts.
+- **Decision:**
+  1. Mandate the **YAGNI Defense**: Default to a Single Model / Single Database architecture for all applications and generic subdomains. CQRS is strictly forbidden as a global, top-level system architecture.
+  2. Define an **Evolutionary 4-Tier CQRS Spectrum**:
+     - *Level 0 (Method CQS)*: Commands mutate state; queries return values. Zero overhead; mandatory everywhere.
+     - *Level 1 (Segregated Handlers)*: Single database/schema. Command Handlers load Aggregates to enforce business invariants; Query Handlers bypass domain entities and query direct SQL projections into flat DTOs.
+     - *Level 2 (Segregated Read Models / Materialized Views)*: Single database. Synchronously updated read tables or materialized views for multi-table join optimization.
+     - *Level 3 (Polyglot Multi-Store CQRS)*: Dual databases (PostgreSQL write + Elasticsearch/Redis read) synchronized strictly via the Transactional Outbox Pattern and CDC. Permitted only when explicit empirical tipping points (Read:Write > 50:1, search engine requirement, or read starvation) are proven.
+  3. Prohibit common anti-patterns: Conflating CQRS with Event Sourcing, dual-write projections without an outbox, and exposing users to eventual consistency lag on their own mutations (enforce Read-Your-Own-Writes consistency via optimistic UI or version headers).
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`docs/rules/cqrs.md`](./docs/rules/cqrs.md), [`docs/rules/clean_code.md`](./docs/rules/clean_code.md), [`docs/rules/database_transactions.md`](./docs/rules/database_transactions.md), [`memory.md`](./memory.md).
+
+#### ADR-020: Universal YAGNI Gate Architecture, Tipping Points & Foundational Library Leverage
+- **Date:** 2026-09-25 | **Status:** ACCEPTED
+- **Context:** LLM coding agents suffer from a known statistical failure mode—"Instruction Creep" and "Eager Pattern Application"—where introducing an advanced architectural rule (e.g. distributed caching, state machines, feature flag servers, server-driven UI) prompts the agent to reflexively implement complex infrastructure across all tasks, even for 50-line CLIs or low-traffic prototypes. Conversely, developers sometimes misinterpret YAGNI as forbidding battle-tested libraries (shadcn/ui, Tailwind CSS, Zod, Lombok), leading to Not-Invented-Here (NIH) syndrome and massive hand-rolled accidental complexity.
+- **Decision:**
+  1. Codify the **YAGNI Gate Triad** across all architectural pattern rules and skills:
+     - *Part 1: The Simple Baseline (Day 1)*: Zero-overhead default (single DB before CQRS; relational indexes before Redis; simple enums before State Machines; standard React before Server-Driven UI; env vars before Flipt).
+     - *Part 2: The Anti-Triggers*: Explicit negative scenarios where the pattern is forbidden as premature over-engineering.
+     - *Part 3: The Empirical Tipping Point*: Measurable threshold (latency SLA, state count, asymmetry ratio, external scripts) required to graduate.
+  2. Clarify **Foundational Leverage vs. Speculative Over-Engineering**: Adopting standard open-source primitives (`shadcn/ui`, `Tailwind CSS`, `Zod`, `TanStack Query`, `Lombok`) to solve concrete present requirements with minimal code is YAGNI-compliant foundational leverage. YAGNI strictly attacks speculative custom code and premature multi-tier distributed architectures.
+  3. Retrofit explicit YAGNI Gates across high-risk rules: [`caching.md`](./docs/rules/caching.md), [`workflow_state_machines.md`](./docs/rules/workflow_state_machines.md), [`feature_flags.md`](./docs/rules/feature_flags.md), [`server_driven_ui.md`](./docs/rules/server_driven_ui.md), [`tenant_pluggable_logic.md`](./docs/rules/tenant_pluggable_logic.md), [`tenant_dynamic_schemas.md`](./docs/rules/tenant_dynamic_schemas.md), [`multitenancy_isolation.md`](./docs/rules/multitenancy_isolation.md).
+#### ADR-021: Language-Agnostic Core Rules Generalization (`type_safety.md` & `frontend_architecture.md`) and Deferred Project-Specific Specialization via `/lets-build`
+- **Date:** 2026-09-26 | **Status:** ACCEPTED
+- **Context:** Naming rules after specific technologies (`typescript.md`, `react.md`) in a foundational template workspace creates false tool/platform bias, violating Problem-First Architecture and confusing developers initializing Python, Java, Go, Rust, or C# systems. Furthermore, procedural package management rules (e.g. creating rules for `venv` vs `uv` vs `poetry`, or `maven` vs `gradle`) is a severe YAGNI violation and prompt anti-pattern, because LLMs already possess parametric toolchain knowledge and should derive execution commands from native workspace manifests (`pom.xml`, `pyproject.toml`).
+- **Decision:**
+  1. Generalize technology-specific rule filenames into polyglot architectural disciplines:
+     - Rename `typescript.md` ➔ [`type_safety.md`](./docs/rules/type_safety.md): Codifies sound type systems, branded nominal typing, and fail-fast boundary validation across TypeScript, Python (`mypy`/`pydantic`), Java (records), C# (nullable), Rust (newtype), and Go.
+     - Rename `react.md` ➔ [`frontend_architecture.md`](./docs/rules/frontend_architecture.md): Codifies headless accessible primitives, server-state query caching (TanStack Query), declarative schema form validation, state separation hierarchy, and design tokens across modern web clients.
+  2. Maintain a strict **Zero Toolchain Rule Policy**: Package managers (`uv`, `maven`, `gradle`, `composer`, `cargo`) shall never have dedicated rule files. Instead, `/lets-build` inquires into preferred toolchains during the interview, scaffolds native manifests, and stamps a concise 4-line execution contract into `AGENTS.md` (`## 2. Runtime & Core Scripts`).
+  3. Defer project-specific pruning to `/lets-build`: Projects without a frontend (e.g. headless Python backends or Rust CLIs) prune frontend rules during bootstrapping to ensure minimal token footprint.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`docs/rules/type_safety.md`](./docs/rules/type_safety.md), [`docs/rules/frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`.agents/skills/lets-build/SKILL.md`](./.agents/skills/lets-build/SKILL.md), [`memory.md`](./memory.md).
+
+
+
 

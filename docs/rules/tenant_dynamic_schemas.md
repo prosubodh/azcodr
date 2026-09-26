@@ -4,9 +4,36 @@
 
 ---
 
-## 1. Hybrid Core + JSON/Document Extensibility
+## 1. The YAGNI Gate: Relational Columns vs. Dynamic JSON Schemas
 
-Store universal relational attributes in standard typed columns. Store tenant-specific custom fields in a semi-structured `custom_attributes` column governed by tenant-scoped JSON Schemas:
+Dynamic JSON schemas, virtual entities, and runtime validation introduce significant query indexing overhead, complex serialization, and loss of compile-time type safety. **Never introduce dynamic JSON schema extensibility when relational database migrations satisfy the domain requirements.**
+
+```
+                 DYNAMIC SCHEMA YAGNI GATE
+  ┌────────────────────────────────────────────────────────────────────────┐
+  │ 1. SIMPLE BASELINE (Day 1)                                             │
+  │    • Standard typed relational columns (VARCHAR, INT, TIMESTAMP).      │
+  │    • Schema modifications managed via migrations (Atlas / Flyway).     │
+  │    • Zero runtime JSON Schema validators or virtual entity tables.     │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 2. ANTI-TRIGGERS (When Dynamic Schemas are Strictly Forbidden)         │
+  │    • Adding `custom_attributes JSON` "just in case" fields change later│
+  │    • Entities with static, predictable attributes known at compile time│
+  │    • Systems without tenant self-service custom field requirements.    │
+  ├────────────────────────────────────────────────────────────────────────┤
+  │ 3. THE TIPPING POINT (Graduation Threshold to Dynamic Schemas)         │
+  │    • B2B Enterprise SaaS where external tenant administrators require  │
+  │      defining custom fields and validation rules at runtime via a UI.  │
+  │    • Multi-tenant products where different tenants require entirely    │
+  │      distinct business forms and metadata on shared entity tables.     │
+  └────────────────────────────────────────────────────────────────────────┘
+```
+
+---
+
+## 2. Hybrid Core + JSON/Document Extensibility
+
+When the tipping point is reached, store universal relational attributes in standard typed columns. Store tenant-specific custom fields in a semi-structured `custom_attributes` column governed by tenant-scoped JSON Schemas:
 
 ```sql
 CREATE TABLE customers (
@@ -48,7 +75,7 @@ Supported natively by open-source engines in every major language (`valico` in R
 
 ---
 
-## 2. Meta-Schema Catalog for Virtual Custom Entities
+## 3. Meta-Schema Catalog for Virtual Custom Entities
 
 When tenants define completely custom entities/tables dynamically without deploying code:
 
@@ -73,7 +100,7 @@ CREATE TABLE tenant_records (
 
 ---
 
-## 3. Indexing Strategies for Dynamic Custom Attributes
+## 4. Indexing Strategies for Dynamic Custom Attributes
 
 1. **Virtual / Generated Columns**: For high-throughput queried fields inside dynamic attributes, project them into virtual/generated columns and attach standard B-tree indexes:
    ```sql
