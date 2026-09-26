@@ -91,12 +91,8 @@ if [[ "${IS_CASE_INSENSITIVE}" == "true" ]]; then
   log_pass "agents.md is satisfied natively by AGENTS.md (case-insensitive filesystem)."
 else
   if [[ ! -L "${AGENTS_LOWER}" ]] && [[ ! -e "${AGENTS_LOWER}" ]] && [[ -f "${AGENTS_FILE}" ]]; then
-    if [[ "${FIX_MODE}" == "true" ]]; then
-      ln -sf "AGENTS.md" "${AGENTS_LOWER}"
-      log_pass "Created agents.md symlink to AGENTS.md (--fix mode)."
-    else
-      log_fail "agents.md is missing. Run with --fix to automatically repair symlinks."
-    fi
+    ln -sf "AGENTS.md" "${AGENTS_LOWER}"
+    log_pass "Created agents.md symlink to AGENTS.md (case-sensitive filesystem parity)."
   fi
   if [[ -L "${AGENTS_LOWER}" ]]; then
     TARGET=$(readlink "${AGENTS_LOWER}")
@@ -107,8 +103,6 @@ else
     fi
   elif [[ -f "${AGENTS_LOWER}" ]] && is_valid_text_pointer "${AGENTS_LOWER}"; then
     log_pass "agents.md is a text pointer to AGENTS.md (symlink fallback)."
-  elif [[ ! -e "${AGENTS_LOWER}" ]] && [[ "${FIX_MODE}" == "true" ]]; then
-    : # Handled above
   else
     log_fail "agents.md is not a symbolic link."
   fi
