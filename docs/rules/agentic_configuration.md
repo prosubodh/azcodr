@@ -75,6 +75,17 @@ description: <Imperative trigger description under 1024 characters. MUST start w
 - `scripts/`: Deterministic executable scripts (bash, node, python) for tasks where LLMs produce non-deterministic drift.
 - `assets/`: Static data, lookup tables, schemas, or boilerplate templates.
 
+### Explicit Prohibition: The "Library-as-a-Skill" Anti-Pattern
+Never author or dynamically generate skills for commodity open-source packages or libraries (e.g. `react`, `tanstack`, `shadcn`, `zustand`, `testing-library`, `vitest`):
+- **Prompt Bloat & Re-Explanation Tax:** Skill descriptions are continuously loaded into the agent's `<skills>` context. Proliferating skills for every library in a stack floods the prompt with thousands of redundant tokens and degrades model reasoning.
+- **Parametric Redundancy:** Frontier LLMs already possess extensive parametric knowledge of open-source library APIs. Re-explaining basic imports and function signatures in a skill wastes context and creates documentation rot.
+- **Trigger Collision & Agent Paralysis:** When a prompt touches UI, form validation, and data fetching, having 5 library skills triggers semantic collision, causing the agent to waste execution turns resolving which sub-skill to run.
+- **The 4-Layer Resolution Standard:** Always resolve library stack knowledge through the **4-Layer Resolution Model**:
+  1. *Layer 1 (Manifest Ground Truth):* Read `package.json`, `components.json`, or `tsconfig.json`.
+  2. *Layer 2 (Stack Contract in `AGENTS.md`):* 3–5 line declaration in project entrypoint stamped by `/lets-build`.
+  3. *Layer 3 (Universal Domain Rules):* Enforce architectural invariants (`frontend_architecture.md`, `test_isolation.md`) rather than library syntax.
+  4. *Layer 4 (Tool & CLI Execution):* Direct execution of official CLIs (`npx shadcn@latest add ...`) or local component inspection.
+
 ---
 
 ## 5. The Architectural Atomicity Mandate for Rules & Skills

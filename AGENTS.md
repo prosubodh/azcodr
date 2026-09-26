@@ -89,7 +89,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Accessibility** | [docs/rules/accessibility.md](./docs/rules/accessibility.md) | WCAG 2.2 AA compliance, accessible primitives, focus trapping, ARIA live regions. |
 | **UI Navigation** | [docs/rules/ui_navigation.md](./docs/rules/ui_navigation.md) | Bidirectional URL state synchronization, deep linking, search params. |
 | **UI/UX Architecture** | [docs/rules/ui_ux_architecture.md](./docs/rules/ui_ux_architecture.md) | Design triage, persistent app shell, collapsible sidebar, dual-experience portals. |
-| **Frontend Architecture** | [docs/rules/frontend_architecture.md](./docs/rules/frontend_architecture.md) | Headless accessible primitives, TanStack Query, schema form validation, state separation. |
+| **Frontend Architecture** | [docs/rules/frontend_architecture.md](./docs/rules/frontend_architecture.md) | Headless accessible primitives, server-state cache sync, schema form validation, state hierarchy. |
 | **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
 | **Product Ownership** | [docs/rules/product_ownership.md](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
 | **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Aggregates, Capability Mapping. |

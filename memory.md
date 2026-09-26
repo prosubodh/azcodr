@@ -34,6 +34,10 @@
 | **ADR-016** | Elimination of Static Markdown Knowledge Graph | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`continuous_learning.md`](./docs/rules/continuous_learning.md) |
 | **ADR-017** | Progressive Rules Consolidation (DDD & GoF Patterns) | 2026-09-25 | ACCEPTED | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md), [`design_patterns.md`](./docs/rules/design_patterns.md) |
 | **ADR-018** | Elimination of Upstream Changes Ledger and Sync Tooling | 2026-09-25 | ACCEPTED | [`clean_code.md`](./docs/rules/clean_code.md), [`workspace_isolation.md`](./docs/rules/workspace_isolation.md) |
+| **ADR-019** | Evolutionary CQRS Spectrum & Strict YAGNI Tipping Points | 2026-09-26 | ACCEPTED | [`cqrs.md`](./docs/rules/cqrs.md), [`database_transactions.md`](./docs/rules/database_transactions.md) |
+| **ADR-020** | Universal YAGNI Gate Triad Architecture | 2026-09-26 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`.agents/skills/agentic-architect/SKILL.md`](./.agents/skills/agentic-architect/SKILL.md) |
+| **ADR-021** | Language-Agnostic Core Rules Generalization & Toolchain Zero-Rule Policy | 2026-09-26 | ACCEPTED | [`type_safety.md`](./docs/rules/type_safety.md), [`frontend_architecture.md`](./docs/rules/frontend_architecture.md) |
+| **ADR-022** | Vendor-Agnostic Frontend Architecture & Library-as-a-Skill Anti-Pattern Defense | 2026-09-26 | ACCEPTED | [`frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
 
 
 ---
@@ -182,10 +186,26 @@
 - **Decision:**
   1. Generalize technology-specific rule filenames into polyglot architectural disciplines:
      - Rename `typescript.md` ➔ [`type_safety.md`](./docs/rules/type_safety.md): Codifies sound type systems, branded nominal typing, and fail-fast boundary validation across TypeScript, Python (`mypy`/`pydantic`), Java (records), C# (nullable), Rust (newtype), and Go.
-     - Rename `react.md` ➔ [`frontend_architecture.md`](./docs/rules/frontend_architecture.md): Codifies headless accessible primitives, server-state query caching (TanStack Query), declarative schema form validation, state separation hierarchy, and design tokens across modern web clients.
+     - Rename `react.md` ➔ [`frontend_architecture.md`](./docs/rules/frontend_architecture.md): Codifies headless accessible primitives, server-state cache synchronization and deduplication, declarative schema form validation, 5-tier state separation hierarchy, and design tokens across modern web clients.
   2. Maintain a strict **Zero Toolchain Rule Policy**: Package managers (`uv`, `maven`, `gradle`, `composer`, `cargo`) shall never have dedicated rule files. Instead, `/lets-build` inquires into preferred toolchains during the interview, scaffolds native manifests, and stamps a concise 4-line execution contract into `AGENTS.md` (`## 2. Runtime & Core Scripts`).
   3. Defer project-specific pruning to `/lets-build`: Projects without a frontend (e.g. headless Python backends or Rust CLIs) prune frontend rules during bootstrapping to ensure minimal token footprint.
 - **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`docs/rules/type_safety.md`](./docs/rules/type_safety.md), [`docs/rules/frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`.agents/skills/lets-build/SKILL.md`](./.agents/skills/lets-build/SKILL.md), [`memory.md`](./memory.md).
+
+#### ADR-022: Vendor-Agnostic Frontend Architecture & The "Library-as-a-Skill" Anti-Pattern Defense
+- **Date:** 2026-09-26 | **Status:** ACCEPTED
+- **Context:** Hardcoding a specific library (e.g. `TanStack Query`) as a mandatory requirement in `frontend_architecture.md` violates Problem-First Topology Alignment when building applications with Vue, SvelteKit, Angular, Solid, or React Server Components. Furthermore, a recurring temptation during domain analysis is to dynamically generate dedicated agent "skills" for every chosen library (e.g. `skills/react`, `skills/tanstack`, `skills/shadcn`, `skills/zustand`, `skills/testing-library`).
+- **Decision:**
+  1. **Vendor-Agnostic Architectural Invariants**: Decouple `frontend_architecture.md` from specific libraries. Codify universal architectural patterns (Headless Accessible Primitives, Server-State Cache Synchronization & Invalidation, Declarative Schema Form Validation, 5-Tier State Separation, and Token Symmetry) illustrated across frameworks (React, Vue, Svelte, Angular).
+  2. **Defend Against the "Library-as-a-Skill" Anti-Pattern**: Do NOT generate skills for standard commodity open-source libraries:
+     - *Prompt Bloat & Re-explanation Tax:* Skill descriptions are injected into every prompt. Adding 15 library skills floods the context window with parametric knowledge the LLM already knows.
+     - *Trigger Collision & Agent Paralysis:* A single UI prompt (e.g. "Create a profile form with data fetch") collides across multiple library skills (`react`, `tanstack`, `shadcn`, `testing-library`), causing wasteful subagent hops.
+     - *Passive Libraries vs. Active Workflows:* A skill is an active multi-step procedure (e.g. `/lets-build`, `product-analyst`, `compliance-audit`). A library is passive code whose usage is derived from code manifests (`package.json`, `components.json`), local component directories (`components/ui`), and CLI tools (`npx shadcn@latest add`).
+  3. **The 4-Layer Resolution Standard for Project Stack Knowledge**:
+     - *Layer 1 (Ground Truth Manifests):* `package.json`, `tsconfig.json`, `components.json`.
+     - *Layer 2 (Stack Contract in `AGENTS.md`):* 3–5 line declaration in project entrypoint stamped by `/lets-build`.
+     - *Layer 3 (Universal Domain Rules):* `frontend_architecture.md`, `test_isolation.md`, `accessibility.md`.
+     - *Layer 4 (Tool & CLI Execution):* Direct execution of package CLIs (`npx shadcn@latest add`) or MCP servers.
+- **Enforced In:** [`frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`memory.md`](./memory.md).
 
 
 

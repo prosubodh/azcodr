@@ -87,7 +87,7 @@ The architecture enforces 45 atomic, single-responsibility domain rules. Read on
 | **Accessibility** | [`accessibility.md`](./docs/rules/accessibility.md) | WCAG 2.2 AA compliance, accessible primitives, focus trapping, ARIA live regions. |
 | **UI Navigation** | [`ui_navigation.md`](./docs/rules/ui_navigation.md) | Bidirectional URL state synchronization, deep linking, search params. |
 | **UI/UX Architecture** | [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md) | Design triage, persistent app shell, collapsible sidebar, dual-experience portals. |
-| **Frontend Architecture** | [`frontend_architecture.md`](./docs/rules/frontend_architecture.md) | Headless accessible primitives, TanStack Query, schema form validation, state separation. |
+| **Frontend Architecture** | [`frontend_architecture.md`](./docs/rules/frontend_architecture.md) | Headless accessible primitives, server-state cache sync, schema form validation, state hierarchy. |
 | **Requirements Engineering** | [`requirements_engineering.md`](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
 | **Product Ownership** | [`product_ownership.md`](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
 | **Domain-Driven Design** | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) | Problem vs Solution Space, Ubiquitous Language, Aggregates, Capability Mapping. |

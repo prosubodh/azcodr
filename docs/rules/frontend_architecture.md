@@ -1,29 +1,30 @@
 # Frontend Architecture & Client State Management
 
-> **Core Mandate:** Enforce production-grade web client architecture: headless accessible component primitives, server-state query caching (TanStack Query), declarative schema form validation (Zod/standard-schema), explicit state separation (server vs URL vs form vs global), and symmetrical design tokens.
+> **Core Mandate:** Enforce production-grade client architecture: accessible headless component primitives, asynchronous server-state cache synchronization and deduplication, declarative contract schema form validation, explicit 5-tier state separation (server vs URL vs form vs component vs global), and symmetrical design tokens.
 
 ---
 
-## 1. The YAGNI Gate: Semantic HTML & Headless Primitives vs. Premature Sprawl
+## 1. The YAGNI Gate: Semantic Markup & Headless Primitives vs. Premature Sprawl
 
-Frontend engineering is frequently derailed by two opposing anti-patterns: **reinventing the wheel** (hand-rolling custom dialogs and CSS frameworks) or **premature framework sprawl** (installing heavy global state machines for simple data flows).
+Frontend engineering is frequently derailed by two opposing anti-patterns: **reinventing the wheel** (hand-rolling custom dialogs and bespoke CSS architectures) or **premature framework sprawl** (installing heavy global state machines for simple data flows).
 
 ```
                  FRONTEND ARCHITECTURE YAGNI GATE
   ┌────────────────────────────────────────────────────────────────────────┐
   │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Semantic HTML styled with Tailwind CSS utility classes.           │
-  │    • Battle-tested accessible headless primitives (shadcn / Radix UI). │
+  │    • Semantic HTML/markup styled with utility classes.                 │
+  │    • Battle-tested accessible headless primitives (Radix UI, Melt UI,  │
+  │      Kobalte, PrimeVue, Angular CDK).                                  │
   │    • Zero bespoke CSS architectures, unstyled `<div>` modals, or Redux.│
   ├────────────────────────────────────────────────────────────────────────┤
   │ 2. ANTI-TRIGGERS (When Frontend Architecture is Strictly Forbidden)    │
   │    • Headless backends, REST/gRPC microservices, or cloud workers.     │
   │    • Terminal CLI utilities, embedded libraries, or game engines.      │
-  │    • Ad-hoc global state stores (Redux, MobX) before separating server │
-  │      state (TanStack Query) and URL search parameters.                 │
+  │    • Monolithic global state stores (Redux, MobX, Pinia) before        │
+  │      separating asynchronous server cache from URL search parameters.  │
   ├────────────────────────────────────────────────────────────────────────┤
   │ 3. THE TIPPING POINT (When to Apply this Architectural Discipline)     │
-  │    • Dynamic web interfaces with asynchronous server data fetching,    │
+  │    • Dynamic client interfaces with asynchronous server data fetching, │
   │      declarative form submissions, and multi-step UI workflows.        │
   │    • Requirements for strict WCAG 2.2 AA accessibility, focus trapping,│
   │      and full keyboard navigation.                                     │
@@ -34,27 +35,34 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 
 ## 2. Component Primitives & Headless Accessibility
 
-- **Accessible Headless Primitives**: All interactive UI components (dialogs, dropdowns, selects, tabs, tooltips, popovers) must be built on battle-tested headless primitives (`@radix-ui` / `shadcn/ui` components in `@/components/ui/` or framework equivalents in Vue/Svelte).
-- **Zero Unstyled Raw Elements**: Never create unstyled raw HTML modals, dropdowns, or custom select tags using raw `<div>` and ad-hoc state.
-- **Tailwind Utility Styling (`cn` helper)**: Combine Tailwind utility classes using `clsx` and `tailwind-merge` (`cn(...)`) to allow clean prop overrides and consistent theming.
+- **Accessible Headless Primitives**: All interactive UI components (dialogs, dropdowns, selects, tabs, tooltips, popovers) must decouple behavioral accessibility (focus trapping, keyboard navigation, ARIA states) from visual presentation using headless primitives:
+  - *React:* `@radix-ui` / `shadcn/ui` in `@/components/ui/`
+  - *Vue:* `radix-vue` / `shadcn-vue` or `primevue`
+  - *Svelte:* `melt-ui` / `bits-ui`
+  - *Solid:* `@kobalte/core`
+  - *Angular:* `@angular/cdk/a11y`
+- **Zero Unstyled Raw Elements**: Never create unstyled raw HTML modals, dropdowns, or custom select tags using raw `<div>` tags and ad-hoc mouse-only state.
+- **Utility Styling & Class Merging (`cn` helper)**: Combine utility classes using deterministic class merging (e.g., `clsx` and `tailwind-merge` via `cn(...)`) to allow clean prop overrides and consistent theming.
 - **Strict Prohibition of Native Dialogs**: As mandated in [`docs/rules/accessibility.md`](./accessibility.md), `window.alert()` and `window.confirm()` are strictly forbidden. Use accessible headless dialogs (`<ConfirmDialog />`).
 
 ---
 
-## 3. Server State & Remote Data Fetching (TanStack Query)
+## 3. Server-State Cache Synchronization & Invalidation
 
-- **Mandatory Server State Manager**: All asynchronous data fetching, caching, and background refetching must use **TanStack Query (`@tanstack/react-query`, `@tanstack/vue-query`, `@tanstack/svelte-query`)**.
-- **No Raw `useEffect` / Lifecycle Fetch Loops**:
-  - *Anti-Pattern:* `useEffect(() => { fetch(...).then(setData) }, [])` with manual `loading` and `error` state.
-  - *Standard Pattern:*
+- **Decoupling Remote Cache from Local State**: Server state (owned remotely, asynchronous, shared across clients) must never be treated as local synchronous client state.
+- **Mandatory Cache Synchronization Engine**: Asynchronous data fetching, caching, deduplication, and background revalidation must use a dedicated cache synchronization manager (e.g., TanStack Query, SWR, or RTK Query in React; Pinia Colada or VueUse `useFetch` in Vue; Superforms or SvelteKit load functions in Svelte; Angular Signals with HttpClient).
+- **Elimination of Raw Lifecycle Fetch Loops**:
+  - *Anti-Pattern:* Uncoordinated manual fetching in component lifecycles (`useEffect(() => { fetch().then(...) })`, `onMounted`, `ngOnInit`) with hand-rolled `isLoading` and `error` boolean states.
+  - *Standard Pattern (Query Hook / Cache Invalidation):*
     ```tsx
+    // Idiomatic client cache query
     const { data: resources, isLoading, error } = useQuery({
       queryKey: ['resources', tenantId],
-      queryFn: () => api.getResources(),
+      queryFn: () => api.getResources(tenantId),
     });
     ```
-- **Declarative Mutations & Invalidation**:
-  - Mutations must define `useMutation` with `onSuccess` cache invalidation:
+- **Declarative Mutations & Cache Invalidation**:
+  - Mutations must declare side-effects that explicitly invalidate affected cache keys rather than imperatively splicing local component state arrays:
     ```tsx
     const queryClient = useQueryClient();
     const createResourceMutation = useMutation({
@@ -64,15 +72,15 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
       },
     });
     ```
-- **Query Key Conventions**: Format query keys hierarchically as tuples: `['entity', id, ...filters]`, e.g., `['orders', orderId]`, `['users', tenantId]`.
+- **Hierarchical Query Keys**: Format query keys hierarchically as structured tuples: `['entity', id, ...filters]`, e.g., `['orders', orderId]`, `['users', tenantId]`.
 
 ---
 
 ## 4. Form State Management & Fail-Fast Schema Validation
 
-- **Mandatory Schema Validation**: Every form submission must be validated against a formal declarative schema (Zod or standard-schema) that mirrors the shared DTO/input contracts.
-- **Form State Engines**: Use **React Hook Form (`react-hook-form` + `@hookform/resolvers/zod`)** or **TanStack Form (`@tanstack/react-form`)**.
-- **Zero Unvalidated `useState` Multi-Field Objects**:
+- **Mandatory Schema Validation**: Every form submission must be validated against a formal declarative schema (Zod, Valibot, standard-schema, or framework validator) that mirrors shared DTO/input contracts.
+- **Dedicated Form State Engines**: Use dedicated form engines (React Hook Form, TanStack Form, VeeValidate, Superforms, Angular Reactive Forms) that track field dirty states, touched states, and asynchronous validation without triggering full component tree re-renders.
+- **Zero Unvalidated Multi-Field Objects**:
   - *Anti-Pattern:*
     ```tsx
     const [form, setForm] = useState({ name: '', email: '' });
@@ -89,15 +97,16 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 
 ---
 
-## 5. The 4-Tier State Separation Hierarchy
+## 5. The 5-Tier State Separation Hierarchy
 
-Never dump all application state into a single global state container. Enforce strict categorical separation:
+Never dump all application state into a single global state container. Enforce strict categorical separation across 5 distinct lifecycles:
 
-1. **Server State (Remote)**: Manage exclusively with **TanStack Query**.
-2. **URL State (Search / Pagination / Filters)**: Manage in URL search params per [`docs/rules/ui_navigation.md`](./ui_navigation.md).
-3. **Form State (Transient Edits)**: Manage via **React Hook Form / TanStack Form**.
-4. **Global Client State (Session/UI)**: Manage via **Zustand** (or React Context for theme/auth).
-5. **Data Grids & Tables**: When building sortable, paginated, or virtualized tables, standardize on **TanStack Table (`@tanstack/react-table`)**.
+1. **Server State (Remote Cache)**: Managed exclusively by the query cache engine; invalidated by resource keys.
+2. **URL State (Search / Pagination / Filters)**: Managed in URL search params per [`docs/rules/ui_navigation.md`](./ui_navigation.md) for bookmarkability and deep linking.
+3. **Form State (Transient Edits)**: Managed by form validation engines; discarded after submission or reset.
+4. **Local Component State (Ephemeral UI)**: Managed by primitive local component state (`useState`, `ref`, `$state`) strictly for local UI toggles (dropdown open, accordion expanded, hover).
+5. **Global Application State (Session / Context)**: Managed by lightweight client stores (Zustand, Pinia, Context, Signals) strictly for cross-cutting session data (current user, tenant context, active feature flags).
+6. **Data Grids & Large Tables**: When building sortable, paginated, or virtualized tables, standardize on headless table engines (TanStack Table, AG Grid) with row virtualization for datasets exceeding 100 rows.
 
 ---
 
