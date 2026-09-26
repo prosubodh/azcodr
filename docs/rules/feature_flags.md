@@ -8,27 +8,15 @@
 
 Dynamic feature flag platforms (Flipt, Unleash) introduce network I/O, external infrastructure dependencies, and branching code complexity. **Never deploy a feature flag server when an environment variable or static config satisfies the requirement.**
 
-```
-                     FEATURE FLAG YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Static environment variable (`ENABLE_NEW_CHECKOUT=true`).         │
-  │    • Compile-time or build-time feature toggling.                      │
-  │    • Zero external flag servers (no Flipt, Unleash, LaunchDarkly).     │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (When Dynamic Flag Platforms are Forbidden)           │
-  │    • Flags that only change during scheduled code deployments.         │
-  │    • Low-risk internal refactors covered by automated test suites.     │
-  │    • Local CLI tools, browser extensions, or single-tenant utilities.  │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (Graduation Threshold to OpenFeature & Flipt)     │
-  │    • Percentage-based canary rollouts (e.g. 5% ➔ 25% ➔ 100% traffic).  │
-  │    • Non-engineering product/business teams require runtime toggling   │
-  │      without triggering a code deployment pipeline.                    │
-  │    • Contextual tenant targeting (enabling features per subscription   │
-  │      tier or specific tenant IDs at runtime).                          │
-  │    • High-blast-radius integrations requiring instant kill-switches.   │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph FlagGate["Feature Flag YAGNI Gate"]
+        B1["1. Simple Baseline (Day 1)<br/>• Static environment variable (ENABLE_NEW_CHECKOUT=true)<br/>• Compile-time or build-time feature toggling<br/>• Zero external flag servers (no Flipt, Unleash, LaunchDarkly)"]
+        B2["2. Anti-Triggers (Forbidden)<br/>• Flags that only change during scheduled code deployments<br/>• Low-risk internal refactors covered by automated test suites<br/>• Local CLI tools, browser extensions, or single-tenant utilities"]
+        B3["3. The Tipping Point (Graduation)<br/>• Percentage-based canary rollouts (5% -> 25% -> 100%)<br/>• Non-engineering product/business teams require runtime toggling without deployment<br/>• Contextual tenant targeting (per subscription tier or tenant ID)<br/>• High-blast-radius integrations requiring instant kill-switches"]
+        B1 -->|Forbidden if static or low-risk| B2
+        B1 -->|Triggered by canaries or runtime targeting| B3
+    end
 ```
 
 ---

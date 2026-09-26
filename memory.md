@@ -222,8 +222,22 @@
   7. **Testing**: Merge `test_isolation.md` into [`test_driven_development.md`](./docs/rules/test_driven_development.md).
   8. **Agent Governance**: Merge `workspace_isolation.md`, `continuous_learning.md`, and `architecture_decision_records.md` into [`agentic_configuration.md`](./docs/rules/agentic_configuration.md).
 - **Consequences:** Eliminates 22 fragmented micro-files, reduces `AGENTS.md` table from 45 to 28 rows, and aligns every rule with True Single Responsibility.
-- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`memory.md`](./memory.md), and all 28 consolidated rules under [`docs/rules/`](./docs/rules/).
-
-
-
-
+#### ADR-024: Outside-In Interaction Discovery vs. Inside-Out Domain Invariants, Headless UI Testing Architecture for AI Agents, and Universal Mermaid Diagram Standards
+- **Date:** 2026-09-26 | **Status:** ACCEPTED
+- **Context:**
+  1. The classic software dichotomy: "Does UI (CLI, GUI, API) dictate logic or vice versa?" Misunderstanding this relationship causes teams to either tightly couple business rules to UI frameworks (fat UI components) or build ivory-tower domain models detached from real customer journeys.
+  2. Autonomous AI agents operate in headless execution environments with zero visual eyesight. Standard engineering workflows frequently neglect UI testing or rely on fragile manual browser inspection that AI agents cannot execute or verify.
+  3. Workspace rules previously contained ad-hoc ASCII art diagrams that render inconsistently across markdown viewports, violate the user formatting directive, and cannot be dynamically rendered by modern Git platforms.
+- **Decision:**
+  1. **Outside-In Interaction Discovery vs. Inside-Out Domain Invariants Law**:
+     - *Phase 1 & 2 (Outside-In Discovery)*: UI, CLI, and client interaction models guide *what capabilities are needed* early. The customer journey discovers input command payloads, output presentation DTOs, and state requirements.
+     - *Phase 3 & 4 (Inside-Out Execution & Invariants)*: Domain entities enforce *how business rules operate*. Core business invariants are 100% agnostic to presentation frameworks, decoupled via Driving Ports (Use Cases).
+     - *Headless / Zero-UI Topologies*: In systems without a graphical interface (microservices, daemons, developer CLIs), the external API schema (OpenAPI, gRPC) or CLI command pipeline IS the UI. The identical Outside-In discovery law applies.
+  2. **The 4-Tier Headless UI Testing Pyramid for Autonomous AI Agents**:
+     - *Tier 1 (Accessible Component Tests)*: `@testing-library` + `user-event`. Query elements strictly by accessible ARIA roles (`getByRole`), ensuring semantic accessibility and banning brittle CSS selectors.
+     - *Tier 2 (Network Interception & Universal UI States)*: `MSW` (Mock Service Worker). Test all 4 universal UI states (Loading, Success, Error, Empty) deterministically in memory without live backends.
+     - *Tier 3 (Zero-Eyesight Automated Accessibility)*: `axe-core` (`vitest-axe` / `@axe-core/playwright`). Execute programmatic WCAG 2.2 AA assertions providing empirical pass/fail proof without visual eyesight.
+     - *Tier 4 (Headless E2E Smoke Tests)*: Headless Playwright CLI runs. Validate critical user journeys with traces, screenshots, and video recordings captured automatically upon test failure.
+  3. **Universal Mermaid Diagram Standard**:
+     - Standardize exclusively on GitHub-Flavored Markdown Mermaid diagrams (`flowchart`, `sequenceDiagram`, `classDiagram`) across all workspace rules, replacing all legacy ASCII box drawings.
+- **Enforced In:** [`docs/rules/frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`docs/rules/test_driven_development.md`](./docs/rules/test_driven_development.md), [`docs/rules/api_architecture.md`](./docs/rules/api_architecture.md), all 28 domain rules in [`docs/rules/`](./docs/rules/), [`memory.md`](./memory.md).

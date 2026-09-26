@@ -8,25 +8,15 @@
 
 Multi-tenancy introduces significant operational complexity: tenant routing, cross-tenant data leak risks, noisy neighbor resource starvation, and complex database migrations. **Never force multi-tenant abstractions onto applications that execute in single-tenant boundaries.**
 
-```
-                     MULTI-TENANCY YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Single-tenant application architecture.                           │
-  │    • Standard database tables without tenant foreign keys.             │
-  │    • Zero RLS policies, tenant interceptors, or dynamic schemas.       │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (When Multi-Tenancy Architecture is Forbidden)        │
-  │    • Single-tenant on-premise deployments or dedicated instances.      │
-  │    • Internal employee enterprise tools, developer CLIs, or games.     │
-  │    • Early-stage prototypes validating core domain logic.              │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (Graduation to Multi-Tenancy Architecture)        │
-  │    • Multi-tenant B2B SaaS where multiple independent organizations    │
-  │      share the same underlying application and database infrastructure.│
-  │    • Strict legal, SOC 2, and regulatory mandates prohibiting any      │
-  │      cross-tenant data leakage.                                        │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph MultiTenancyGate["Multi-Tenancy YAGNI Gate"]
+        B1["1. Simple Baseline (Day 1)<br/>• Single-tenant application architecture<br/>• Standard database tables without tenant foreign keys<br/>• Zero RLS policies, tenant interceptors, or dynamic schemas"]
+        B2["2. Anti-Triggers (Forbidden)<br/>• Single-tenant on-premise deployments or dedicated instances<br/>• Internal employee enterprise tools, developer CLIs, or games<br/>• Early-stage prototypes validating core domain logic"]
+        B3["3. The Tipping Point (Graduation)<br/>• Multi-tenant B2B SaaS where independent organizations share infrastructure<br/>• Strict legal, SOC 2, and regulatory mandates prohibiting cross-tenant data leakage"]
+        B1 -->|Forbidden if single-tenant| B2
+        B1 -->|Triggered by B2B SaaS requirements| B3
+    end
 ```
 
 ---
@@ -35,16 +25,12 @@ Multi-tenancy introduces significant operational complexity: tenant routing, cro
 
 Tenant identity must be resolved at the edge/gateway from **cryptographically verified session context**, never from spoofable client input:
 
-```
-[Incoming Request] ──► [Auth Middleware] ──► Extract Verified `tenantId` from JWT
-                               │
-                               ▼
-                    [AsyncLocalStorage / Context]
-                               │
-            ┌──────────────────┴──────────────────┐
-            ▼                                     ▼
-     [Database Connection]                [Audit / Event Log]
-   SET LOCAL app.current_tenant_id       Tagged with `tenantId`
+```mermaid
+flowchart LR
+    Req["Incoming Request"] --> Auth["Auth Middleware<br/>Extract Verified tenantId from JWT"]
+    Auth --> Ctx["AsyncLocalStorage / Context"]
+    Ctx --> DB["Database Connection<br/>SET LOCAL app.current_tenant_id"]
+    Ctx --> Audit["Audit / Event Log<br/>Tagged with tenantId"]
 ```
 
 ### Invariants:

@@ -41,20 +41,12 @@ The only vehicle through which a team delivers actual product value is a usable,
 
 The OKR framework connects overarching strategic vision to sprint execution and product backlog ordering.
 
-```
-Company Vision & Strategy
-       │
-       ▼
-Strategic OKRs (Annual / Quarterly)
-       │
-       ▼
-  Product Goal (Long-Term Commitment)
-       │
-       ▼
-Product Backlog (Emergent, Ordered PBIs)
-       │
-       ▼
-  Sprint Goal (Tactical Increment)
+```mermaid
+flowchart TD
+    V["Company Vision & Strategy"] --> OKR["Strategic OKRs (Annual / Quarterly)"]
+    OKR --> PG["Product Goal (Long-Term Commitment)"]
+    PG --> PB["Product Backlog (Emergent, Ordered PBIs)"]
+    PB --> SG["Sprint Goal (Tactical Increment)"]
 ```
 
 ### Anatomy of an OKR
@@ -111,19 +103,22 @@ A collaborative prioritization exercise where stakeholders are allocated a const
 
 Following Gunther Verheyen's backlog topology, the Product Backlog serves as an **emergent, living roadmap**:
 
-```
-▲ Finer Granularity (Top)
-│   [ PBI 1: Sprintable, vertically sliced, clear DoD & Gherkin ]
-│   [ PBI 2: High priority, well-understood, estimated ]
-│   [ PBI 3: Actionable, small, customer value clear ]
-│
-│ Medium Granularity (Middle)
-│   [ PBI 4: Candidate for next period, coarse slice ]
-│   [ PBI 5: Alternative approach under evaluation ]
-│
-▼ Coarser Granularity (Bottom)
-    [ PBI 6: Long-term idea, future capability ]
-    [ PBI 7: Raw thought, exploratory concept ]
+```mermaid
+flowchart TD
+    subgraph Top["Finer Granularity (Top of Backlog)"]
+        P1["PBI 1: Sprintable, vertically sliced, clear DoD & Gherkin"]
+        P2["PBI 2: High priority, well-understood, estimated"]
+        P3["PBI 3: Actionable, small, customer value clear"]
+    end
+    subgraph Middle["Medium Granularity (Middle)"]
+        P4["PBI 4: Candidate for next period, coarse slice"]
+        P5["PBI 5: Alternative approach under evaluation"]
+    end
+    subgraph Bottom["Coarser Granularity (Bottom)"]
+        P6["PBI 6: Long-term idea, future capability"]
+        P7["PBI 7: Raw thought, exploratory concept"]
+    end
+    Top --> Middle --> Bottom
 ```
 
 ### Rules of Progressive Elaboration

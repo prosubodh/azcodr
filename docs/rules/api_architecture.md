@@ -35,12 +35,17 @@ APIs must adhere strictly to standard HTTP semantics. Never return `200 OK` for 
 
 Operations with unpredictable or long execution durations (> 1.5 seconds, such as video rendering, large PDF exports, batch imports, or complex report generation) must never block synchronous HTTP request threads:
 
-```
-[Client] ──POST /reports/export──► [API Gateway] ──Dispatch──► [Task Queue / Worker]
-   ▲                                      │
-   └──────── 202 Accepted ────────────────┘
-             Location: /api/v1/tasks/tsk_123
-             { "taskId": "tsk_123", "status": "QUEUED", "pollIntervalMs": 2000 }
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Client
+    participant Gateway as API Gateway
+    participant Queue as Task Queue / Worker
+    
+    Client->>Gateway: POST /reports/export (Long-running > 1.5s)
+    Gateway->>Queue: Dispatch background job
+    Gateway-->>Client: 202 Accepted (Location: /api/v1/tasks/tsk_123)
+    Note over Client,Gateway: Client polls GET /api/v1/tasks/tsk_123 until complete
 ```
 
 ### Protocol Standards:

@@ -8,26 +8,15 @@
 
 Type systems exist to prove program correctness and eliminate entire classes of runtime errors. **Never compromise static type safety with `any` escape hatches, but avoid premature type-level metaprogramming acrobatics that obscure domain intent.**
 
-```
-                     TYPE SAFETY YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Strict compiler flags enabled with zero compilation warnings.     │
-  │    • Concrete interfaces, records, dataclasses, and structs.           │
-  │    • Zero `any`, `Any`, or raw `Object` escape hatches.                │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (What is Strictly Forbidden)                          │
-  │    • Bypassing the compiler via `any`, `as unknown as T`, or casts.    │
-  │    • Deep, recursive type-gymnastics or complex mapped types where a   │
-  │      simple explicit interface or function solves the problem.         │
-  │    • Primitive Obsession: passing raw `string` for all domain IDs.     │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (When to Apply Advanced Type Patterns)            │
-  │    • Domain Identifiers: Use Branded/Nominal types when multiple entity│
-  │      IDs (`UserId`, `TenantId`, `OrderId`) risk accidental mix-ups.    │
-  │    • System Boundaries: Use fail-fast schema validation (Zod, Serde,   │
-  │      Pydantic) whenever parsing untrusted external JSON/network data.  │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph TypeSafetyGate["Type Safety YAGNI Gate"]
+        B1["1. Simple Baseline (Day 1)<br/>• Strict compiler flags enabled with zero compilation warnings<br/>• Concrete interfaces, records, dataclasses, and structs<br/>• Zero any, Any, or raw Object escape hatches"]
+        B2["2. Anti-Triggers (Forbidden)<br/>• Bypassing the compiler via any, as unknown as T, or casts<br/>• Deep recursive type-gymnastics where a simple interface solves it<br/>• Primitive Obsession: passing raw string for all domain IDs"]
+        B3["3. The Tipping Point (Graduation)<br/>• Domain Identifiers: Use Branded/Nominal types when multiple entity IDs risk mix-ups<br/>• System Boundaries: Use fail-fast schema validation (Zod, Serde, Pydantic) on untrusted inputs"]
+        B1 -->|Forbidden if compiler bypassed| B2
+        B1 -->|Triggered by domain safety & boundary parsing| B3
+    end
 ```
 
 ---
@@ -49,23 +38,12 @@ Regardless of the execution language chosen for an adapter, service, or CLI, enf
 
 Prevent accidental mixing of raw primitive identifiers (e.g. passing an arbitrary `string` representing a `TenantId` where a `UserId` is expected) by enforcing nominal types across all supported languages:
 
-```
-┌────────────────────────────────────────────────────────────────────────┐
-│ Nominal Domain Identifier Pattern (Polyglot)                           │
-├────────────────────────────────────────────────────────────────────────┤
-│ Rust:       struct TenantId(String);                                   │
-│             struct UserId(String);                                     │
-│ Go:         type TenantId string                                       │
-│             type UserId string                                         │
-│ TypeScript: type TenantId = Brand<string, 'TenantId'>;                 │
-│             type UserId = Brand<string, 'UserId'>;                     │
-│ Python:     TenantId = NewType('TenantId', str)                        │
-│             UserId = NewType('UserId', str)                            │
-│ Java:       record TenantId(String value) {}                           │
-│             record UserId(String value) {}                             │
-│ C#:         readonly record struct TenantId(string Value);             │
-│             readonly record struct UserId(string Value);               │
-└────────────────────────────────────────────────────────────────────────┘
+```mermaid
+classDiagram
+    class NominalIdentifierPattern {
+        <<Polyglot Implementations>>
+    }
+    note for NominalIdentifierPattern "Rust: struct TenantId(String); struct UserId(String);<br/>Go: type TenantId string; type UserId string<br/>TypeScript: type TenantId = Brand<string, 'TenantId'>;<br/>Python: TenantId = NewType('TenantId', str)<br/>Java: record TenantId(String value) {}<br/>C#: readonly record struct TenantId(string Value);"
 ```
 
 Domain functions must accept and return branded types rather than raw primitive strings or integers.

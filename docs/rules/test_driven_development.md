@@ -8,57 +8,42 @@
 
 Every functional increment, feature, or architectural modification must traverse this unbroken sequence. Writing code out of order (e.g. coding before tests, or testing before domain analysis) is strictly prohibited.
 
-```
-┌────────────────────────────────────────────────────────────────────────────────────────┐
-│                        THE NON-NEGOTIABLE AGILE DOMAIN LIFECYCLE                       │
-└────────────────────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    P1["Phase 1: Requirements Engineering<br/>• INVEST stories & Gherkin criteria<br/>• Out-of-scope non-goals & status matrix"]
+    P2["Phase 2: Tactical Domain Analysis<br/>• Ubiquitous Language & Bounded Contexts<br/>• Aggregate Roots & Business Invariants"]
+    P3["Phase 3: Outer Acceptance Test (RED)<br/>• Failing UI component or API route test<br/>• Verifies failure for expected reason"]
+    P4["Phase 4: Inner TDD & Collaborator Discovery (RED-GREEN-REFACTOR)<br/>• Discovers Use Cases & Ports<br/>• Nano-cycles with Uncle Bob's 3 Laws"]
+    P5["Phase 5: Outer Verification & Proof (GREEN)<br/>• Outer test passes with zero regressions<br/>• 100.00% coverage & boundary smoke verification"]
 
-  [Phase 1: Requirements Engineering]
-     │  - Decompose user prompt into INVEST user stories.
-     │  - Author executable Gherkin Given-When-Then criteria.
-     │  - Define Out-of-Scope non-goals and edge case status code matrix.
-     ▼
-  [Phase 2: Tactical Domain Analysis]
-     │  - Discover and enforce Ubiquitous Language terms.
-     │  - Map Bounded Contexts, Aggregate Roots, and Value Objects.
-     │  - Codify explicit business invariants that state mutations must protect.
-     ▼
-  [Phase 3: Outer-Loop Acceptance Test (RED)]
-     │  - Write failing end-to-end acceptance or contract test:
-     │      * Frontend: Component/UI user interaction assertion (Playwright / testing library).
-     │      * Backend: Black-box HTTP API contract test (Supertest/OpenAPI).
-     │  - Verify the test FAILS for the expected reason (RED proof).
-     ▼
-  [Phase 4: Inner-Loop TDD & Collaborator Discovery (RED-GREEN-REFACTOR)]
-     │  - Outer test discovers required collaborators (Use Cases, Ports, Domain Entities).
-     │  - For each collaborator:
-     │      1. RED: Write failing unit test asserting domain invariants.
-     │      2. GREEN: Write minimal production code to pass.
-     │      3. REFACTOR: Eliminate duplication, enforce SLAP, CQS, Clean Code.
-     ▼
-  [Phase 5: Outer Acceptance Resolution & Definition of Done]
-        - Run outer acceptance test: verifies GREEN without altering the test assertion.
-        - Run cross-package boundary smoke tests (reverse proxy, sockets, LAN interfaces).
-        - Verify 100.00% test coverage gate across all packages.
-        - Pass Definition of Done (DoD) checklist.
+    P1 --> P2 --> P3 --> P4 --> P5
 ```
 
 ---
 
-## 2. Outside-In TDD (London School) Double Loop
+## 2. The London School Double-Loop TDD Workflow
 
 Drive all user-facing features from the outermost interface inward:
 
-```
-[Outer Loop: Acceptance / Contract Test (RED)]
-       │
-       ▼
-[Inner Loop: Unit Test Collaborator (RED)] ──► [Implement Minimal Code (GREEN)] ──► [Refactor (REFACTOR)]
-       │                                                                                   │
-       └──────────────────────── Repeat Inner Loop until Done ◄────────────────────────────┘
-       │
-       ▼
-[Outer Loop: Acceptance / Contract Test (GREEN)] ──► [Outer Refactor]
+```mermaid
+flowchart TD
+    subgraph OuterLoop ["Outer Loop (Acceptance / Contract Test)"]
+        O_RED["Outer Acceptance Test (RED)"]
+        O_GREEN["Outer Acceptance Test (GREEN)"]
+        O_REF["Outer Refactor & Proof"]
+    end
+
+    subgraph InnerLoop ["Inner Loop (Unit Test & Collaborator TDD)"]
+        I_RED["Unit Test Collaborator (RED)"]
+        I_GREEN["Implement Minimal Code (GREEN)"]
+        I_REF["Refactor under Green (REFACTOR)"]
+        
+        I_RED --> I_GREEN --> I_REF
+        I_REF -.->|"Next Micro-Assertion"| I_RED
+    end
+
+    O_RED --> I_RED
+    I_REF --> O_GREEN --> O_REF
 ```
 
 1. **Outer Acceptance / Contract Test First**: Every feature begins with a failing outer acceptance test:
@@ -83,11 +68,6 @@ Deviating from this lifecycle introduces catastrophic defects and architectural 
 | **Skipping Outer Acceptance Tests** | In-memory unit tests pass, but user interactions and network routing fail. | "The In-Memory Supertest Illusion": App says "Offline/Connecting" while 100% unit tests pass. |
 | **Skipping the Refactor Phase** | Technical debt accumulates immediately behind green tests. | Code rot, duplicated logic, bloated monolithic functions (> 30 lines), violated DRY/SLAP. |
 
-### The Immutable Three Laws of TDD (Uncle Bob & Kent Beck):
-1. **First Law:** You are not allowed to write any production code unless it is to make a single failing unit or acceptance test pass.
-2. **Second Law (Strict Incremental Boundary):** You are not allowed to write any more of a unit test than is sufficient to fail; and compilation failures are failures.
-3. **Third Law (Minimal Production Code):** You are not allowed to write any more production code than is sufficient to pass the one currently failing test.
-
 ---
 
 ## 4. The Batch-Test Anti-Pattern & The Incremental Nano-Cycle
@@ -111,18 +91,22 @@ Every collaborator discovered in Phase 4 must progress through micro-cycles of o
 ## 5. Ping-Pong Pair Programming Protocol with AI
 
 When pairing with the human developer, operate in true **Ping-Pong TDD**:
+
+```mermaid
+sequenceDiagram
+    autonumber
+    actor A as Partner A (Driver/Human)
+    participant S as Test Runner
+    actor B as Partner B (Navigator/AI)
+    
+    A->>S: Writes 1 micro-test assertion (RED)
+    S-->>A: Displays verified failure output
+    B->>S: Writes minimal code to pass (GREEN)
+    S-->>B: Displays verified pass
+    Note over A,B: Both refactor under green (REFACTOR)
+    Note over A,B: Roles swap; repeat for next behavior
 ```
-  ┌─────────────────────────────────────────────────────────────┐
-  │                 PING-PONG PAIR PROGRAMMING                  │
-  │                                                             │
-  │  Turn 1 [Partner A]: Writes ONE micro-test assertion (RED)  │
-  │  Turn 2 [System]:    Runs test & displays verified failure  │
-  │  Turn 3 [Partner B]: Writes MINIMAL code to pass (GREEN)    │
-  │  Turn 4 [System]:    Runs test & displays verified pass     │
-  │  Turn 5 [Both]:      Refactors under green (REFACTOR)       │
-  │  Turn 6:             Roles swap; repeat for next behavior   │
-  └─────────────────────────────────────────────────────────────┘
-```
+
 - **Collaborative Steering**: The human developer can write the test while the AI writes the minimal pass, or the AI can present each micro-test and await confirmation before implementing.
 - **Continuous Alignment**: Design and data structures emerge organically through mutual feedback rather than monolithic code dumps.
 
@@ -149,4 +133,52 @@ When pairing with the human developer, operate in true **Ping-Pong TDD**:
   - Server Failures: `500 Internal Server Error`, `503 Service Unavailable`
 - **UI Interaction States & Edge Cases**: Fully assert all presentation states (loading spinners, disabled controls, error banners, success feedback, empty states) across suites.
 
+---
 
+## 8. Headless UI Testing Architecture for Autonomous Agents
+
+Autonomous AI coding agents operate without human eyesight. To verify user interfaces deterministically without manual browser clicking, projects with UI interfaces must enforce the **4-Tier Headless UI Testing Pyramid**:
+
+```mermaid
+flowchart TD
+    T4["Tier 4: Headless Playwright E2E<br/>(Full multi-page browser journeys, Chromium CLI)"]
+    T3["Tier 3: Automated A11y Gates (axe-core)<br/>(WCAG 2.2 AA audits with zero human eyesight)"]
+    T2["Tier 2: Network Isolation via MSW<br/>(Deterministic HTTP mocking: loading, error, empty, success)"]
+    T1["Tier 1: Behavioral Component Testing (@testing-library)<br/>(Accessible role queries, user-event keyboard/mouse)"]
+
+    T4 --> T3 --> T2 --> T1
+```
+
+### 8.1. Behavioral Component Testing (@testing-library + jsdom/happy-dom)
+- **Test Behavior, Not Implementation**: Never assert component internal state, hook variables, or private methods. Assert what the user experiences.
+- **Strict Accessible Role-Based Queries**:
+  - *Mandatory:* `screen.getByRole('button', { name: /submit/i })`, `screen.getByRole('heading', { level: 1 })`, `screen.getByLabelText(/email/i)`.
+  - *Prohibited:* `container.querySelector('.btn-primary')`, `getByTestId('submit-btn')` (data-testid is a banned crutch for poor semantic accessibility).
+- **Realistic User Events**: Always use `@testing-library/user-event` rather than synthetic `fireEvent` to accurately simulate browser focus, keypress, typing, and click sequences.
+
+### 8.2. Network Isolation via Mock Service Worker (MSW)
+- Never mock client fetch/HTTP clients with ad-hoc mock objects (`vi.fn()`).
+- Intercept requests at the network layer using **MSW**:
+  ```typescript
+  // Deterministic network boundary simulation
+  http.get('/api/v1/orders', () => HttpResponse.json(mockOrders))
+  ```
+- **The 4 Universal UI Presentation States**: Component tests must explicitly assert:
+  1. *Loading State:* Accessible spinner / skeleton is rendered while request is in flight.
+  2. *Success State:* Data grid / list renders items with correct semantic markup.
+  3. *Error State:* RFC 7807 error banner renders with retry button when API returns `500` or `422`.
+  4. *Empty State:* Meaningful empty-state message and CTA when API returns `[]`.
+
+### 8.3. Automated Headless Accessibility Gates (axe-core)
+- Every component test suite must execute automated accessibility checks using `axe-core` (`vitest-axe` or `@axe-core/playwright`):
+  ```typescript
+  const { container } = render(<OrderDetailsModal orderId="ord_123" />);
+  const results = await axe(container);
+  expect(results).toHaveNoViolations();
+  ```
+- Fails the test automatically on missing ARIA labels, invalid heading hierarchies, contrast defects, or unlinked form labels without requiring human eyesight.
+
+### 8.4. End-to-End Headless Browser Automation (Playwright)
+- For critical user journeys (authentication, checkout, resource creation):
+  - Run headless Chromium in CLI/CI: `npx playwright test`.
+  - Configure automated forensic captures on failure: screenshots, trace files, and videos saved to `test-results/` for immediate agent inspection.

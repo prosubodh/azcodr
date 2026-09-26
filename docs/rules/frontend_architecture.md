@@ -8,32 +8,68 @@
 
 Frontend engineering is frequently derailed by two opposing anti-patterns: **reinventing the wheel** (hand-rolling custom dialogs and bespoke CSS architectures) or **premature framework sprawl** (installing heavy global state machines for simple data flows).
 
-```
-                 FRONTEND ARCHITECTURE YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Semantic HTML/markup styled with utility classes.                 │
-  │    • Battle-tested accessible headless primitives (Radix UI, Melt UI,  │
-  │      Kobalte, PrimeVue, Angular CDK).                                  │
-  │    • Zero bespoke CSS architectures, unstyled `<div>` modals, or Redux.│
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (When Frontend Architecture is Strictly Forbidden)    │
-  │    • Headless backends, REST/gRPC microservices, or cloud workers.     │
-  │    • Terminal CLI utilities, embedded libraries, or game engines.      │
-  │    • Monolithic global state stores (Redux, MobX, Pinia) before        │
-  │      separating asynchronous server cache from URL search parameters.  │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (When to Apply this Architectural Discipline)     │
-  │    • Dynamic client interfaces with asynchronous server data fetching, │
-  │      declarative form submissions, and multi-step UI workflows.        │
-  │    • Requirements for strict WCAG 2.2 AA accessibility, focus trapping,│
-  │      and full keyboard navigation.                                     │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph Gate ["Frontend Architecture YAGNI Gate"]
+        B1["1. SIMPLE BASELINE (Day 1)"]
+        B1_D["• Semantic HTML/markup styled with utility classes.<br/>• Battle-tested accessible headless primitives (Radix, Melt, Kobalte, PrimeVue).<br/>• Zero bespoke CSS architectures, unstyled div modals, or Redux."]
+        
+        B2["2. ANTI-TRIGGERS (Strictly Forbidden)"]
+        B2_D["• Headless backends, REST/gRPC microservices, or cloud workers.<br/>• Terminal CLI utilities, embedded libraries, or game engines.<br/>• Monolithic global state stores (Redux, MobX, Pinia) before separating server cache."]
+        
+        B3["3. THE TIPPING POINT (Graduation Threshold)"]
+        B3_D["• Dynamic client interfaces with asynchronous server data fetching.<br/>• Multi-step declarative form submissions and complex workflows.<br/>• Strict WCAG 2.2 AA accessibility, focus trapping, and keyboard navigation."]
+        
+        B1 --- B1_D
+        B2 --- B2_D
+        B3 --- B3_D
+    end
 ```
 
 ---
 
-## 2. Component Primitives, Headless Accessibility & WCAG 2.2 Standards
+## 2. The Asymmetry Law: Outside-In Discovery vs. Inside-Out Execution
+
+A fundamental architectural question is: **Does the User Interface dictate Business Logic, or does Business Logic dictate the UI?**
+
+The answer is governed by the **Outside-In Discovery vs. Inside-Out Execution Asymmetry**:
+
+```mermaid
+flowchart LR
+    subgraph Discovery ["Outside-In Discovery (Phase 1 & 2)"]
+        UI["User Interface & Interaction Model<br/>(Web GUI, Mobile, or Terminal CLI)"]
+        UC["Inbound Driving Port<br/>(Use Case / Command DTO)"]
+        UI -->|"Discovers Required Capabilities"| UC
+    end
+
+    subgraph Execution ["Inside-Out Execution (Phase 3 & 4)"]
+        DM["Domain Core & Invariants<br/>(100% UI-Agnostic Rules & State Machines)"]
+        AD["Outbound Driven Adapters<br/>(Database, Email, External Services)"]
+        UC -->|"Executes Isolated Logic"| DM
+        DM -->|"Persists / Notifies"| AD
+    end
+```
+
+### 1. Outside-In Discovery (Why Interaction Must Be Refined Early)
+- The user's operational mental model, workflow steps, and interaction touchpoints (whether Web forms, CLI flags, or API endpoints) **guide the discovery of system capabilities**.
+- If business logic is authored in a vacuum without interaction analysis, engineers build speculative methods and database models that do not align with user journeys (**The Anemic Core Antipattern**).
+- *Mandate:* In Phase 1 (Requirements) and Phase 2 (Domain Analysis), interaction models and wireframe workflows must be refined early via [`product-analyst`](../../.agents/skills/product-analyst/SKILL.md) and [`ui_ux_architecture.md`](./ui_ux_architecture.md).
+
+### 2. Inside-Out Execution (Why Domain Logic Remains Pure)
+- Once discovered, **business invariants are 100% decoupled from the UI**.
+- A business rule (e.g. *"An invoice cannot be paid twice"*, *"Discount cannot exceed 50%"*) must never live in a React `onClick` handler, a component hook, or a CLI flag parser (**The Smart UI Antipattern**).
+- The presentation layer merely parses user interaction into a plain **Command DTO** and calls an **Application Use Case** (Driving Port).
+- If the Web UI is replaced with a CLI or a background job, the core domain logic requires **zero modifications**.
+
+### 3. What If a Project Has No UI? (Headless Topologies)
+- For Headless Backends, Daemon Workers, and Embedded Systems:
+  - The **API Schema (OpenAPI / gRPC Protobuf) or Function Signature IS the UI**.
+  - For a CLI Utility, the **Command Pipeline (flags, stdin/stdout, exit codes)** IS the UI.
+  - The principle remains identical: the external interface defines the boundary contract, while the internal engine enforces pure invariants.
+
+---
+
+## 3. Component Primitives, Headless Accessibility & WCAG 2.2 Standards
 
 - **Accessible Headless Primitives**: All interactive UI components (dialogs, dropdowns, selects, tabs, tooltips, popovers) must decouple behavioral accessibility (focus trapping, keyboard navigation, ARIA states) from visual presentation using headless primitives:
   - *React:* `@radix-ui` / `shadcn/ui` in `@/components/ui/`
@@ -54,7 +90,7 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 
 ---
 
-## 3. Server-State Cache Synchronization & Invalidation
+## 4. Server-State Cache Synchronization & Invalidation
 
 - **Decoupling Remote Cache from Local State**: Server state (owned remotely, asynchronous, shared across clients) must never be treated as local synchronous client state.
 - **Mandatory Cache Synchronization Engine**: Asynchronous data fetching, caching, deduplication, and background revalidation must use a dedicated cache synchronization manager (e.g., TanStack Query, SWR, or RTK Query in React; Pinia Colada or VueUse `useFetch` in Vue; Superforms or SvelteKit load functions in Svelte; Angular Signals with HttpClient).
@@ -82,7 +118,7 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 
 ---
 
-## 4. Form State Management & Fail-Fast Schema Validation
+## 5. Form State Management & Fail-Fast Schema Validation
 
 - **Mandatory Schema Validation**: Every form submission must be validated against a formal declarative schema (Zod, Valibot, standard-schema, or framework validator) that mirrors shared DTO/input contracts.
 - **Dedicated Form State Engines**: Use dedicated form engines (React Hook Form, TanStack Form, VeeValidate, Superforms, Angular Reactive Forms) that track field dirty states, touched states, and asynchronous validation without triggering full component tree re-renders.
@@ -99,7 +135,7 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 
 ---
 
-## 5. The 5-Tier State Hierarchy & Bidirectional URL Navigation
+## 6. The 5-Tier State Hierarchy & Bidirectional URL Navigation
 
 Never dump all application state into a single global state container. Enforce strict categorical separation across 5 distinct lifecycles:
 
@@ -115,7 +151,7 @@ Never dump all application state into a single global state container. Enforce s
 
 ---
 
-## 6. Theme Architecture & Symmetrical Design Tokens
+## 7. Theme Architecture & Symmetrical Design Tokens
 
 - **Symmetric Design Tokens**: Ensure foundational CSS variables (`--background`, `--foreground`, `--card`, `--border`, `--popover`) are symmetrically declared across `:root` and `.dark`. Omitted root tokens in `.dark` result in unstyled backgrounds and illegible text when switching themes.
 - **System Preference Detection & Reactive Synchronization**: `ThemeProvider` implementations must listen to `window.matchMedia('(prefers-color-scheme: dark)')` with dynamic event listeners so OS appearance toggles seamlessly propagate in real-time, and synchronize `document.documentElement.style.colorScheme = resolvedTheme` to ensure browser-native elements (scrollbars, input widgets) match the active theme.

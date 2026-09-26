@@ -146,32 +146,16 @@ A common misunderstanding is that YAGNI forbids using external libraries. **This
 
 Never architect or modify a skill based on assumptions. Before authoring any `SKILL.md`, run the **7 Core Skill Inquiry Branches**:
 
-```
-[New Skill / Rule Request]
-       │
-       ▼
-[Branch 1: Placement] ────────── Should this be AGENTS.md, a Rule, or a Skill?
-       │
-       ▼
-[Branch 2: Trigger Boundaries] ── Exact 'Use when...' and explicit 'Do NOT use for...'?
-       │
-       ▼
-[Branch 3: Domain Ground Truth] ─ Have generic textbook tutorials been purged?
-       │
-       ▼
-[Branch 4: Gotchas & Anti-Patterns] What specific AI mistakes MUST be forbidden?
-       │
-       ▼
-[Branch 5: Determinism vs LLM] ── Should deterministic steps be scripts in scripts/?
-       │
-       ▼
-[Branch 6: Progressive Bloat] ─── Is SKILL.md < 500 lines with sub-docs in references/?
-       │
-       ▼
-[Branch 7: Verification Loop] ─── Are there output templates and self-checklists?
-       │
-       ▼
-[Ready to Author / Update Skill]
+```mermaid
+flowchart TD
+    Req["New Skill / Rule Request"] --> B1["Branch 1: Placement<br/>AGENTS.md, Rule, or Skill?"]
+    B1 --> B2["Branch 2: Trigger Boundaries<br/>Exact 'Use when...' & 'Do NOT use for...'?"]
+    B2 --> B3["Branch 3: Domain Ground Truth<br/>Generic textbook tutorials purged?"]
+    B3 --> B4["Branch 4: Gotchas & Anti-Patterns<br/>What AI mistakes MUST be forbidden?"]
+    B4 --> B5["Branch 5: Determinism vs LLM<br/>Deterministic steps scripted in scripts/?"]
+    B5 --> B6["Branch 6: Progressive Bloat<br/>SKILL.md < 500 lines with sub-docs in references/?"]
+    B6 --> B7["Branch 7: Verification Loop<br/>Output templates & self-checklists present?"]
+    B7 --> Ready["Ready to Author / Update Skill"]
 ```
 
 ### The 7 Core Inquiry Branches

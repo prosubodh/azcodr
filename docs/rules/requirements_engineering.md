@@ -40,20 +40,22 @@ Ensure every user story satisfies Bill Wake's **INVEST** criteria:
 
 ### The Multi-Layer Cake Metaphor (Vertical Slicing)
 Think of a complete feature as a multi-layer cake:
-```
-┌──────────────────────────────────────┐
-│ Presentation / UI Layer              │
-├──────────────────────────────────────┤
-│ Business Logic & Application Use Case│
-├──────────────────────────────────────┤
-│ Domain Invariants & Entities         │
-├──────────────────────────────────────┤
-│ Persistence & Database Layer         │
-└──────────────────────────────────────┘
-                   ▲
-                   │
-           Vertical Cake Slice
-   (Customer gets a taste of every layer)
+```mermaid
+flowchart TD
+    subgraph Cake["The Multi-Layer Cake (Vertical Slicing)"]
+        direction TB
+        L1["Presentation / UI Layer"]
+        L2["Business Logic & Application Use Case"]
+        L3["Domain Invariants & Entities"]
+        L4["Persistence & Database Layer"]
+        L1 --- L2 --- L3 --- L4
+    end
+
+    Slice["Vertical Cake Slice<br/>(Customer gets a taste of every layer)"]
+    Slice --> L1
+    Slice --> L2
+    Slice --> L3
+    Slice --> L4
 ```
 - **Horizontal Slicing (Anti-Pattern):** Implementing only the database schema or only the UI mock. A full database table has zero observable value to the customer without presentation and logic layers.
 - **Vertical Slicing (Golden Standard):** Slicing thin through all layers (UI ➔ API ➔ Domain ➔ DB). Even a minimal vertical slice provides working functionality that can be deployed, tested, and validated empirically.

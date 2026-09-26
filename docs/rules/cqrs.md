@@ -8,19 +8,17 @@
 
 CQRS separates the data model used for state mutations (**Commands**) from the data model used for read operations (**Queries**). While powerful, **CQRS is one of the most frequently over-engineered patterns in modern software**. 
 
-```
-                               THE YAGNI TENSION
-  ┌─────────────────────────────────────┐     ┌─────────────────────────────────────┐
-  │     DEFAULT SINGLE-MODEL (CRUD)     │     │      DISTRIBUTED CQRS (LEVEL 3)     │
-  │  • 1 Unified Data Schema (ACID)     │     │  • Dual Schemas & Dual Databases    │
-  │  • Immediate Strong Consistency     │ VS  │  • Eventual Consistency & Lag       │
-  │  • Zero Projection Infrastructure   │     │  • Outbox, Message Bus, CDC Workers │
-  │  • Minimal Mental Overhead          │     │  • Projection Versioning & Replays  │
-  └─────────────────────────────────────┘     └─────────────────────────────────────┘
-                    ▲                                            ▲
-                    │                                            │
-               START HERE                                GRADUATE ONLY ON
-           (95% of Applications)                     PROVEN TIPPING POINTS
+```mermaid
+flowchart LR
+    subgraph DefaultModel["Default Single-Model (CRUD) - Start Here"]
+        D1["• 1 Unified Data Schema (ACID)<br/>• Immediate Strong Consistency<br/>• Zero Projection Infrastructure<br/>• Minimal Mental Overhead"]
+    end
+
+    subgraph DistributedCQRS["Distributed CQRS (Level 3) - Graduate on Proof"]
+        C1["• Dual Schemas & Dual Databases<br/>• Eventual Consistency & Lag<br/>• Outbox, Message Bus, CDC Workers<br/>• Projection Versioning & Replays"]
+    end
+
+    DefaultModel -.->|Graduate ONLY on high read-write asymmetry or SLA breaches| DistributedCQRS
 ```
 
 ### The YAGNI Rule for CQRS
@@ -37,21 +35,14 @@ CQRS separates the data model used for state mutations (**Commands**) from the d
 
 Rather than treating CQRS as a binary switch, systems must graduate incrementally across four explicit architectural tiers:
 
-```
-  LEVEL 0: Method CQS (Bertrand Meyer)
-  └── Functions either mutate state or return data; zero architectural overhead. Always mandatory.
-         │
-         ▼
-  LEVEL 1: Segregated Handlers in Code (Single DB, Single Schema)
-  └── Command Handlers load Aggregates; Query Handlers bypass domain model for flat DTOs.
-         │
-         ▼
-  LEVEL 2: Segregated Read Models / Materialized Views (Single DB)
-  └── Read queries query indexed SQL views or JSON cache tables populated synchronously via ACID transactions.
-         │
-         ▼
-  LEVEL 3: Polyglot Persistence & Asynchronous Projections (Multi-Store)
-  └── Write DB (Postgres) + Read DB (Elastic/Redis). Synchronized asynchronously via Transactional Outbox + CDC.
+```mermaid
+flowchart TD
+    L0["Level 0: Method CQS (Bertrand Meyer)<br/>Functions either mutate state or return data; zero architectural overhead. Always mandatory."]
+    L1["Level 1: Segregated Handlers in Code (Single DB, Single Schema)<br/>Command Handlers load Aggregates; Query Handlers bypass domain model for flat DTOs."]
+    L2["Level 2: Segregated Read Models / Materialized Views (Single DB)<br/>Read queries query indexed SQL views or JSON cache tables populated synchronously via ACID transactions."]
+    L3["Level 3: Polyglot Persistence & Asynchronous Projections (Multi-Store)<br/>Write DB (Postgres) + Read DB (Elastic/Redis). Synchronized asynchronously via Transactional Outbox + CDC."]
+
+    L0 --> L1 --> L2 --> L3
 ```
 
 ### Level 0: Method-Level CQS (Command-Query Separation)

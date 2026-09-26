@@ -28,16 +28,14 @@ All application processes and containers must handle graceful termination:
 - Drain active, in-flight connections within a bounded timeout window (e.g. 10 seconds).
 - Gracefully flush telemetry buffers, terminate background workers, and close database/cache connection pools cleanly before exiting with code 0:
 
-```
-┌────────────────────────────────────────────────────────┐
-│ Graceful Shutdown Flow (Universal / Agnostic)          │
-├────────────────────────────────────────────────────────┤
-│ onSignal(SIGTERM | SIGINT):                            │
-│   1. Set health check probe to UNHEALTHY (drain LB)    │
-│   2. Stop server listening for new connections         │
-│   3. Wait for in-flight requests (timeout: 10s)        │
-│   4. Close database and cache connection pools         │
-│   5. Flush OpenTelemetry trace & log buffers           │
-│   6. Terminate process with exit code 0                │
-└────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph GracefulShutdown["Graceful Shutdown Flow (Universal / Agnostic)"]
+        Sig["onSignal (SIGTERM | SIGINT)"] --> S1["1. Set health check probe to UNHEALTHY (drain LB)"]
+        S1 --> S2["2. Stop server listening for new connections"]
+        S2 --> S3["3. Wait for in-flight requests (timeout: 10s)"]
+        S3 --> S4["4. Close database and cache connection pools"]
+        S4 --> S5["5. Flush OpenTelemetry trace & log buffers"]
+        S5 --> S6["6. Terminate process with exit code 0"]
+    end
 ```

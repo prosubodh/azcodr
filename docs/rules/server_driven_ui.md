@@ -8,27 +8,15 @@
 
 Server-Driven UI requires building and maintaining a JSON schema specification, schema versioning, validation, and multi-platform component interpreters. **Never build a Server-Driven UI when standard client-side components and modern web deployments solve the problem.**
 
-```
-                     SERVER-DRIVEN UI YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Standard React/JSX components styled with Tailwind CSS.           │
-  │    • Instant web deployments via continuous delivery (Vercel/Cloudflare│
-  │    • Zero dynamic layout interpreters or backend schema JSONs.         │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (When Server-Driven UI is Strictly Forbidden)         │
-  │    • Web-only SaaS dashboards, internal admin tools, or landing pages. │
-  │    • Early-stage products iterating on UI layouts (SDUI slows down UX).│
-  │    • Teams without multi-platform client parity requirements.          │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (Graduation Threshold to Server-Driven UI)        │
-  │    • Native mobile applications (iOS / Android) where Apple App Store  │
-  │      and Google Play review cycles delay urgent UI/flow mutations.     │
-  │    • Multi-tenant white-label products where external customers        │
-  │      dynamically construct custom form layouts and section orders.     │
-  │    • Cross-platform feature parity where 1 backend team drives layout  │
-  │      across Web, iOS SwiftUI, and Android Jetpack Compose concurrently.│
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph SDUIGate["Server-Driven UI YAGNI Gate"]
+        B1["1. Simple Baseline (Day 1)<br/>• Standard React/JSX components styled with Tailwind CSS<br/>• Instant web deployments via continuous delivery<br/>• Zero dynamic layout interpreters or backend schema JSONs"]
+        B2["2. Anti-Triggers (Forbidden)<br/>• Web-only SaaS dashboards, internal admin tools, or landing pages<br/>• Early-stage products iterating on UI layouts<br/>• Teams without multi-platform client parity requirements"]
+        B3["3. The Tipping Point (Graduation)<br/>• Native mobile apps (iOS/Android) where app store review cycles delay urgent UI/flow mutations<br/>• Multi-tenant white-label products where customers dynamically construct custom form layouts<br/>• Cross-platform parity: 1 backend drives layout across Web, iOS SwiftUI, and Android Jetpack Compose"]
+        B1 -->|Forbidden if web-only or early| B2
+        B1 -->|Triggered by multi-platform or white-label| B3
+    end
 ```
 
 ---

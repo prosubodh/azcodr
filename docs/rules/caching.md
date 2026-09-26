@@ -8,26 +8,15 @@
 
 Caching introduces state duplication, cache invalidation race conditions, and memory overhead. **Caching is never a substitute for missing database indexes or poorly structured SQL queries.**
 
-```
-                           THE CACHING YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Relational queries with composite indexes (see database_perf.md). │
-  │    • Request-scoped in-memory DataLoader batching to eliminate N+1.     │
-  │    • Zero distributed cache infrastructure (no Redis / Memcached).     │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (When Caching is Strictly Forbidden)                  │
-  │    • Queries that are slow due to missing indexes or sequential scans. │
-  │    • High-write / high-churn entities (write-heavy mutation streams).   │
-  │    • Low-traffic administrative or internal operational queries.       │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (Graduation Threshold to Distributed Caching)     │
-  │    • Query has been optimized with EXPLAIN ANALYZE, but p99 latency    │
-  │      still exceeds SLA (> 100ms) under production read concurrency.    │
-  │    • Read-to-write asymmetry on the entity exceeds 20:1.               │
-  │    • Downstream external API rate limits or third-party egress costs   │
-  │      demand response caching.                                          │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph CachingGate["Caching YAGNI Gate"]
+        B1["1. Simple Baseline (Day 1)<br/>• Relational queries with composite indexes<br/>• Request-scoped in-memory DataLoader batching to eliminate N+1<br/>• Zero distributed cache infrastructure (no Redis / Memcached)"]
+        B2["2. Anti-Triggers (Forbidden)<br/>• Queries that are slow due to missing indexes or sequential scans<br/>• High-write / high-churn entities (write-heavy mutation streams)<br/>• Low-traffic administrative or internal operational queries"]
+        B3["3. The Tipping Point (Graduation)<br/>• Query has been optimized with EXPLAIN ANALYZE, but p99 latency still exceeds SLA (> 100ms)<br/>• Read-to-write asymmetry on the entity exceeds 20:1<br/>• Downstream external API rate limits or third-party egress costs demand response caching"]
+        B1 -->|Forbidden if missing indexes| B2
+        B1 -->|Triggered by high read/write ratio| B3
+    end
 ```
 
 ---
@@ -36,16 +25,16 @@ Caching introduces state duplication, cache invalidation race conditions, and me
 
 Application services interact with caching infrastructure through a swappable **Cache Port**, supporting any backend (Redis, Valkey, Dragonfly, KeyDB, Memcached, or in-memory LRU):
 
-```
-┌────────────────────────────────────────────────────────┐
-│ Cache Port Interface (Agnostic Contract)               │
-├────────────────────────────────────────────────────────┤
-│ get(key): Optional<String>                             │
-│ set(key, value, ttlSeconds): void                      │
-│ delete(key): void                                      │
-│ deletePattern(pattern): void                           │
-│ acquireLock(lockKey, ttlMs): boolean                   │
-└────────────────────────────────────────────────────────┘
+```mermaid
+classDiagram
+    class CachePort {
+        <<interface>>
+        +get(key: string) Optional~string~
+        +set(key: string, value: string, ttlSeconds: number) void
+        +delete(key: string) void
+        +deletePattern(pattern: string) void
+        +acquireLock(lockKey: string, ttlMs: number) boolean
+    }
 ```
 
 ### Cache-Aside Implementation & Stampede Defense

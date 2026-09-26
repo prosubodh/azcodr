@@ -19,17 +19,24 @@
 - **Strategy Pattern**: Swap algorithms or execution behavior at runtime without code changes (e.g. tenant-specific pricing algorithms, shipping calculation strategies).
 - **Result / Either Pattern**: Model anticipated domain errors as explicit return values (`Result<T, E>`) rather than throwing untyped exceptions across architectural boundaries:
 
-```
-┌────────────────────────────────────────────────────────┐
-│ Universal Result Pattern Semantics                     │
-├────────────────────────────────────────────────────────┤
-│ Result<T, E> = Ok(T) | Err(E)                          │
-│                                                        │
-│ Rust:       Result<T, DomainError>                     │
-│ Go:         (T, error)                                 │
-│ TypeScript: type Result<T, E> = Ok<T> | Err<E>         │
-│ Python:     Union[Success[T], Failure[E]]              │
-└────────────────────────────────────────────────────────┘
+```mermaid
+classDiagram
+    class Result~T_E~ {
+        <<Universal Semantics>>
+        +isOk() boolean
+        +isErr() boolean
+        +unwrap() T
+        +unwrapErr() E
+    }
+    class Ok~T~ {
+        +value: T
+    }
+    class Err~E~ {
+        +error: E
+    }
+    Result <|-- Ok
+    Result <|-- Err
+    note for Result "Rust: Result~T, DomainError~<br/>Go: (T, error)<br/>TypeScript: type Result~T, E~ = Ok~T~ | Err~E~<br/>Python: Union[Success[T], Failure[E]]"
 ```
 
 Domain services must return explicit Result types, compelling callers to handle failure branches deterministically.

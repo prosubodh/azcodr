@@ -8,14 +8,12 @@
 
 Database schema migrations must never require maintenance windows or downtime. Follow the **3-Phase Expand-Contract Pattern**:
 
-```
-PHASE 1: EXPAND              PHASE 2: DUAL-RUN & BACKFILL         PHASE 3: CONTRACT
-(Zero-Downtime DDL)          (Application Rolling Update)         (Cleanup DDL)
-┌──────────────────────┐     ┌─────────────────────────────┐     ┌──────────────────────┐
-│ Add new column as    │ ──► │ Deploy app writing to both  │ ──► │ Drop old column      │
-│ NULLABLE or DEFAULT. │     │ columns; backfill old rows. │     │ after all traffic on │
-│ Zero breaking locks. │     │ Read fallback to old col.   │     │ new column version.  │
-└──────────────────────┘     └─────────────────────────────┘     └──────────────────────┘
+```mermaid
+flowchart LR
+    P1["Phase 1: EXPAND<br/>(Zero-Downtime DDL)<br/>Add new column as NULLABLE/DEFAULT<br/>Zero breaking locks"]
+    P2["Phase 2: DUAL-RUN & BACKFILL<br/>(Application Rolling Update)<br/>Deploy app writing both columns<br/>Backfill historical rows<br/>Read fallback to old column"]
+    P3["Phase 3: CONTRACT<br/>(Cleanup DDL)<br/>Drop old column<br/>after 100% traffic migrates"]
+    P1 --> P2 --> P3
 ```
 
 ### Invariants:

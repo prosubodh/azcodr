@@ -8,15 +8,15 @@
 
 Data integrity must be enforced by the relational database engine, not delegated exclusively to application code:
 
-```
-[Application Layer] ──── Validates DTOs (Zod / Pydantic / Bean Validation)
-        │
-        ▼
-[Database Engine]   ──── Final Arbiter of Truth:
-                         • FOREIGN KEY (Referential Integrity)
-                         • CHECK (Domain Invariants & Ranges)
-                         • EXCLUDE USING gist (Temporal Overlaps)
-                         • UNIQUE ... WHERE deleted_at IS NULL (Partial Indexes)
+```mermaid
+flowchart TD
+    App["Application Layer<br/>Validates DTOs (Zod / Pydantic / Bean Validation)"] --> DB["Database Engine (Final Arbiter of Truth)"]
+    subgraph EngineRules["Engine Constraints"]
+        DB --> FK["FOREIGN KEY<br/>Referential Integrity"]
+        DB --> CHECK["CHECK<br/>Domain Invariants & Ranges"]
+        DB --> EXCLUDE["EXCLUDE USING gist<br/>Temporal Non-Overlaps"]
+        DB --> PARTIAL["Partial Unique Indexes<br/>UNIQUE ... WHERE deleted_at IS NULL"]
+    end
 ```
 
 ### Invariants:
@@ -96,23 +96,28 @@ Every operation mutating multiple database rows or coordinating interrelated agg
 
 Never execute a database write and a message broker publish sequentially in application code. If the network fails between the two operations, the system enters an inconsistent, corrupted state (**The Dual-Write Anti-Pattern**).
 
-```
-                      ATOMIC ACID TRANSACTION
-┌─────────────────────────────────────────────────────────────────┐
-│ 1. Mutate Domain State:                                         │
-│    UPDATE accounts SET balance = balance - 100 WHERE id = :id;  │
-│                                                                 │
-│ 2. Insert Outbox Event:                                         │
-│    INSERT INTO outbox_events (id, aggregate_type, payload)      │
-│    VALUES (gen_random_uuid(), 'ACCOUNT', '{"debited": 100}');   │
-└─────────────────────────────────────────────────────────────────┘
-                                │
-                                ▼ [Committed to Disk]
-┌─────────────────────────────────────────────────────────────────┐
-│ Asynchronous Message Relay (Debezium CDC / Polling Worker)      │
-│ 3. Reads outbox_events ──► Publishes to Kafka / RabbitMQ / SQS │
-│ 4. Marks event as published or purges row                       │
-└─────────────────────────────────────────────────────────────────┘
+```mermaid
+sequenceDiagram
+    autonumber
+    actor Caller
+    participant App as Application Service
+    participant DB as PostgreSQL Database
+    participant Relay as CDC Relay / Worker
+    participant Broker as Message Broker (Kafka/SQS)
+
+    Caller->>App: Execute Command
+    activate App
+    Note over App,DB: Atomic ACID Transaction
+    App->>DB: 1. Mutate Domain State (UPDATE accounts...)
+    App->>DB: 2. Insert Outbox Event (INSERT INTO outbox_events...)
+    App->>DB: COMMIT
+    App-->>Caller: Success Response
+    deactivate App
+
+    Note over Relay,Broker: Asynchronous Processing
+    Relay->>DB: 3. Read unpublished outbox_events (CDC / Polling)
+    Relay->>Broker: 4. Publish Event to Broker
+    Relay->>DB: 5. Mark Event Published / Purge
 ```
 
 ### Outbox Invariants:

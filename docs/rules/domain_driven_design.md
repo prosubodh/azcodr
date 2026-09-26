@@ -8,19 +8,23 @@
 
 Software engineering fails when teams jump directly into the **Solution Space** (choosing languages, frameworks, databases, and microservices) before fully defining the **Problem Space**.
 
-```
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │                           THE PROBLEM SPACE                            │
-  │  Business Problem ➔ Subdomains (Core/Supporting/Generic) ➔ Invariants  │
-  │  Operational Constraints: Execution target, Latency budget, GC limits  │
-  └───────────────────────────────────┬────────────────────────────────────┘
-                                      │ Shapes & Dictates
-                                      ▼
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │                           THE SOLUTION SPACE                           │
-  │  Bounded Contexts ➔ Architectural Style (DOD, Hexagonal, Pipeline)      │
-  │  Emergent Toolchain: Programming Language, Runtime, Persistence        │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph ProblemSpace["The Problem Space (The Essence)"]
+        direction TB
+        P1["Business Problem ➔ Subdomains (Core / Supporting / Generic) ➔ Invariants"]
+        P2["Operational Constraints: Execution target, Latency budget, GC limits"]
+        P1 --- P2
+    end
+
+    subgraph SolutionSpace["The Solution Space (The Accidents)"]
+        direction TB
+        S1["Bounded Contexts ➔ Architectural Style (DOD, Hexagonal, Pipeline)"]
+        S2["Emergent Toolchain: Programming Language, Runtime, Persistence"]
+        S1 --- S2
+    end
+
+    ProblemSpace -->|Shapes & Dictates| SolutionSpace
 ```
 
 - **The Problem Space (The Essence - Fred Brooks):** Concerns *what* problem is being solved, the entities, state transitions, and operational constraints (e.g. 16.6ms frame budget for games, zero-install browser sandbox for extensions, or ACID compliance for banking). **Zero technology, stack, or database choices are permitted in the Problem Space.**

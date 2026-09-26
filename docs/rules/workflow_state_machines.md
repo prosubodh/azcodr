@@ -8,28 +8,15 @@
 
 State machine libraries, declarative transition matrices, and workflow orchestration engines introduce significant cognitive and operational weight. **Never build a state machine when a simple enum or boolean flag suffices.**
 
-```
-                     STATE MACHINE YAGNI GATE
-  ┌────────────────────────────────────────────────────────────────────────┐
-  │ 1. SIMPLE BASELINE (Day 1)                                             │
-  │    • Discriminated union or enum column (e.g. status: 'PENDING'|'DONE')│
-  │    • Simple guard clause in aggregate method (`if (status !== 'A')`).  │
-  │    • Zero external state-machine libraries (no XState, Temporal, BPMN).│
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 2. ANTI-TRIGGERS (When State Machines are Strictly Forbidden)          │
-  │    • Binary lifecycle flags (`is_active`, `is_verified`, `archived`).   │
-  │    • Strict linear forward-only progressions without branching/rollback│
-  │    • Synchronous single-table mutations within one ACID transaction.   │
-  ├────────────────────────────────────────────────────────────────────────┤
-  │ 3. THE TIPPING POINT (Graduation Threshold to Formal State Machines)   │
-  │    • Entity has 3+ non-linear states with branching transitions,       │
-  │      cancellations, or conditional rollbacks.                          │
-  │    • Transitions require multi-step side-effects (emitting domain      │
-  │      events, releasing authorizations, triggering webhooks).           │
-  │    • Business/regulatory rules mandate an immutable transition audit.  │
-  │    • Durable orchestration (Temporal) justified ONLY when transitions   │
-  │      depend on asynchronous multi-day human or external API callbacks. │
-  └────────────────────────────────────────────────────────────────────────┘
+```mermaid
+flowchart TD
+    subgraph StateMachineGate["State Machine YAGNI Gate"]
+        B1["1. Simple Baseline (Day 1)<br/>• Discriminated union or enum column (status: 'PENDING' | 'DONE')<br/>• Simple guard clause in aggregate method (if (status !== 'A'))<br/>• Zero external state-machine libraries (no XState, Temporal, BPMN)"]
+        B2["2. Anti-Triggers (Forbidden)<br/>• Binary lifecycle flags (is_active, is_verified, archived)<br/>• Strict linear forward-only progressions without branching/rollback<br/>• Synchronous single-table mutations within one ACID transaction"]
+        B3["3. The Tipping Point (Graduation)<br/>• Entity has 3+ non-linear states with branching transitions, cancellations, or conditional rollbacks<br/>• Transitions require multi-step side-effects (emitting domain events, releasing authorizations)<br/>• Business/regulatory rules mandate an immutable transition audit<br/>• Durable orchestration (Temporal) justified ONLY when transitions depend on asynchronous multi-day callbacks"]
+        B1 -->|Forbidden if linear or binary| B2
+        B1 -->|Triggered by multi-step or non-linear branches| B3
+    end
 ```
 
 ---

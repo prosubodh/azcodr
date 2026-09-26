@@ -10,14 +10,16 @@ A catastrophic software defect occurs when design architecture is not triaged up
 
 Before a single UI component or view is built, every interface increment must pass the **7-Pillar Design Architecture Triage Gate**:
 
-```
-1. ROLE & IDENTITY TRIAGE      ──► Who is the user? What is their exact operational domain and boundary?
-2. INFORMATION ARCHITECTURE    ──► What is the hierarchy? Persistent Shell vs. Dynamic Canvas?
-3. EXPERIENCE DUALITY          ──► Operator Enterprise Workspace (dense) vs. Member Consumer Portal (simple)?
-4. NAVIGATION & WAYFINDING     ──► Collapsible sidebar, breadcrumbs, command palette (Cmd+K), mobile drawer?
-5. STATE & URL SYNCHRONIZATION ──► Deep-linkable search params (?tab=, ?q=, ?page=, ?modal=)?
-6. ACCESS & ROUTE PROTECTION   ──► Strict route guards (<ProtectedRoute>), role redirection, 403 handling?
-7. ACCESSIBILITY & FEEDBACK    ──► WCAG 2.2 AA, focus trapping, ARIA live regions, zero browser-native alerts?
+```mermaid
+flowchart TD
+    P1["1. Role & Identity Triage<br/>Who is the user? Operational domain & boundary"]
+    P2["2. Information Architecture<br/>Hierarchy: Persistent Shell vs. Dynamic Canvas"]
+    P3["3. Experience Duality<br/>Operator Enterprise Workspace (dense) vs. Member Consumer Portal (simple)"]
+    P4["4. Navigation & Wayfinding<br/>Collapsible sidebar, breadcrumbs, command palette Cmd+K, mobile drawer"]
+    P5["5. State & URL Synchronization<br/>Deep-linkable search params (?tab=, ?q=, ?page=, ?modal=)"]
+    P6["6. Access & Route Protection<br/>Route guards, role redirection, 403 handling"]
+    P7["7. Accessibility & Feedback<br/>WCAG 2.2 AA, focus trapping, ARIA live regions, zero native alerts"]
+    P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
 ```
 
 ---
@@ -26,27 +28,28 @@ Before a single UI component or view is built, every interface increment must pa
 
 The application interface is strictly divided into two distinct anatomical zones:
 
-```
-+----------------------------------------------------------------------------------------------------+
-| PERSISTENT GLOBAL HEADER                                                                           |
-| [Brand / Logo] | [Organization Context Switcher] | [Command Palette Cmd+K] | [Alerts] | [User Menu]|
-+------------------------------------+---------------------------------------------------------------+
-| PERSISTENT OPERATOR SIDEBAR        | DYNAMIC VIEWPORT CANVAS                                       |
-| (Collapsible to 64px Icon Rail)    |                                                               |
-|                                    | 1. CONTEXTUAL BREADCRUMBS                                     |
-| - Overview (Dashboard)             |    Home > Resources > Resource Alpha > Details                |
-| - Operations (Catalogs, Resources) | ------------------------------------------------------------- |
-| - Transactions (Orders, Invoices)  | 2. PAGE HEADER & PRIMARY ACTION CTA                           |
-| - Financials (Ledger, Settlements) |    [Page Title]               [Filter] [+ Primary Action CTA] |
-| - Services (Requests, Tickets)     | ------------------------------------------------------------- |
-| - Settings (Team, Roles, Org)      | 3. URL-SYNCHRONIZED TABS & SEARCH BAR                         |
-| ---------------------------------- |    [Active (12)] [Draft (2)] [Archived (0)]  [Search...]      |
-| [System Health Badge]              | ------------------------------------------------------------- |
-| [Collapse / Expand Toggle Button]  | 4. DATA PRESENTATION CANVAS                                   |
-|                                    |    (Data Tables, Metric Grids, Detail Drawers, Dialogs)       |
-+------------------------------------+---------------------------------------------------------------+
-| PERSISTENT STATUS / FOOTER (System Context, Active Role Indicator, Accessible Live Regions)         |
-+----------------------------------------------------------------------------------------------------+
+```mermaid
+flowchart TD
+    subgraph PersistentAppShell["Persistent Application Shell"]
+        Header["Persistent Global Header<br/>[Brand / Logo] | [Org Switcher] | [Command Palette Cmd+K] | [Alerts] | [User Profile]"]
+        
+        subgraph BodyLayout["Viewport Split"]
+            Sidebar["Persistent Operator Sidebar<br/>(Collapsible to 64px Icon Rail)<br/>• Overview (Dashboard)<br/>• Operations (Catalogs, Resources)<br/>• Transactions (Orders, Invoices)<br/>• Financials (Ledger, Settlements)<br/>• Services (Requests, Tickets)<br/>• Settings (Team, Roles, Org)<br/>• Collapse / Expand Toggle"]
+            
+            subgraph DynamicCanvas["Dynamic Viewport Canvas"]
+                Breadcrumb["1. Contextual Breadcrumbs<br/>Home > Resources > Details"]
+                PageHeader["2. Page Header & Primary Action CTA<br/>[Page Title] [Filter] [+ Primary Action CTA]"]
+                Tabs["3. URL-Synchronized Tabs & Search Bar<br/>[Active (12)] [Draft (2)] [Archived (0)] [Search...]"]
+                Content["4. Data Presentation Canvas<br/>(Data Tables, Metric Grids, Detail Drawers, Dialogs)"]
+                Breadcrumb --> PageHeader --> Tabs --> Content
+            end
+            Sidebar ~~~ DynamicCanvas
+        end
+        
+        Footer["Persistent Status / Footer (System Context, Active Role Indicator, Accessible Live Regions)"]
+        
+        Header --> BodyLayout --> Footer
+    end
 ```
 
 ### 2.1. The Persistent Shell (Never Re-rendered Across Page Navigations)
