@@ -16,7 +16,7 @@
 
 ### Dimension 2: System Topology Classification
 Classify the system into its primary operational topology:
-1. **Topology A — Web SaaS / Cloud Microservices:** Network-facing HTTP/gRPC services with multi-tenant data persistence and web/mobile clients.
+1. **Topology A — Web SaaS / Cloud Applications:** Network-facing systems with multi-tenant data persistence, ranging from Fullstack Web Applications (API Backend + Web Frontend) to Headless Microservices (API-only).
 2. **Topology B — Browser Extension:** Client-side sandboxed extension (Chrome/Firefox MV3) orchestrating content scripts, background service workers, and popup UI.
 3. **Topology C — Game Engine / High-Performance Simulator:** Low-level, frame-budgeted application directly interfacing with GPU APIs (Vulkan, DirectX, Metal) and system memory.
 4. **Topology D — Browser / Canvas Game:** Sandboxed web game running inside the browser DOM/Canvas via Canvas2D, WebGL, or WebGPU.
@@ -86,7 +86,13 @@ Derive the programming language, runtime, and package manager strictly from the 
 
 Inquire *only* into the dimensions relevant to the selected topology. **Never ask non-backend projects about databases, containers, or API versioning!**
 
-### For Web SaaS & Enterprise Backends ONLY:
+### For Web SaaS & Enterprise Cloud Applications ONLY:
+- **Application Interface Scope:** Headless API service (no UI) vs Fullstack Web Application (API Backend + Web Frontend Client).
+- **Frontend UI Stack (If Fullstack Web Application):**
+  - **Framework & Runtime:** React + Vite, Vue 3, Svelte 5, Next.js.
+  - **Component Primitives & Styling:** Tailwind CSS + Accessible Headless Primitives (Radix UI / shadcn/ui) per [docs/rules/frontend_architecture.md](../../../../docs/rules/frontend_architecture.md).
+  - **Client Structure:** Paired Client (`client/` + `src/` backend) vs Monorepo (`apps/web` + `apps/api`).
+  - **Design Triage & App Shell:** Persistent App Shell (collapsible sidebar, global header) vs Dynamic Canvas per [docs/rules/ui_ux_architecture.md](../../../../docs/rules/ui_ux_architecture.md).
 - **API Protocols:** REST (OpenAPI 3.1) vs gRPC (Protobuf v3 via Buf) vs GraphQL.
 - **Database Migrations:** Declarative (Atlas) vs Versioned SQL (Flyway, Goose).
 - **Multi-Tenancy Isolation:** AST Query Interceptor vs Database RLS vs Schema-per-tenant.

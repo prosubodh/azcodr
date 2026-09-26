@@ -70,6 +70,24 @@ flowchart TD
 
 ---
 
+## Decision Tree 5: User Interface, Experience Duality & Interaction Flows
+
+```mermaid
+flowchart TD
+  Q1["Does the feature introduce or modify a user interface?"]
+  Q1 -->|Yes| Q2["Who is the primary actor and operational persona?"]
+  
+  Q2 -->|Operator / Admin| Q_Op["1. Information Density: Dense tabular grid with filters?\n2. Persistent App Shell: Left collapsible sidebar route?\n3. Actions: Inline row actions or full-page drawer?"]
+  Q2 -->|Consumer / Member| Q_Member["1. Experience Duality: Consumer portal (/portal)?\n2. Touch Ergonomics: Clean cards & mobile drawer?\n3. Simplified self-service actions?"]
+
+  Q_Op --> Q3["Navigation & State Synchronization"]
+  Q_Member --> Q3
+
+  Q3 --> Q_State["1. URL State: Deep-link query params (?tab=, ?q=, ?page=, ?modal=)?\n2. Server Cache: TanStack Query hook with automated invalidation?\n3. Accessibility: Accessible headless dialogs & ARIA live regions?"]
+```
+
+---
+
 ## Contextual Follow-Up Patterns
 
 When conducting the interview, use this exact syntax pattern to chain questions adaptively:

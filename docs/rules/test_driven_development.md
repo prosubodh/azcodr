@@ -66,6 +66,7 @@ Deviating from this lifecycle introduces catastrophic defects and architectural 
 | **Skipping Domain Analysis** | Hallucinated entities, missing business invariants, wrong data models. | "The Toy Prototype Blunder": Foreign key string inputs, unvalidated states, costly migrations. |
 | **Writing Code Before Tests** | Untested edge cases, unfalsifiable code, confirmation bias in test design. | Hidden bugs in production, regressions during refactoring, brittle codebases. |
 | **Skipping Outer Acceptance Tests** | In-memory unit tests pass, but user interactions and network routing fail. | "The In-Memory Supertest Illusion": App says "Offline/Connecting" while 100% unit tests pass. |
+| **Dropping the UI in Fullstack TDD** | Developer plunges into internal domain units, leaving the application headless with no web UI. | "The Headless Fallacy": User requests a fullstack web app but receives pure headless backend libraries. |
 | **Skipping the Refactor Phase** | Technical debt accumulates immediately behind green tests. | Code rot, duplicated logic, bloated monolithic functions (> 30 lines), violated DRY/SLAP. |
 
 ---

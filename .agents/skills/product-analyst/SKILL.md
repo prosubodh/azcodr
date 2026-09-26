@@ -53,7 +53,17 @@ Ensure every user story conforms to Bill Wake's **INVEST** criteria:
 - **Small:** Sized to be completable in 1–2 development days.
 - **Testable:** Accompanied by executable, unambiguous Gherkin acceptance criteria.
 
-**The Multi-Layer Cake Rule:** Never slice horizontally (e.g. "Create database schema only"). Always slice vertically through the full stack so that every story delivers working software.
+**The Multi-Layer Cake Rule & UI Integration:**
+- **Never slice horizontally** (e.g. *"Create database schema only"* or *"Create backend API only"*). Always slice vertically through the full stack so that every story delivers working software.
+- **Mandatory UI/UX Triage Gate for User-Facing Applications:** If the project has a frontend or user interface (Fullstack Web SaaS, Extension, Desktop), execute the **7-Pillar Design Architecture Triage Gate** ([`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md)) before finalizing stories:
+  1. *Role & Identity:* Define who the user is and their operational boundary.
+  2. *Information Architecture:* Define how the view fits into the Persistent App Shell vs Dynamic Canvas.
+  3. *Experience Duality:* Clarify whether the screen belongs to an Enterprise Operator Workspace or Consumer Portal.
+  4. *Navigation & Wayfinding:* Specify sidebar route, active tab, breadcrumbs, and command palette entries.
+  5. *State & URL Synchronization:* Specify query params (`?tab=`, `?q=`, `?page=`, `?modal=`).
+  6. *Access Control:* Specify route guards and permission checks.
+  7. *Accessibility & Feedback:* Specify accessible notifications, focus trapping, and zero native alerts.
+- **Every user-facing story MUST specify:** (1) The UI view/component & user interaction, (2) The API Command/Query DTO, (3) The core domain invariant, and (4) The persistence change.
 
 ### Step 5: Decompose Stories into SMART Developer Tasks
 For engineering execution, translate INVEST user stories into Bill Wake's **SMART** developer tasks:
@@ -71,7 +81,8 @@ Map all failure paths to HTTP status codes (`400`, `401`, `403`, `404`, `409`, `
 ## 3. Gotchas & What NOT to Do
 
 - **DO NOT** confuse output (features shipped, story points burned) with outcome (value delivered, satisfaction gap closed).
-- **DO NOT** write horizontal, technical user stories (e.g., *"As a developer, I want a database table"*).
+- **DO NOT** write horizontal, technical user stories (e.g., *"As a developer, I want a database table"* or *"As an API, I want a REST endpoint"*).
+- **DO NOT** author backend-only user stories or ignore the UI when analyzing a user-facing system. If the system has a web frontend or client interface, slicing must start with user interactions and views.
 - **DO NOT** force technical constraints, security policies, or infrastructure upgrades into user story syntax. Treat them as non-story requirements or architectural spikes.
 - **DO NOT** omit the Out-of-Scope ("Won't Have this time") section. Lack of negative boundaries causes runaway scope bloat.
 - **DO NOT** allow developer tasks to be open-ended without a measurable time-box. If a task exceeds 4 hours, it must be split or paired.

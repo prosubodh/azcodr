@@ -104,6 +104,9 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.cursorrules')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.windsurfrules')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.editorconfig')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'LICENSE')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.github', 'copilot-instructions.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'package.json')), true);
 
     const validatorScript = path.join(
       targetProjectDir,
@@ -115,11 +118,11 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     );
     assert.strictEqual(fs.existsSync(validatorScript), true);
 
-    const validationOutput = execSync(`bash "${validatorScript}" "${targetProjectDir}"`, {
+    const npmValidateOutput = execSync('npm run validate', {
+      cwd: targetProjectDir,
       encoding: 'utf-8'
     });
-
-    assert.match(validationOutput, /SUCCESS: All agentic configurations are valid and healthy!/);
+    assert.match(npmValidateOutput, /SUCCESS: All agentic configurations are valid and healthy!/);
   });
 
   test('CLI executes --dry-run and -d mode without creating files on disk', () => {
@@ -196,6 +199,34 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.match(output, /initialized successfully/i);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'foo.txt')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
+  });
+
+  test('CLI fast-fails on unexpected extra argument with exit code 1', () => {
+    assert.throws(
+      () => {
+        execFileSync(process.execPath, [CLI_PATH, 'dir1', 'extra-arg'], {
+          encoding: 'utf-8',
+          stdio: ['pipe', 'pipe', 'pipe']
+        });
+      },
+      (error) => {
+        assert.match(error.stderr || error.stdout, /Unexpected argument 'extra-arg'/);
+        assert.strictEqual(error.status, 1);
+        return true;
+      }
+    );
+  });
+
+  test('CLI numbers steps starting from 1 when scaffolding into current directory dot', () => {
+    const subDir = path.join(tmpDir, 'dot-dir');
+    fs.mkdirSync(subDir, { recursive: true });
+    const output = execFileSync(process.execPath, [CLI_PATH, '.', '--no-git'], {
+      cwd: subDir,
+      encoding: 'utf-8'
+    });
+
+    assert.match(output, /Next steps:\s+1\. Open the project/);
+    assert.doesNotMatch(output, /Next steps:\s+2\. Open the project/);
   });
 });
 
@@ -369,6 +400,13 @@ describe('CLI In-Process Unit Tests & Branch Coverage', () => {
     await runCli([filePath], io);
     assert.strictEqual(io.exitCode, 1);
     assert.match(io.stderrLogs[0], /already exists and is not a directory/);
+  });
+
+  test('runCli fails when extra positional arguments are provided', async () => {
+    const io = createMockIo({ cwd: tmpDir });
+    await runCli(['dir1', 'dir2'], io);
+    assert.strictEqual(io.exitCode, 1);
+    assert.match(io.stderrLogs[0], /Unexpected argument 'dir2'/);
   });
 
   test('runCli handles scaffolding failure gracefully', async () => {

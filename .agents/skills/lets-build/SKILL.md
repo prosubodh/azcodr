@@ -45,7 +45,7 @@ Do NOT guess or assume any technology or stack choice. Execute the relentless in
 #### Batch 1: Problem Space & System Topology
 1. **Domain & Problem Statement:** What real-world problem or capability does this system solve? What data moves, and what transformations occur?
 2. **System Topology Classification:** Which topology best matches the execution target?
-   - Topology A: Web SaaS / Cloud Microservices
+   - Topology A: Web SaaS / Cloud Applications (Fullstack Web App vs Headless API)
    - Topology B: Browser Extension (Manifest V3)
    - Topology C: Game Engine / High-Performance Simulator (Bare metal, GPU)
    - Topology D: Browser / Canvas Game (HTML5 Canvas / WebGL / WebGPU)
@@ -70,7 +70,10 @@ Do NOT guess or assume any technology or stack choice. Execute the relentless in
 
 #### Batch 4: Targeted Invariants (Topology-Scoped, 100% YAGNI)
 Inquire *only* into the dimensions relevant to the selected topology:
-- *If Web SaaS / Backend:* API protocol (REST/gRPC), DB migration engine (Atlas/Flyway), tenancy isolation model, authentication, and OCI distroless containers.
+- *If Web SaaS / Cloud Application:*
+  - **Interface Scope:** Headless API service only vs Fullstack Web Application (API + Web Frontend).
+  - **If Fullstack Web Application:** Frontend framework & build tool (React + Vite, Vue 3, Svelte 5), styling & accessible headless component primitives (Tailwind CSS, Radix UI / shadcn/ui per [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md)), client directory structure (`client/` + `src/` backend), and persistent app shell layout per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md).
+  - **Backend & Data:** API protocol (REST/OpenAPI 3.1 vs gRPC), DB migration engine (Atlas/Flyway), tenancy isolation model, authentication, and OCI distroless containers.
 - *If Browser Extension:* MV3 content script isolation (IIFE bundle), `chrome.storage.sync` flow, permissions. (Zero Docker/K8s/OpenAPI!).
 - *If Game Engine:* Graphics backend (Vulkan/DirectX/wgpu), memory allocators (arena/frame), ECS archetype model. (Zero Docker/SQL!).
 - *If CLI:* Arg parsing library, POSIX exit codes, streaming I/O, `--json` formatting. (Zero Docker/SQL!).
@@ -79,7 +82,7 @@ Inquire *only* into the dimensions relevant to the selected topology:
 
 ### Phase 3: Synthesize (Architecture Blueprint & User Sign-Off)
 1. Consolidate the user's answers into a formal **Consolidated Architectural Blueprint** (using Section 4 template).
-2. Author an Architectural Decision Record in `memory.md` (e.g. `ADR-025: Target Technology Stack & Scaffolding Baseline` or next sequential ADR).
+2. Author the project's foundational Architectural Decision Record in `memory.md`, strictly starting with **`ADR-001: Target Technology Stack & Scaffolding Baseline`**. For a freshly initialized or bootstrapped project, `memory.md` must be a clean slate (zero prior decisions). If `memory.md` contains any legacy template ADRs from `azcodr`, sanitize and reset them so the new project starts from `ADR-001`.
 3. **STOP AND ASK FOR EXPLICIT CONFIRMATION**: Present the blueprint and ADR to the user. Do NOT write scaffolding code until the user approves the blueprint.
 
 ---
@@ -91,7 +94,8 @@ Upon user confirmation:
    bash .agents/skills/lets-build/scripts/bootstrap_workspace.sh . <topology> <language>
    ```
 2. Generate base infrastructure strictly for the selected topology (zero speculative bloat) using layouts from [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md):
-   - *Backend:* `specs/openapi/v1/openapi.yaml`, `specs/tokens/tokens.json`, `deploy/docker`, `deploy/compose`.
+   - *Fullstack Web SaaS:* Backend in `src/`, Web Client in `client/` (`client/src/components/layout`, `client/src/components/ui`, `client/src/pages`, `client/src/hooks`, `client/src/services`), `specs/openapi/v1/openapi.yaml`, `specs/tokens/tokens.json`, `deploy/docker`, `deploy/compose`.
+   - *Headless Backend:* `src/domain/`, `src/ports/`, `src/adapters/`, `specs/openapi/v1/openapi.yaml`, `specs/tokens/tokens.json`, `deploy/docker`, `deploy/compose`.
    - *Extension:* `manifest.json`, `src/background/index.ts`, `src/content/index.ts`, `src/popup/index.html`.
    - *Game / Engine:* `src/core/`, `src/ecs/`, asset manifest, frame loop entrypoint.
    - *CLI:* `src/cmd/`, `src/core/`, CLI entrypoint with exit code handling.
@@ -113,11 +117,14 @@ Upon user confirmation:
    - **`lets-build` IS NOW COMPLETE.** Do NOT proceed to write domain business entities, repositories, or application features.
    - Present the bootstrapped technical skeleton to the user.
    - Instruct the user to invoke `product-analyst` and `relentless-questioner` to initiate the **Domain Discovery & Requirements Engineering Phase** (Ubiquitous Language, Bounded Contexts, Aggregate Boundaries, INVEST User Stories, and Gherkin Acceptance Criteria) before any domain feature code is written.
+   - For applications with a user interface (Fullstack Web SaaS, Extensions, Desktop), the handover must explicitly instruct the user and agent to execute the **7-Pillar Design Architecture Triage Gate** ([`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md)) to define user personas, persistent app shell navigation, and user journeys.
 
 ---
 
 ## 3. Gotchas & What NOT to Do
 
+- **MAJOR DONT: NEVER carry over template-internal ADRs from azcodr into a new project.** When scaffolding or bootstrapping a new project, `memory.md` must be a clean slate and start at `ADR-001`. Do NOT number the first architecture decision as ADR-025 or ADR-028 based on azcodr's template development history.
+- **MAJOR DONT: NEVER silently drop the frontend or treat Fullstack Web SaaS as a headless backend API!** If the user selects a Fullstack Web application with a UI, you MUST scaffold both the client (`client/`) and backend (`src/`) baselines, configure build manifests for both, execute the 7-Pillar Design Architecture Triage Gate, and ensure user stories slice vertically across both UI and API layers.
 - **MAJOR DONT: DO NOT invent, assume, or scaffold application domain entities, business logic, or feature pages during `/lets-build`.** The `lets-build` skill is strictly an infrastructure and technical stack bootstrapper. Fabricating business domain features without dedicated domain analysis and relentless questioning of the user is a fatal architectural defect.
 - **DO NOT** assume the stack. Never start writing Go, Rust, Python, or TypeScript before asking the user.
 - **DO NOT** scaffold universal web boilerplate (Docker, Kubernetes, OpenAPI, Postgres migrations) for non-backend projects (Browser Extensions, CLIs, Game Engines, Desktop apps).

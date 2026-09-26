@@ -27,7 +27,7 @@ Before writing a single line of a skill or rule, execute the **7 Core Inquiry Br
 3. **Domain Ground Truth:** Have all generic textbook tutorials been purged? Is this grounded in verified codebase evidence?
 4. **Gotchas & Anti-Patterns:** What exact mistakes has the AI repeatedly made in this domain that must be forbidden?
 5. **Determinism vs. LLM:** Can brittle tasks be converted into deterministic scripts under `scripts/`?
-6. **Progressive Bloat:** Is `SKILL.md` strictly under 500 lines, offloading deep manuals to `references/` and templates to `assets/`?
+6. **Progressive Bloat:** Is `SKILL.md` strictly under 500 lines, offloading deep manuals to `references/` and templates to `resources/`?
 7. **Verification & Proof:** What structured response template and self-validation checklist will prove success?
 *Rule:* If any branch is unanswered or ambiguous, **STOP and ask the user** (or inspect workspace files). Never fill gaps with assumptions.
 

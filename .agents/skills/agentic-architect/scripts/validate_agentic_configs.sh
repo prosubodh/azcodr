@@ -6,7 +6,21 @@
 
 set -euo pipefail
 
-WORKSPACE_ROOT="${1:-$(pwd)}"
+WORKSPACE_ROOT=""
+FIX_MODE=false
+
+for arg in "$@"; do
+  if [[ "${arg}" == "--fix" ]]; then
+    FIX_MODE=true
+  elif [[ -z "${WORKSPACE_ROOT}" ]]; then
+    WORKSPACE_ROOT="${arg}"
+  fi
+done
+
+if [[ -z "${WORKSPACE_ROOT}" ]]; then
+  WORKSPACE_ROOT="$(pwd)"
+fi
+
 ERRORS=0
 WARNINGS=0
 
@@ -77,7 +91,12 @@ if [[ "${IS_CASE_INSENSITIVE}" == "true" ]]; then
   log_pass "agents.md is satisfied natively by AGENTS.md (case-insensitive filesystem)."
 else
   if [[ ! -L "${AGENTS_LOWER}" ]] && [[ ! -e "${AGENTS_LOWER}" ]] && [[ -f "${AGENTS_FILE}" ]]; then
-    ln -sf "AGENTS.md" "${AGENTS_LOWER}"
+    if [[ "${FIX_MODE}" == "true" ]]; then
+      ln -sf "AGENTS.md" "${AGENTS_LOWER}"
+      log_pass "Created agents.md symlink to AGENTS.md (--fix mode)."
+    else
+      log_fail "agents.md is missing. Run with --fix to automatically repair symlinks."
+    fi
   fi
   if [[ -L "${AGENTS_LOWER}" ]]; then
     TARGET=$(readlink "${AGENTS_LOWER}")
@@ -86,6 +105,10 @@ else
     else
       log_fail "agents.md points to '${TARGET}' instead of 'AGENTS.md'."
     fi
+  elif [[ -f "${AGENTS_LOWER}" ]] && is_valid_text_pointer "${AGENTS_LOWER}"; then
+    log_pass "agents.md is a text pointer to AGENTS.md (symlink fallback)."
+  elif [[ ! -e "${AGENTS_LOWER}" ]] && [[ "${FIX_MODE}" == "true" ]]; then
+    : # Handled above
   else
     log_fail "agents.md is not a symbolic link."
   fi
@@ -151,6 +174,14 @@ if [[ -d "${WORKSPACE_ROOT}/.github" ]]; then
   elif [[ -f "${COPILOT_FILE}" ]]; then
     log_warn ".github/copilot-instructions.md exists but is neither a symlink to ../AGENTS.md nor references AGENTS.md."
   fi
+fi
+
+# Check .gitignore exists
+GITIGNORE_FILE="${WORKSPACE_ROOT}/.gitignore"
+if [[ -f "${GITIGNORE_FILE}" ]]; then
+  log_pass ".gitignore exists."
+else
+  log_fail "Missing .gitignore at ${GITIGNORE_FILE}"
 fi
 
 # 2. Checking Progressive Disclosure Rules (docs/rules)

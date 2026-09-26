@@ -6,8 +6,9 @@
 
 ## 1. Universal Directory Topology
 
-Regardless of language, all bootstrapped projects must follow this high-level separation:
+Depending on whether the project target is a **Fullstack Web SaaS** (Frontend + Backend) or a **Headless Service** (API only), projects follow these standard layouts:
 
+### Fullstack Web SaaS Topology (Web Frontend + Hexagonal Backend)
 ```
 <project-root>/
 ├── .agents/skills/                   # Specialized agentic workflows (carried from azcodr template)
@@ -15,11 +16,19 @@ Regardless of language, all bootstrapped projects must follow this high-level se
 │   ├── knowledge/                    # Domain knowledge & living ubiquitous language glossary
 │   └── rules/                        # 28 cohesive single-responsibility domain rules
 ├── specs/                            # Canonical contract specifications
-│   ├── protobuf/                     # gRPC service definitions (*.proto)
 │   ├── openapi/                      # OpenAPI 3.1 REST specifications (*.yaml)
 │   ├── schemas/                      # Universal JSON Schema Draft 2020-12 (*.json)
 │   └── tokens/                       # W3C DTCG Design Tokens (tokens.json)
-├── src/                              # Application source code
+├── client/                           # Web Frontend Application (Vite + React / SPA)
+│   ├── src/
+│   │   ├── components/
+│   │   │   ├── layout/               # Persistent Shell (Sidebar, Header, Breadcrumbs)
+│   │   │   └── ui/                   # Accessible Headless Primitives (Radix / shadcn)
+│   │   ├── pages/                    # Dynamic Canvas Route Views
+│   │   ├── hooks/                    # Server-State Cache & URL State Synchronization
+│   │   └── services/                 # Inbound API Client Adapters
+│   └── public/                       # Static web assets
+├── src/                              # Backend Application (Hexagonal Architecture)
 │   ├── domain/                       # Core Invariant Domain (Entities, Value Objects, Invariants)
 │   ├── ports/                        # Primary (driving) and Secondary (driven) Ports
 │   │   ├── primary/                  # Inbound Use Cases, Commands, and Queries
@@ -31,6 +40,7 @@ Regardless of language, all bootstrapped projects must follow this high-level se
 │   ├── unit/                         # Fast unit tests using test doubles
 │   ├── integration/                  # Adapter integration tests with transactional rollback
 │   ├── contracts/                    # Pact / OpenAPI contract verification
+│   ├── client/                       # Frontend component and interaction tests
 │   └── acceptance/                   # BDD Gherkin / Cucumber end-to-end features
 ├── deploy/                           # Deployment & Infrastructure as Code
 │   ├── docker/                       # Minimal OCI Distroless/Scratch Dockerfiles
@@ -43,9 +53,45 @@ Regardless of language, all bootstrapped projects must follow this high-level se
 └── README.md                         # Project documentation
 ```
 
+### Headless Service Topology (Backend API Only)
+```
+<project-root>/
+├── .agents/skills/                   # Specialized agentic workflows
+├── docs/                             # Domain knowledge & 28 domain rules
+├── specs/                            # OpenAPI 3.1 & Schema contracts
+├── src/                              # Domain, Ports, Adapters
+├── tests/                            # Unit, Integration, Contracts, Acceptance
+├── deploy/                           # Docker, Compose
+├── AGENTS.md
+└── memory.md
+```
+
 ---
 
 ## 2. Language-Specific Source Layouts
+
+### TypeScript Fullstack Scaffold (`client/` + `src/` via `package.json` / `pnpm`)
+```
+client/                               # Web Frontend (Vite + React / Vue / Svelte)
+├── src/
+│   ├── components/
+│   │   ├── layout/                   # Persistent App Shell (Header, Collapsible Sidebar)
+│   │   └── ui/                       # Accessible Headless Primitives (Radix / shadcn)
+│   ├── pages/                        # Dynamic Canvas Route Views
+│   ├── hooks/                        # Server-State Cache & URL State Synchronization
+│   └── services/                     # Inbound API Client Adapters
+└── public/
+src/                                  # Core Backend (Hexagonal Ports & Adapters)
+├── domain/
+│   ├── entities/user.ts
+│   └── value-objects/tenant-id.ts
+├── ports/
+│   ├── primary/create-user.usecase.ts
+│   └── secondary/user-repository.port.ts
+└── adapters/
+    ├── primary/fastify-router.ts
+    └── secondary/kysely-user-repository.ts
+```
 
 ### Go Scaffold (`go.mod`)
 ```
@@ -89,7 +135,7 @@ src/
     └── secondary/asyncpg_repository.py
 ```
 
-### TypeScript Scaffold (`package.json` / `pnpm`)
+### TypeScript Backend-Only Scaffold (`package.json` / `pnpm`)
 ```
 src/
 ├── domain/
@@ -107,7 +153,8 @@ src/
 
 ## 3. Foundational Scaffold Invariants
 
-1. **Domain Isolation**: Code in `src/domain/` must have **zero imports** from `src/adapters/`, external web frameworks, or database drivers.
+1. **Domain Isolation**: Code in `src/domain/` must have **zero imports** from `src/adapters/`, `client/`, external web frameworks, or database drivers.
 2. **Ports as Pure Contracts**: Code in `src/ports/` contains abstract interfaces, Command DTOs, Query DTOs, and Result containers.
 3. **Adapters Depend on Ports**: `src/adapters/` implements ports defined in `src/ports/`. Adapters never depend directly on other adapters.
 4. **Contract-First Synchronization**: Whenever an API or event interface changes, the canonical contract in `specs/` must be updated and validated before adapter code is generated or modified.
+5. **Frontend Decoupling via Contract**: The frontend in `client/` consumes backend driving ports strictly via canonical OpenAPI contracts (`specs/openapi`) and W3C Design Tokens (`specs/tokens/tokens.json`). It follows the 7-Pillar Design Architecture Triage Gate ([docs/rules/ui_ux_architecture.md](../../../../docs/rules/ui_ux_architecture.md)) and accessible headless primitives ([docs/rules/frontend_architecture.md](../../../../docs/rules/frontend_architecture.md)).

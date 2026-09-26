@@ -37,6 +37,7 @@ Upon receiving a user task or feature prompt, classify the functional archetype 
 - **Archetype C: Asynchronous & Event Streaming** (background jobs, webhooks, queues, pub/sub)
 - **Archetype D: 3rd-Party & External Integrations** (external APIs, payment gateways, mailers)
 - **Archetype E: Read Performance & Search** (dashboards, aggregations, high-scale read traffic)
+- **Archetype F: User Interface, Experience Duality & Interaction Flows** (personas, app shell, screen journeys, URL synchronization, WCAG accessibility per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md) and [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md))
 
 ---
 
@@ -62,6 +63,8 @@ Check the user's proposed answers against the **28 Cohesive Domain Rules** in `d
 - If the user proposes writing to the database and publishing an event sequentially ➔ **Flag the dual-write anti-pattern** and mandate the Transactional Outbox pattern ([`database_design.md`](../../../docs/rules/database_design.md)).
 - If the user proposes storing tenant data without an isolation mechanism ➔ **Flag the tenant leak risk** and mandate an isolation model ([`multitenancy_architecture.md`](../../../docs/rules/multitenancy_architecture.md)).
 - If the user proposes arbitrary untrusted script execution ➔ **Flag the host security vulnerability** and mandate Wasm sandboxing ([`multitenancy_architecture.md`](../../../docs/rules/multitenancy_architecture.md)).
+- If the user proposes a fullstack feature but ignores user workflows or screens ➔ **Flag the Anemic Core anti-pattern** and mandate Outside-In interaction discovery ([`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md)).
+- If the user proposes ad-hoc modal alerts or unstructured page navigation ➔ **Flag UX debt** and enforce the 7-Pillar Design Architecture Triage Gate ([`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md)).
 - Reconcile the conflict collaboratively before proceeding.
 
 ---

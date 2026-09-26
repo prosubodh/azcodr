@@ -11,6 +11,7 @@ const {
   ensureSymlink,
   isSameCaseInsensitiveFile,
   makeScriptsExecutable,
+  isInsideGitWorkTree,
   initGit,
   getTemplateDir,
   TEMPLATE_ITEMS
@@ -62,7 +63,7 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(fs.existsSync(nonExistent), false);
   });
 
-  test('copyTemplate copies essential template files including .editorconfig', () => {
+  test('copyTemplate copies essential template files including .editorconfig, LICENSE, and package.json', () => {
     copyTemplate(tmpDir, templateDir);
 
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), true);
@@ -72,6 +73,9 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'skills')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.gitignore')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.editorconfig')), true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'LICENSE')), true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github', 'copilot-instructions.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'package.json')), true);
   });
 
   test('copyTemplate skips template items that do not exist in template directory', () => {
@@ -96,11 +100,14 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(actions.length > 0, true);
     assert.strictEqual(actions.some(a => a.includes('copy: AGENTS.md')), true);
     assert.strictEqual(actions.some(a => a.includes('copy: .editorconfig')), true);
+    assert.strictEqual(actions.some(a => a.includes('copy: LICENSE')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: CLAUDE.md')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: agents.md')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: GEMINI.md')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: .cursorrules')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: .windsurfrules')), true);
+    assert.strictEqual(actions.some(a => a.includes('symlink: .github/copilot-instructions.md')), true);
+    assert.strictEqual(actions.some(a => a.includes('create: package.json')), true);
   });
 
   test('copyTemplate creates valid symlinks for CLAUDE.md, agents.md, GEMINI.md, .cursorrules, and .windsurfrules', () => {
@@ -334,6 +341,145 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(initialized, false);
   });
 
+  test('makeScriptsExecutable handles agent scripts chmodSync exceptions gracefully', () => {
+    const fakeAgentDir = path.join(tmpDir, '.agents', 'scripts');
+    fs.mkdirSync(fakeAgentDir, { recursive: true });
+    const fakeScript = path.join(fakeAgentDir, 'hook.sh');
+    fs.writeFileSync(fakeScript, '#!/bin/sh\necho test\n');
+
+    const origChmodSync = fs.chmodSync;
+    try {
+      fs.chmodSync = () => {
+        throw new Error('EPERM: not permitted');
+      };
+      const modified = makeScriptsExecutable(tmpDir, false);
+      assert.strictEqual(modified.length, 1);
+    } finally {
+      fs.chmodSync = origChmodSync;
+    }
+  });
+
+  test('copyTemplate falls back to .npmignore when .gitignore is missing', () => {
+    const fakeTpl = path.join(tmpDir, 'npmignore-tpl');
+    fs.mkdirSync(fakeTpl, { recursive: true });
+    fs.writeFileSync(path.join(fakeTpl, '.npmignore'), '# npmignore rules\nnode_modules/\n');
+
+    const dest = path.join(tmpDir, 'npmignore-dest');
+    copyTemplate(dest, fakeTpl);
+
+    assert.strictEqual(fs.existsSync(path.join(dest, '.gitignore')), true);
+    assert.match(fs.readFileSync(path.join(dest, '.gitignore'), 'utf-8'), /npmignore rules/);
+  });
+
+  test('copyTemplate handles missing .gitignore and missing .npmignore gracefully', () => {
+    const fakeTpl = path.join(tmpDir, 'empty-tpl');
+    fs.mkdirSync(fakeTpl, { recursive: true });
+
+    const dest = path.join(tmpDir, 'empty-dest');
+    copyTemplate(dest, fakeTpl);
+
+    assert.strictEqual(fs.existsSync(path.join(dest, '.gitignore')), false);
+  });
+
+  test('copyTemplate preserves existing package.json and handles root directory fallback', () => {
+    const customPkgPath = path.join(tmpDir, 'package.json');
+    fs.writeFileSync(customPkgPath, JSON.stringify({ name: 'existing-app' }));
+
+    const actions = copyTemplate(tmpDir, templateDir);
+    assert.strictEqual(actions.some(a => a.includes('create: package.json')), false);
+    const loaded = JSON.parse(fs.readFileSync(customPkgPath, 'utf-8'));
+    assert.strictEqual(loaded.name, 'existing-app');
+
+    // Test project name fallback when path.basename is empty string
+    const origBasename = path.basename;
+    try {
+      path.basename = () => '';
+      const dest = path.join(tmpDir, 'fallback-name-dest');
+      copyTemplate(dest, templateDir);
+      const pkg = JSON.parse(fs.readFileSync(path.join(dest, 'package.json'), 'utf-8'));
+      assert.strictEqual(pkg.name, 'my-project');
+    } finally {
+      path.basename = origBasename;
+    }
+  });
+
+  test('isInsideGitWorkTree detects git repositories, non-existent directories, and command failures', () => {
+    // Current workspace is a git work tree
+    assert.strictEqual(isInsideGitWorkTree(templateDir), true);
+
+    // Temp directory is not a git work tree
+    assert.strictEqual(isInsideGitWorkTree(tmpDir), false);
+
+    // Non-existent directory falls back to path.dirname
+    const nonExistent = path.join(tmpDir, 'deep', 'does-not-exist');
+    assert.strictEqual(isInsideGitWorkTree(nonExistent), false);
+
+    // Error in execSync returns false
+    const origExec = childProcess.execSync;
+    try {
+      childProcess.execSync = () => {
+        throw new Error('git not found');
+      };
+      assert.strictEqual(isInsideGitWorkTree(templateDir), false);
+    } finally {
+      childProcess.execSync = origExec;
+    }
+  });
+
+  test('initGit returns false when target is already inside an existing git work tree', () => {
+    // Inside a subdirectory of azcodr (no local .git, but inside git work tree)
+    const subDir = path.join(templateDir, 'docs');
+    const result = initGit(subDir, { noGit: false });
+    assert.strictEqual(result, false);
+  });
+
+  test('initGit handles branch main fallback, branch rename failures, and commit fallbacks', () => {
+    const origExec = childProcess.execSync;
+    const commandsRun = [];
+
+    try {
+      childProcess.execSync = (cmd, opts) => {
+        commandsRun.push(cmd);
+        if (cmd === 'git rev-parse --is-inside-work-tree') {
+          return 'false\n';
+        }
+        if (cmd.startsWith('git init -b main')) {
+          throw new Error('option -b not supported');
+        }
+        if (cmd.startsWith('git branch -m main')) {
+          throw new Error('branch rename failed');
+        }
+        if (cmd.startsWith('git commit')) {
+          throw new Error('author identity unknown');
+        }
+        return '';
+      };
+
+      const result = initGit(tmpDir, { noGit: false });
+      assert.strictEqual(result, true);
+      assert.strictEqual(commandsRun.some(c => c.includes('git init -q')), true);
+      assert.strictEqual(commandsRun.some(c => c.includes('git branch -m main')), true);
+      assert.strictEqual(commandsRun.some(c => c.includes('user.name="azcodr"')), true);
+    } finally {
+      childProcess.execSync = origExec;
+    }
+  });
+
+  test('initGit handles complete commit failure gracefully', () => {
+    const origExec = childProcess.execSync;
+    try {
+      childProcess.execSync = (cmd) => {
+        if (cmd === 'git rev-parse --is-inside-work-tree') return 'false\n';
+        if (cmd.includes('commit') || cmd.includes('add')) throw new Error('git disk full');
+        return '';
+      };
+      const result = initGit(tmpDir, { noGit: false });
+      assert.strictEqual(result, true);
+    } finally {
+      childProcess.execSync = origExec;
+    }
+  });
+
   test('index.js exports scaffold, constants, and helper methods', () => {
     const api = require('../lib/index.js');
     assert.strictEqual(typeof api.scaffold, 'function');
@@ -341,9 +487,11 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(typeof api.copyTemplate, 'function');
     assert.strictEqual(typeof api.ensureSymlink, 'function');
     assert.strictEqual(typeof api.makeScriptsExecutable, 'function');
+    assert.strictEqual(typeof api.isInsideGitWorkTree, 'function');
     assert.strictEqual(typeof api.initGit, 'function');
     assert.strictEqual(typeof api.getTemplateDir, 'function');
     assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
+    assert.strictEqual(api.TEMPLATE_ITEMS.includes('LICENSE'), true);
   });
 });

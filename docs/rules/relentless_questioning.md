@@ -39,6 +39,10 @@ Questions must dynamically pivot depending on the technical archetype:
 *Trigger:* The feature interacts with external SaaS, webhooks, or cloud services.
 - *Adaptive Inquiries:* What is the project-owned Port/Adapter boundary interface? What are the rate-limiting and circuit-breaking parameters? How are mock test doubles constructed without mocking third-party types directly?
 
+### Branch E: User Interface, Experience Duality & Interaction Flows
+*Trigger:* The feature introduces or modifies user interfaces, web pages, screen layouts, form mutations, or navigation.
+- *Adaptive Inquiries:* Who is the target user persona (Operator/Admin dense workspace vs Consumer/Member portal)? How does the view fit into the Persistent App Shell (collapsible sidebar, global header) vs Dynamic Canvas? What is the URL state synchronization strategy (`useSearchParams` for `?tab=`, `?q=`, `?page=`, `?modal=`)? What server-state cache manager synchronizes data (TanStack Query)? How are validation feedback and errors displayed (RFC 7807 inline/toast alerts, WCAG 2.2 live regions, zero native `window.alert()`)?
+
 ---
 
 ## 3. Anti-Assumption Guardrails

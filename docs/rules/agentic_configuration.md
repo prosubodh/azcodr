@@ -40,6 +40,7 @@ Different AI agents and IDE harnesses look for different configuration filenames
 - Google Antigravity & Gemini CLI: `GEMINI.md`
 - Cursor: `.cursorrules`
 - Windsurf: `.windsurfrules`
+- GitHub Copilot: `.github/copilot-instructions.md`
 
 **Standard:** Maintain identical configuration across all harnesses by establishing filesystem symbolic links:
 ```bash
@@ -48,6 +49,7 @@ ln -sf AGENTS.md CLAUDE.md
 ln -sf AGENTS.md GEMINI.md
 ln -sf AGENTS.md .cursorrules
 ln -sf AGENTS.md .windsurfrules
+mkdir -p .github && ln -sf ../AGENTS.md .github/copilot-instructions.md
 ```
 Never duplicate content into separate files.
 
@@ -253,4 +255,5 @@ Significant architectural, technical stack, or invariant decisions must be captu
 ### Numbering & Immutability:
 - ADR numbers are monotonically increasing (`ADR-001`, `ADR-002`, ...).
 - ADR entries are **immutable history**. Never edit past accepted ADRs to represent new decisions; author a new ADR that explicitly supersedes the former.
+- **Fresh Project Baseline (ADR Clean Slate):** When starting or bootstrapping a new project from this starter template, the memory ledger in [`memory.md`](../../memory.md) must be a clean slate with zero prior decisions recorded. The initial technical foundation derived during `/lets-build` must always be recorded as **`ADR-001`**. Template development history from `azcodr` must never bleed into downstream project memory ledgers.
 

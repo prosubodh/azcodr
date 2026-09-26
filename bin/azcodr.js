@@ -97,6 +97,9 @@ async function runCli(rawArgs = process.argv.slice(2), io = {}) {
       return exit(1);
     } else if (!targetDir) {
       targetDir = arg;
+    } else {
+      err(`❌ Error: Unexpected argument '${arg}'. Run 'npx azcodr --help' for available options.`);
+      return exit(1);
     }
   }
 
@@ -181,18 +184,20 @@ async function runCli(rawArgs = process.argv.slice(2), io = {}) {
       out('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
       out('  ✅ Specialized agentic skills copied (.agents/skills/)');
       out('  ✅ Editor formatting standards initialized (.editorconfig)');
-      out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md, GEMINI.md, .cursorrules, .windsurfrules)');
+      out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md, GEMINI.md, .cursorrules, .windsurfrules, .github/copilot-instructions.md)');
+      out('  ✅ Project configuration initialized (package.json)');
       if (result.gitInitialized) {
         out('  ✅ Git repository initialized');
       }
 
       out('\n🎉 azcodr initialized successfully!\n');
       out('Next steps:');
+      let step = 1;
       if (targetDir !== '.' && targetDir !== './') {
-        out(`  1. cd ${targetDir}`);
+        out(`  ${step++}. cd ${targetDir}`);
       }
-      out('  2. Open the project in your AI coding assistant (Antigravity, Claude Code, Cursor, OpenHands)');
-      out('  3. Run /lets-build to start the architectural interview and scaffold your application stack!\n');
+      out(`  ${step++}. Open the project in your AI coding assistant (Antigravity, Claude Code, Cursor, OpenHands)`);
+      out(`  ${step++}. Run /lets-build to start the architectural interview and scaffold your application stack!\n`);
     }
     return exit(0);
   } catch (error) {
