@@ -13,7 +13,7 @@ Regardless of language, all bootstrapped projects must follow this high-level se
 ├── .agents/skills/                   # Specialized agentic workflows (carried from azcodr template)
 ├── docs/
 │   ├── knowledge/                    # Domain knowledge & living ubiquitous language glossary
-│   └── rules/                        # 41 atomic single-responsibility domain rules
+│   └── rules/                        # 28 cohesive single-responsibility domain rules
 ├── specs/                            # Canonical contract specifications
 │   ├── protobuf/                     # gRPC service definitions (*.proto)
 │   ├── openapi/                      # OpenAPI 3.1 REST specifications (*.yaml)

@@ -58,10 +58,10 @@ Do NOT dump a massive 20-question static checklist. Execute the interview in **d
 ---
 
 ### Phase 3: Architectural Friction & Rule Reconciliation
-Check the user's proposed answers against the **47 Atomic Domain Rules** in `docs/rules/`:
-- If the user proposes writing to the database and publishing an event sequentially ➔ **Flag the dual-write anti-pattern** and mandate the Transactional Outbox pattern ([`database_transactions.md`](../../../docs/rules/database_transactions.md)).
-- If the user proposes storing tenant data without an isolation mechanism ➔ **Flag the tenant leak risk** and mandate an isolation model ([`multitenancy_isolation.md`](../../../docs/rules/multitenancy_isolation.md)).
-- If the user proposes arbitrary untrusted script execution ➔ **Flag the host security vulnerability** and mandate Wasm sandboxing ([`tenant_pluggable_logic.md`](../../../docs/rules/tenant_pluggable_logic.md)).
+Check the user's proposed answers against the **28 Cohesive Domain Rules** in `docs/rules/`:
+- If the user proposes writing to the database and publishing an event sequentially ➔ **Flag the dual-write anti-pattern** and mandate the Transactional Outbox pattern ([`database_design.md`](../../../docs/rules/database_design.md)).
+- If the user proposes storing tenant data without an isolation mechanism ➔ **Flag the tenant leak risk** and mandate an isolation model ([`multitenancy_architecture.md`](../../../docs/rules/multitenancy_architecture.md)).
+- If the user proposes arbitrary untrusted script execution ➔ **Flag the host security vulnerability** and mandate Wasm sandboxing ([`multitenancy_architecture.md`](../../../docs/rules/multitenancy_architecture.md)).
 - Reconcile the conflict collaboratively before proceeding.
 
 ---
@@ -78,7 +78,7 @@ Synthesize the answers into an unambiguous **Feature Alignment Specification (FA
 - **DO NOT** ask 10+ questions at once. Keep batches small (2–3 questions) to maintain a collaborative conversation.
 - **DO NOT** start coding or planning in parallel while the interrogation is in progress.
 - **DO NOT** let the user bypass critical failure branches (e.g. *"we'll handle errors later"*). Insist on defining failure states.
-- **DO NOT** compromise on the 41 atomic rules. If a user request introduces an architectural violation, surface it immediately.
+- **DO NOT** compromise on the 28 cohesive domain rules. If a user request introduces an architectural violation, surface it immediately.
 
 ---
 

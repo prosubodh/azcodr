@@ -38,6 +38,7 @@
 | **ADR-020** | Universal YAGNI Gate Triad Architecture | 2026-09-26 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`.agents/skills/agentic-architect/SKILL.md`](./.agents/skills/agentic-architect/SKILL.md) |
 | **ADR-021** | Language-Agnostic Core Rules Generalization & Toolchain Zero-Rule Policy | 2026-09-26 | ACCEPTED | [`type_safety.md`](./docs/rules/type_safety.md), [`frontend_architecture.md`](./docs/rules/frontend_architecture.md) |
 | **ADR-022** | Vendor-Agnostic Frontend Architecture & Library-as-a-Skill Anti-Pattern Defense | 2026-09-26 | ACCEPTED | [`frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
+| **ADR-023** | Architectural Cohesion Consolidation (Synthesis of 28 Cohesive Domain Rules) | 2026-09-26 | ACCEPTED | All 28 rules in [`docs/rules/`](./docs/rules/) |
 
 
 ---
@@ -203,9 +204,25 @@
   3. **The 4-Layer Resolution Standard for Project Stack Knowledge**:
      - *Layer 1 (Ground Truth Manifests):* `package.json`, `tsconfig.json`, `components.json`.
      - *Layer 2 (Stack Contract in `AGENTS.md`):* 3–5 line declaration in project entrypoint stamped by `/lets-build`.
-     - *Layer 3 (Universal Domain Rules):* `frontend_architecture.md`, `test_isolation.md`, `accessibility.md`.
+     - *Layer 3 (Universal Domain Rules):* `frontend_architecture.md`, `test_driven_development.md`, `api_architecture.md`.
      - *Layer 4 (Tool & CLI Execution):* Direct execution of package CLIs (`npx shadcn@latest add`) or MCP servers.
 - **Enforced In:** [`frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`memory.md`](./memory.md).
+
+#### ADR-023: Architectural Cohesion Consolidation (Synthesis of 28 Cohesive Domain Rules)
+- **Date:** 2026-09-26 | **Status:** ACCEPTED
+- **Context:** The workspace rules had suffered from micro-rule fragmentation (45 separate files, with 15 files under 35 lines), creating high cognitive discovery overhead, duplicated directives, and split concerns across closely related domains (e.g. 5 UI files, 5 database files, 4 DevOps files, 3 multi-tenancy files, 3 API files).
+- **Decision:**
+  Consolidate fragmented micro-rules into 28 cohesive, single-responsibility domain rules:
+  1. **Frontend & UI**: Merge `accessibility.md` and `ui_navigation.md` into [`frontend_architecture.md`](./docs/rules/frontend_architecture.md). Retain [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md) for system design/layout and [`server_driven_ui.md`](./docs/rules/server_driven_ui.md) for backend schemas.
+  2. **API Architecture**: Merge `rest_api_conventions.md`, `advanced_api_patterns.md`, and `api_versioning.md` into [`api_architecture.md`](./docs/rules/api_architecture.md) (covering HTTP status codes, sync vs async 202 processing, `_actions`, idempotency keys, cursor pagination, OCC, and RFC 8594 lifecycle deprecation).
+  3. **Multi-Tenancy**: Merge `multitenancy_isolation.md`, `tenant_dynamic_schemas.md`, and `tenant_pluggable_logic.md` into [`multitenancy_architecture.md`](./docs/rules/multitenancy_architecture.md) (unifying context resolution, 4 isolation models, RLS, dynamic schemas, and pluggable logic with YAGNI gates).
+  4. **Database Architecture**: Consolidate into 2 atomic rules: [`database_design.md`](./docs/rules/database_design.md) (relational integrity, FKs, CHECKs, Canonical 6 Audit Fields, ACID transactions, Outbox pattern) and [`database_operations.md`](./docs/rules/database_operations.md) (zero-downtime expand-contract migrations, N+1 elimination, DataLoader, indexing, connection pooling, PITR).
+  5. **DevOps & CI/CD**: Merge `continuous_integration.md`, `continuous_deployment.md`, `container_infrastructure.md`, and `devsecops.md` into [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md).
+  6. **Security & Compliance**: Merge `application_security.md` and `compliance.md` into [`security_compliance.md`](./docs/rules/security_compliance.md).
+  7. **Testing**: Merge `test_isolation.md` into [`test_driven_development.md`](./docs/rules/test_driven_development.md).
+  8. **Agent Governance**: Merge `workspace_isolation.md`, `continuous_learning.md`, and `architecture_decision_records.md` into [`agentic_configuration.md`](./docs/rules/agentic_configuration.md).
+- **Consequences:** Eliminates 22 fragmented micro-files, reduces `AGENTS.md` table from 45 to 28 rows, and aligns every rule with True Single Responsibility.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`README.md`](./README.md), [`memory.md`](./memory.md), and all 28 consolidated rules under [`docs/rules/`](./docs/rules/).
 
 
 

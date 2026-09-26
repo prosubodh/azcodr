@@ -13,7 +13,7 @@ description: Use when initializing or bootstrapping a new project from this temp
 
 - When the user starts a fresh project by copying this workspace into a new directory.
 - When the user explicitly invokes `/lets-build` or asks to initialize/scaffold a new application.
-- When transforming or re-architecting an existing project to adhere to the 41 atomic domain rules.
+- When transforming or re-architecting an existing project to adhere to the 28 cohesive domain rules.
 - **Do NOT use for**:
   - Routine bug fixes or minor edits on an already bootstrapped codebase.
   - Adding a single endpoint or modifying an existing domain model.

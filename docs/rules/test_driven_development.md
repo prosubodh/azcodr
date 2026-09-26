@@ -1,6 +1,6 @@
-# Test-Driven Development (London School TDD) & Agile Domain Lifecycle
+# Test-Driven Development (London School TDD) & Test Isolation Standards
 
-> **Core Mandate:** Drive all features through the non-negotiable 5-Phase Agile Domain Lifecycle: Requirements ➔ Domain Analysis ➔ Outer Acceptance Test (RED) ➔ Inner Unit Test (RED-GREEN-REFACTOR) ➔ Outer Verification (GREEN). Never deviate from this sequence.
+> **Core Mandate:** Drive all features through the non-negotiable 5-Phase Agile Domain Lifecycle (Outside-In Double-Loop TDD, Uncle Bob's 3 Laws), enforcing transactional database rollback per test, zero-sleep determinism, and non-negotiable 100.00% statement, branch, and function coverage gates.
 
 ---
 
@@ -125,4 +125,28 @@ When pairing with the human developer, operate in true **Ping-Pong TDD**:
 ```
 - **Collaborative Steering**: The human developer can write the test while the AI writes the minimal pass, or the AI can present each micro-test and await confirmation before implementing.
 - **Continuous Alignment**: Design and data structures emerge organically through mutual feedback rather than monolithic code dumps.
+
+---
+
+## 6. Test Isolation & Determinism
+
+- **Transactional Rollback per Integration Test**:
+  - Every integration test that interacts with persistence must execute within a scoped transaction that is rolled back upon test completion (`afterEach` rollback) or use ephemeral, disposable database isolates. Never leave mutated rows that pollute subsequent tests.
+- **Deterministic Test Data Factories**:
+  - Utilize strongly-typed test data factories (`buildUser()`, `buildOrder()`) with randomized unique identifiers rather than hardcoded magic strings or fixed database IDs.
+- **Zero Sleep / Flakiness Elimination**:
+  - Strictly forbid arbitrary `sleep()` or timeout pauses in tests.
+  - Rely exclusively on deterministic condition polling (`waitFor(condition)`) or reactive event promises to eliminate test flakiness.
+
+---
+
+## 7. Mandatory 100.00% Test Coverage Thresholds
+
+- **Strict Coverage Thresholds**: Maintain line, function, branch, and statement test coverage at **100.00%** across all backend domain logic, adapters, contracts, and frontend suites. Strictly enforce 100% threshold failure gates in CI pipelines (`scripts/test_coverage.js`).
+- **Exhaustive Status Codes & Error Branches**: Explicitly test all HTTP/gRPC response codes:
+  - Success: `200 OK`, `201 Created`, `204 No Content`
+  - Client Errors: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict`, `422 Unprocessable Entity`, `429 Too Many Requests`
+  - Server Failures: `500 Internal Server Error`, `503 Service Unavailable`
+- **UI Interaction States & Edge Cases**: Fully assert all presentation states (loading spinners, disabled controls, error banners, success feedback, empty states) across suites.
+
 

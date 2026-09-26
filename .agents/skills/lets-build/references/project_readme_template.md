@@ -37,7 +37,7 @@
 │   ├── contracts/                    # Consumer contract tests (Pact)
 │   └── acceptance/                   # BDD Gherkin / Cucumber features
 ├── deploy/                           # OCI Distroless Dockerfiles & Compose manifests
-├── docs/rules/                       # 41 atomic single-responsibility architectural rules
+├── docs/rules/                       # 28 cohesive single-responsibility architectural rules
 ├── memory.md                         # Master memory hub & Lightweight ADR ledger
 └── AGENTS.md                         # Lean agentic directives (< 120 lines)
 ```
@@ -74,6 +74,6 @@ cp .env.example .env
 
 ## 🏛️ Architecture Governance & Decisions
 
-This project is governed by the **41 Atomic Domain Rules** located in [`docs/rules/`](./docs/rules/) and Architectural Decision Records in [`memory.md`](./memory.md):
+This project is governed by the **28 Cohesive Domain Rules** located in [`docs/rules/`](./docs/rules/) and Architectural Decision Records in [`memory.md`](./memory.md):
 - **ADR Ledger:** See [`memory.md`](./memory.md) for ADR-001 through ADR-006.
 - **Architectural Rules:** See [`docs/rules/`](./docs/rules/) for TDD, Clean Code, Multi-Tenancy, Database Integrity, and DevSecOps directives.

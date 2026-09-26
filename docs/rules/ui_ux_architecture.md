@@ -132,7 +132,7 @@ To prevent confusing operators with consumer simplicity and overwhelming consume
 
 ## 6. Bidirectional URL State Synchronization
 
-Per [`docs/rules/ui_navigation.md`](./ui_navigation.md), all view state that represents navigation, active tab, filtering, sorting, pagination, or search query must synchronize bidirectionally with URL search parameters (`useSearchParams`):
+Per [`docs/rules/frontend_architecture.md`](./frontend_architecture.md), all view state that represents navigation, active tab, filtering, sorting, pagination, or search query must synchronize bidirectionally with URL search parameters (`useSearchParams`):
 1. **Tabs**: `?tab=active`, `?tab=draft`, `?tab=archived`
 2. **Filters**: `?status=ACTIVE&category=cloud`
 3. **Search Queries**: `?q=alpha`

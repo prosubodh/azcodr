@@ -1,27 +1,71 @@
-# Database Operations, PITR & Least-Privilege Roles
+# Database Operations, Migrations & Performance Engineering
 
-> **Core Mandate:** Enforce continuous Point-In-Time Recovery (PITR), causal read-after-write routing, non-blocking table maintenance, connection pooling, and least-privilege role separation.
-
----
-
-## 1. High Availability, Backups & Disaster Recovery (DR)
-
-- **Continuous Point-In-Time Recovery (PITR)**: Utilize continuous write-ahead logging (WAL) archiving and periodic base backups (**WAL-G**, **pgBackRest**, or engine-native tooling) to guarantee restoration to any specific second.
-- **Causal Read-After-Write Consistency**: Read replicas experience asynchronous replication lag. Immediately following a state-mutating command (`POST`, `PUT`, `DELETE`), pin client sessions to the primary database instance for a bounded window (e.g. 2 seconds) before resuming read-replica routing.
+> **Core Mandate:** Enforce zero-downtime expand-contract migrations via declarative tools, systematic N+1 query elimination via DataLoader/batching, composite tenant indexing, connection pooling, and continuous point-in-time recovery (PITR).
 
 ---
 
-## 2. Table Maintenance & Bloat Defragmentation
+## 1. Zero-Downtime Expand-Contract Migrations
 
-- **Online Maintenance**: Table and index space must be reclaimed using non-blocking online utilities (**`pg_repack`**, `gh-ost`, or `pt-online-schema-change`), strictly prohibiting locking full table rewrites during online hours.
-- **Background Autovacuum / Optimization**: Configure proactive background vacuuming and compaction thresholds to prevent transaction ID wraparound and table bloat on high-throughput tables.
+Database schema migrations must never require maintenance windows or downtime. Follow the **3-Phase Expand-Contract Pattern**:
+
+```
+PHASE 1: EXPAND              PHASE 2: DUAL-RUN & BACKFILL         PHASE 3: CONTRACT
+(Zero-Downtime DDL)          (Application Rolling Update)         (Cleanup DDL)
+┌──────────────────────┐     ┌─────────────────────────────┐     ┌──────────────────────┐
+│ Add new column as    │ ──► │ Deploy app writing to both  │ ──► │ Drop old column      │
+│ NULLABLE or DEFAULT. │     │ columns; backfill old rows. │     │ after all traffic on │
+│ Zero breaking locks. │     │ Read fallback to old col.   │     │ new column version.  │
+└──────────────────────┘     └─────────────────────────────┘     └──────────────────────┘
+```
+
+### Invariants:
+1. **Never Rename Columns in a Single Step**: Renaming a column causes running application instances to crash. Always expand with a new column, dual-write, backfill, and drop the old column in a subsequent release.
+2. **Concurrent Index Creation**: In PostgreSQL, never create indexes with standard blocking DDL. Always use `CREATE INDEX CONCURRENTLY` to prevent locking table writes.
+3. **Declarative Migration Tooling**: Standardize on open-source declarative migration tools (e.g. **Atlas**, **Flyway**, or **Liquibase**) that compute deterministic migration plans against production schemas.
 
 ---
 
-## 3. Least-Privilege Role Partitioning & Audit Trails
+## 2. Performance Engineering & N+1 Query Defense
 
-Enforce strict separation of database credentials across execution environments:
-- **`migration_deployer`**: DDL privileges (`CREATE`, `ALTER`, `DROP`) restricted to CI/CD automated migration pipelines.
-- **`app_runtime`**: DML privileges only (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) with zero DDL or schema alteration rights.
-- **`analytics_readonly`**: Read-only access to sanitized views and replica nodes.
-- **Tamper-Proof Audit Logging**: Export schema changes, privilege grants, and sensitive queries to immutable external log sinks.
+A catastrophic database performance bottleneck is the **N+1 Query Problem**, where an application executes 1 query for a list and $N$ additional queries for related records in a loop.
+
+### Invariants:
+1. **Mandatory DataLoader / Batch Fetching**: In GraphQL resolvers, ORM mappers, or loop iterations, always batch entity queries via a DataLoader or SQL `IN (...)` batch queries:
+   ```typescript
+   // Correct: Single batched query for all tenant users
+   const users = await userLoader.loadMany(userIds);
+   ```
+2. **Composite Tenant Indexes**: In multi-tenant systems, every primary lookup index must include `tenant_id` as the leading column:
+   ```sql
+   -- Correct: Optimized for tenant-scoped date range filtering
+   CREATE INDEX idx_orders_tenant_created 
+     ON orders (tenant_id, created_at DESC);
+   ```
+3. **Index Hygiene & Covering Indexes**: Use `EXPLAIN (ANALYZE, BUFFERS)` to verify index scans. For high-frequency queries, use covering indexes (`INCLUDE (...)`) to satisfy queries directly from index pages without heap fetches.
+
+---
+
+## 3. Connection Pooling & Resource Limits
+
+Database connections are expensive resources requiring thread stacks and memory allocation. An uncapped connection pool will exhaust database memory and crash the server under load spikes.
+
+### Invariants:
+1. **Dedicated Connection Pooling**: In production, deploy a dedicated connection pooler (e.g. **PgBouncer** in transaction pooling mode for PostgreSQL, or **HikariCP** in JVM runtimes).
+2. **Connection Sizing Formula**: Size application pools conservatively using the standard Postgres sizing formula:
+   $$\text{connections} = ((\text{core\_count} \times 2) + \text{effective\_disk\_count})$$
+   Over-allocating connections (e.g., 500 connections on an 8-core server) causes severe CPU thrashing and context-switch latency.
+3. **Connection Lifecycle Limits**: Configure `max_lifetime` (e.g. 30 minutes) and `idle_timeout` (e.g. 10 minutes) to cycle stale connections and prevent socket leaks.
+
+---
+
+## 4. Operational Resilience & Backup Baselines
+
+1. **Continuous Point-In-Time Recovery (PITR)**: Production databases must configure continuous WAL (Write-Ahead Log) archiving to object storage (e.g. via `pgBackRest` or `wal-g`), enabling recovery to any arbitrary second within the retention window.
+2. **Autovacuum Tuning (PostgreSQL)**: For high-throughput transactional tables, tune autovacuum parameters to prevent table bloat and transaction ID wraparound:
+   ```sql
+   ALTER TABLE orders SET (
+     autovacuum_vacuum_scale_factor = 0.05,
+     autovacuum_vacuum_cost_limit = 1000
+   );
+   ```
+3. **Database Role Separation**: The application connection user must never connect as `postgres` or `superuser`. Create a dedicated least-privilege `app_user` granted only `DML` (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) on application tables.

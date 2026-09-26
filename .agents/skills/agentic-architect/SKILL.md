@@ -43,8 +43,8 @@ Inspect current agent files and measure their token and line footprint:
 Extract continuous technical requirements into dedicated markdown files under `docs/rules/`:
 - `docs/rules/clean_code.md` (Clean Code, Pragmatic Programmer, CQS, SLAP)
 - `docs/rules/cloud_native.md` (12-Factor 2026, OpenTelemetry, API-first)
-- `docs/rules/compliance.md` (SOC 2 Type II, ISO 27001, GDPR)
-- `docs/rules/continuous_integration.md` (Shift-left pipelines, trunk-based CI)
+- `docs/rules/security_compliance.md` (SOC 2 Type II, ISO 27001, GDPR)
+- `docs/rules/devops_ci_cd.md` (Shift-left pipelines, trunk-based CI, OCI distroless)
 - `docs/rules/requirements_engineering.md` (INVEST user stories, Gherkin criteria)
 
 ### Step 4: Streamline Root AGENTS.md

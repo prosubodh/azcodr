@@ -1,6 +1,6 @@
-# Agentic Configuration, Skills & Harness Standards
+# Agentic Configuration, Governance & Harness Standards
 
-> **Core Mandate:** Maintain lean agent entrypoints via progressive disclosure, modular documentation, strict skill front matter standards, harness symlink parity, and relentless questioning during skill architecture.
+> **Core Mandate:** Enforce progressive disclosure across agent entrypoints, strict skill front matter standards, workspace sovereignty, continuous learning via the direct rule ingestion loop, and immutable Architectural Decision Records (ADRs).
 
 ---
 
@@ -83,7 +83,7 @@ Never author or dynamically generate skills for commodity open-source packages o
 - **The 4-Layer Resolution Standard:** Always resolve library stack knowledge through the **4-Layer Resolution Model**:
   1. *Layer 1 (Manifest Ground Truth):* Read `package.json`, `components.json`, or `tsconfig.json`.
   2. *Layer 2 (Stack Contract in `AGENTS.md`):* 3–5 line declaration in project entrypoint stamped by `/lets-build`.
-  3. *Layer 3 (Universal Domain Rules):* Enforce architectural invariants (`frontend_architecture.md`, `test_isolation.md`) rather than library syntax.
+  3. *Layer 3 (Universal Domain Rules):* Enforce architectural invariants (`frontend_architecture.md`, `test_driven_development.md`) rather than library syntax.
   4. *Layer 4 (Tool & CLI Execution):* Direct execution of official CLIs (`npx shadcn@latest add ...`) or local component inspection.
 
 ---
@@ -195,3 +195,52 @@ When an AI produces suboptimal code or documentation:
 2. Make manual corrections to produce the desired gold-standard output.
 3. Diff the original draft against the corrected version to identify specific gaps.
 4. Update the relevant skill's "What NOT to do" or guideline section to prevent repeating that mistake.
+
+---
+
+## 9. Workspace Sovereignty & Zero Global Interference
+
+Enforce strict workspace containment within the workspace root (`./`):
+- **Ground Truth Boundary**: Only files, dependencies, configuration files (`package.json`, `tsconfig.json`, `docker-compose.yml`), and verified command executions within the local workspace (`./`) constitute project truth.
+- **Zero Global Contamination**: Never import, execute, or assume tools, environment variables, or conventions from global system directories (e.g. `~/.config`, `/tmp`, `~/.gemini/antigravity-cli`, or parent directories) unless explicitly defined within local workspace configuration.
+- **Sibling Project Isolation**: Strictly ignore external or legacy projects. Do not read from or write to directories outside the local repository (`./`).
+- **Subagent Context Sandboxing**: When spawning subagents or executing commands, ensure working directories are anchored strictly to `./`.
+
+---
+
+## 10. Continuous Learning & The Direct Rule Ingestion Loop
+
+Whenever an error, test failure, build friction, or architectural anti-pattern occurs during development, immediately execute the 4-step loop:
+
+```
+1. Capture Defect ──► 2. Root Cause Analysis ──► 3. Synthesize Invariant ──► 4. Update Rule / Skill
+```
+
+1. **Capture Defect**: Record the failure symptoms, stack trace, and failing test case.
+2. **Root Cause Analysis**: Identify the fundamental architectural or operational gap (not just the surface symptom).
+3. **Synthesize Invariant**: Formulate a concrete, positive architectural invariant and code example showing the correct implementation.
+4. **Update Rule / Skill**:
+   - Update the governing domain rule in `docs/rules/<domain>.md` or specialized skill in `.agents/skills/` directly.
+   - If the lesson introduces an architectural trade-off or paradigm shift, record a lightweight ADR in [`memory.md`](../../memory.md).
+   - Run verification (`npm test && npm run validate`) to ensure 100% integrity.
+
+---
+
+## 11. Architectural Decision Records (ADR) Standards
+
+Significant architectural, technical stack, or invariant decisions must be captured in [`memory.md`](../../memory.md):
+
+### Required ADR Envelope:
+```markdown
+#### ADR-XXX: <Imperative Action-Oriented Title>
+- **Date:** YYYY-MM-DD | **Status:** PROPOSED | ACCEPTED | SUPERSEDED | DEPRECATED
+- **Context:** The specific operational or technical problem, constraint, or trade-off requiring a decision.
+- **Decision:** Concrete, unambiguous architecture choice and positive invariants.
+- **Consequences:** Direct benefits and deliberate operational trade-offs accepted.
+- **Enforced In:** Links to specific rule files in `docs/rules/` or code paths.
+```
+
+### Numbering & Immutability:
+- ADR numbers are monotonically increasing (`ADR-001`, `ADR-002`, ...).
+- ADR entries are **immutable history**. Never edit past accepted ADRs to represent new decisions; author a new ADR that explicitly supersedes the former.
+

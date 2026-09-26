@@ -169,7 +169,7 @@ export class GetCustomerOrdersQueryHandler {
 When graduating to Level 3 (asynchronous read stores), you must prevent data corruption, drift, and race conditions:
 
 ### 1. Zero Dual-Writes (Strict Outbox Mandate)
-Never write to the command database and then publish to a message broker (RabbitMQ/Kafka) in two independent operations. Network failure between the two operations corrupts read models. Always use the **Transactional Outbox Pattern** (see [`docs/rules/database_transactions.md`](./database_transactions.md)).
+Never write to the command database and then publish to a message broker (RabbitMQ/Kafka) in two independent operations. Network failure between the two operations corrupts read models. Always use the **Transactional Outbox Pattern** (see [`docs/rules/database_design.md`](./database_design.md)).
 
 ### 2. Monotonic Sequence & Idempotent Projectors
 Every domain event must carry an aggregate version number. Read projectors must discard duplicate or out-of-order events:

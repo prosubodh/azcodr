@@ -1,6 +1,6 @@
 # Frontend Architecture & Client State Management
 
-> **Core Mandate:** Enforce production-grade client architecture: accessible headless component primitives, asynchronous server-state cache synchronization and deduplication, declarative contract schema form validation, explicit 5-tier state separation (server vs URL vs form vs component vs global), and symmetrical design tokens.
+> **Core Mandate:** Enforce production-grade client architecture: accessible headless component primitives, WCAG 2.2 Level AA compliance, asynchronous server-state cache synchronization and deduplication, declarative contract schema form validation, bidirectional URL navigation synchronization, explicit 5-tier state separation, and symmetrical design tokens.
 
 ---
 
@@ -33,7 +33,7 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 
 ---
 
-## 2. Component Primitives & Headless Accessibility
+## 2. Component Primitives, Headless Accessibility & WCAG 2.2 Standards
 
 - **Accessible Headless Primitives**: All interactive UI components (dialogs, dropdowns, selects, tabs, tooltips, popovers) must decouple behavioral accessibility (focus trapping, keyboard navigation, ARIA states) from visual presentation using headless primitives:
   - *React:* `@radix-ui` / `shadcn/ui` in `@/components/ui/`
@@ -41,9 +41,16 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
   - *Svelte:* `melt-ui` / `bits-ui`
   - *Solid:* `@kobalte/core`
   - *Angular:* `@angular/cdk/a11y`
-- **Zero Unstyled Raw Elements**: Never create unstyled raw HTML modals, dropdowns, or custom select tags using raw `<div>` tags and ad-hoc mouse-only state.
+- **Zero Unstyled Raw Elements**: Never create unstyled raw HTML modals, dropdowns, or custom select tags using raw `<div>` tags and ad-hoc mouse-only click handlers.
+- **Focus Management & Trapping**:
+  - Modal dialogs must trap keyboard focus within the dialog container while open.
+  - Closing a dialog must return keyboard focus deterministically to the triggering element.
+- **Visible Focus Indicators**: Never remove default outline rings (`outline: none`) without providing an explicit, high-contrast replacement (`focus-visible:ring-2 focus-visible:ring-offset-2`).
+- **Dynamic Content & ARIA Live Regions**:
+  - Asynchronous notifications, toast alerts, and status updates must use `role="status"` or `aria-live="polite"` so screen readers announce changes without interrupting the user.
+  - Critical error alerts must use `role="alert"` or `aria-live="assertive"`.
+- **Strict Prohibition of Native Dialogs**: Browser-native `window.alert()` and `window.confirm()` are strictly forbidden. Use accessible headless dialogs (`<ConfirmDialog />`).
 - **Utility Styling & Class Merging (`cn` helper)**: Combine utility classes using deterministic class merging (e.g., `clsx` and `tailwind-merge` via `cn(...)`) to allow clean prop overrides and consistent theming.
-- **Strict Prohibition of Native Dialogs**: As mandated in [`docs/rules/accessibility.md`](./accessibility.md), `window.alert()` and `window.confirm()` are strictly forbidden. Use accessible headless dialogs (`<ConfirmDialog />`).
 
 ---
 
@@ -55,7 +62,6 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
   - *Anti-Pattern:* Uncoordinated manual fetching in component lifecycles (`useEffect(() => { fetch().then(...) })`, `onMounted`, `ngOnInit`) with hand-rolled `isLoading` and `error` boolean states.
   - *Standard Pattern (Query Hook / Cache Invalidation):*
     ```tsx
-    // Idiomatic client cache query
     const { data: resources, isLoading, error } = useQuery({
       queryKey: ['resources', tenantId],
       queryFn: () => api.getResources(tenantId),
@@ -81,11 +87,7 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
 - **Mandatory Schema Validation**: Every form submission must be validated against a formal declarative schema (Zod, Valibot, standard-schema, or framework validator) that mirrors shared DTO/input contracts.
 - **Dedicated Form State Engines**: Use dedicated form engines (React Hook Form, TanStack Form, VeeValidate, Superforms, Angular Reactive Forms) that track field dirty states, touched states, and asynchronous validation without triggering full component tree re-renders.
 - **Zero Unvalidated Multi-Field Objects**:
-  - *Anti-Pattern:*
-    ```tsx
-    const [form, setForm] = useState({ name: '', email: '' });
-    // manual validation in submit handler...
-    ```
+  - *Anti-Pattern:* Unvalidated ad-hoc dictionary state (`useState({ name: '', email: '' })`) with manual string checking in submit handlers.
   - *Standard Pattern:*
     ```tsx
     const form = useForm<CreateUserInput>({
@@ -93,16 +95,19 @@ Frontend engineering is frequently derailed by two opposing anti-patterns: **rei
       defaultValues: { name: '', email: '' },
     });
     ```
-- **Accessible Error Linking**: Form inputs must bind validation errors to `aria-invalid="true"` and `aria-describedby="<field>-error"`.
+- **Accessible Error Linking**: Form inputs must bind validation errors to `aria-invalid="true"` and `aria-describedby="<field>-error"`. Every input must have an associated semantic `<label>`.
 
 ---
 
-## 5. The 5-Tier State Separation Hierarchy
+## 5. The 5-Tier State Hierarchy & Bidirectional URL Navigation
 
 Never dump all application state into a single global state container. Enforce strict categorical separation across 5 distinct lifecycles:
 
 1. **Server State (Remote Cache)**: Managed exclusively by the query cache engine; invalidated by resource keys.
-2. **URL State (Search / Pagination / Filters)**: Managed in URL search params per [`docs/rules/ui_navigation.md`](./ui_navigation.md) for bookmarkability and deep linking.
+2. **URL State (Navigation / Search / Pagination / Filters)**:
+   - Must synchronize bidirectionally with URL search parameters (`useSearchParams`) to ensure deep linkability, bookmarkability, and seamless browser history (back/forward) navigation.
+   - Standard format: `?tab=security&page=2&limit=25&sort=createdAt&order=desc&status=ACTIVE`.
+   - Modals and drawers representing actionable entities must synchronize with the URL (e.g. `?modal=edit-user&userId=123`).
 3. **Form State (Transient Edits)**: Managed by form validation engines; discarded after submission or reset.
 4. **Local Component State (Ephemeral UI)**: Managed by primitive local component state (`useState`, `ref`, `$state`) strictly for local UI toggles (dropdown open, accordion expanded, hover).
 5. **Global Application State (Session / Context)**: Managed by lightweight client stores (Zustand, Pinia, Context, Signals) strictly for cross-cutting session data (current user, tenant context, active feature flags).
