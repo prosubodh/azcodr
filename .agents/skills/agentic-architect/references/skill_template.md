@@ -51,5 +51,6 @@ Provide consistent formatting for results:
 ## 5. Subdirectories & Progressive Resources
 - Deep reference documentation: `references/`
 - Deterministic helper scripts: `scripts/`
-- Static schemas or mock assets: `assets/`
+- Static schemas, templates, or mock data: `resources/`
+- Reference implementations and patterns: `examples/`
 ```

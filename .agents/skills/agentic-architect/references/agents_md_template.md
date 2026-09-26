@@ -51,9 +51,12 @@ Read these specialized rule files on demand when performing relevant tasks:
 ---
 
 ## 4. Harness Parity
-Keep `AGENTS.md`, `CLAUDE.md`, and `agents.md` in sync via filesystem symlinks:
+Keep `AGENTS.md`, `CLAUDE.md`, `agents.md`, `GEMINI.md`, `.cursorrules`, and `.windsurfrules` in sync via filesystem symlinks:
 ```bash
 ln -sf AGENTS.md CLAUDE.md
 ln -sf AGENTS.md agents.md
+ln -sf AGENTS.md GEMINI.md
+ln -sf AGENTS.md .cursorrules
+ln -sf AGENTS.md .windsurfrules
 ```
 ```

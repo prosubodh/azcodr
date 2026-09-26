@@ -102,7 +102,7 @@ Audit architectural implementation against compliance baselines:
 ## 3. Compliance Control Evaluation Matrix
 | Framework | Control ID | Control Description | Status | Evidence / Notes |
 |---|---|---|---|---|
-| **SOC 2** | CC6.1 | Least-privilege RBAC & tenant isolation | PASS | Scoped queries in Prisma |
+| **SOC 2** | CC6.1 | Least-privilege RBAC & tenant isolation | PASS | Scoped database queries / RLS |
 | **SOC 2** | CC7.2 | Tamper-evident mutation audit logging | PASS | Audit table with actor tracing |
 | **ISO 27001** | A.10.1 | Cryptographic controls (AES-256, TLS 1.3) | PASS | TLS 1.3 configured, Argon2id auth |
 | **OWASP** | A01 | Broken Access Control checks | PASS | Server-side guards on all routes |

@@ -181,7 +181,7 @@ async function runCli(rawArgs = process.argv.slice(2), io = {}) {
       out('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
       out('  ✅ Specialized agentic skills copied (.agents/skills/)');
       out('  ✅ Editor formatting standards initialized (.editorconfig)');
-      out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md)');
+      out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md, GEMINI.md, .cursorrules, .windsurfrules)');
       if (result.gitInitialized) {
         out('  ✅ Git repository initialized');
       }

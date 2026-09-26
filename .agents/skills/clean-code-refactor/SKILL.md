@@ -5,7 +5,7 @@ description: Use when refactoring existing code to comply with Clean Code, SOLID
 
 # Clean Code & Design Patterns Refactoring Skill
 
-> **Core Purpose:** Transform messy, coupled, or rigid code into clean, expressive, and maintainable TypeScript implementations adhering to Robert C. Martin's Clean Code, The Pragmatic Programmer, and modern Gang of Four patterns without altering external behavior.
+> **Core Purpose:** Transform messy, coupled, or rigid code into clean, expressive, and maintainable implementations adhering to Robert C. Martin's Clean Code, The Pragmatic Programmer, and modern Gang of Four patterns without altering external behavior.
 
 ---
 
@@ -27,7 +27,7 @@ description: Use when refactoring existing code to comply with Clean Code, SOLID
 
 ### Step 1: Establish the Test Safety Net
 - Never refactor without passing tests.
-- Confirm all existing unit and acceptance tests pass: `npm run test` or `npm run coverage`.
+- Confirm all existing unit and acceptance tests pass: workspace test command (e.g. `npm test`, `cargo test`, `go test ./...`, `pytest`).
 - If coverage is missing or incomplete, write tests *before* touching production code.
 
 ### Step 2: Identify Specific Code Smells
@@ -45,8 +45,8 @@ Target concrete flaws:
 
 ### Step 4: Execute Atomic Surgical Edits
 - Make one micro-refactor at a time (e.g. rename a method, extract a class).
-- Maintain existing naming conventions and strict TypeScript types.
-- Ensure zero lint or type errors: `npm run lint && npm run typecheck`.
+- Maintain existing naming conventions and idiomatic type safety.
+- Ensure zero lint or type errors: workspace linter and compiler (e.g. `npm run lint && npm run typecheck`, `cargo clippy`, `golangci-lint`, `mypy`).
 
 ### Step 5: Verify Continuous Green State
 - Run tests after every single atomic change: `npm run coverage`.
@@ -81,11 +81,11 @@ Target concrete flaws:
 3. **Verification Evidence**:
    - Tests Status: PASS (100.00% statement, branch, and function coverage preserved)
    - Linter Status: PASS (0 ESLint warnings)
-   - Typecheck: PASS (0 TypeScript errors)
+   - Typecheck / Compiler: PASS (0 errors)
 ```
 
 ---
 
 ## 5. Subdirectories & Progressive Resources
 - [references/clean_code_smells.md](./references/clean_code_smells.md): Catalog of code smells and their refactoring cures.
-- [references/design_patterns_ts.md](./references/design_patterns_ts.md): Production TypeScript implementations of Adapter, Strategy, and Result patterns.
+- [references/design_patterns_ts.md](./references/design_patterns_ts.md): Reference implementations of Adapter, Strategy, and Result patterns (illustrated in TypeScript).

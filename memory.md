@@ -41,6 +41,7 @@
 | **ADR-023** | Architectural Cohesion Consolidation (Synthesis of 28 Cohesive Domain Rules) | 2026-09-26 | ACCEPTED | All 28 rules in [`docs/rules/`](./docs/rules/) |
 | **ADR-024** | Outside-In Interaction Discovery vs. Inside-Out Invariants & Headless UI Testing | 2026-09-26 | ACCEPTED | [`frontend_architecture.md`](./docs/rules/frontend_architecture.md), [`test_driven_development.md`](./docs/rules/test_driven_development.md) |
 | **ADR-025** | Automated Markdown Link Integrity, Scaffolding Boundary Decoupling & Prepublish Quality Gates | 2026-09-26 | ACCEPTED | [`.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh`](./.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh), [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
+| **ADR-026** | Multi-Harness Parity, Agentic Skill Taxonomy & Deterministic Governance Hardening | 2026-09-26 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`agentic-architect`](./.agents/skills/agentic-architect/SKILL.md) |
 
 
 ---
@@ -255,4 +256,34 @@
   2. **Scaffolding Boundary Decoupling**: Sanitize all documentation and memory records to format internal packaging files (`lib/`, `bin/`) in code font rather than relative markdown links, ensuring scaffolded projects pass validation with zero broken links.
   3. **Prepublish Quality Gate**: Expand `prepublishOnly` in `package.json` to enforce `npm run lint && npm run test:coverage && npm run validate` prior to distribution.
 - **Enforced In:** [`.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh`](./.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh), [`docs/rules/agentic_configuration.md`](./docs/rules/agentic_configuration.md), `package.json`, [`memory.md`](./memory.md).
+
+#### ADR-026: Multi-Harness Parity, Agentic Skill Taxonomy & Deterministic Governance Hardening
+- **Date:** 2026-09-26 | **Status:** ACCEPTED
+- **Context:**
+  1. The repository's harness parity previously only symlinked `CLAUDE.md` and `agents.md`, omitting Google Antigravity & Gemini CLI (`GEMINI.md`), Cursor (`.cursorrules`), and Windsurf (`.windsurfrules`), leading to configuration discovery divergence across different AI coding environments.
+  2. Root `AGENTS.md` omitted required top-level Workspace Identity, Mission, and Runtime Environment contracts mandated by `agentic_configuration.md`.
+  3. Skill subdirectories used non-standard terminology (`assets/` instead of `resources/` / `examples/`), and skills (`lets-build`, `relentless-questioner`) lacked explicit `## 5. Subdirectories & Progressive Resources` catalogs, leaving reference files orphaned.
+  4. The deterministic configuration validator omitted checks for closing frontmatter delimiters, negative boundary trigger phrasing in skill descriptions, and additional harness symlinks.
+- **Decision:**
+  1. **Omni-Harness Parity**: Expand harness parity to establish and assert symlinks across all 5 major AI coding harnesses: `CLAUDE.md`, `agents.md`, `GEMINI.md`, `.cursorrules`, and `.windsurfrules` pointing to root `AGENTS.md`. Update `lib/scaffold.js` to automatically stamp all 5 symlinks during scaffolding.
+  2. **Standardized Skill Folder Taxonomy**: Align skill subdirectory architecture strictly with standard Agent Skills and Antigravity specifications: `scripts/` (executable tools), `references/` (documentation), `resources/` (schemas/templates), and `examples/` (reference patterns), permanently retiring `assets/`.
+  3. **Progressive Resource Discoverability**: Ensure 100% of skills in `.agents/skills/` catalog all sub-resources and scripts under a standardized `## 5. Subdirectories & Progressive Resources` section with active links.
+  4. **Rigorous Configuration Validator Gates**: Enhance `validate_agentic_configs.sh` to validate all 5 harness symlinks, assert YAML frontmatter closure, verify negative boundary phrasing in skill descriptions, and handle `file://` URIs without false positives.
+  5. **Polyglot Skill Neutrality**: Purge hardcoded language-specific assumptions from `clean-code-refactor` and `compliance-audit`, generalizing to universal code health and type safety contracts.
+- **Enforced In:** [`AGENTS.md`](./AGENTS.md), [`docs/rules/agentic_configuration.md`](./docs/rules/agentic_configuration.md), [`.agents/skills/agentic-architect/SKILL.md`](./.agents/skills/agentic-architect/SKILL.md), [`.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh`](./.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh), `lib/scaffold.js`, `bin/azcodr.js`, [`memory.md`](./memory.md).
+
+#### ADR-027: Enterprise Agentic Hardening — Lifecycle Hooks, MCP Blueprints, Topology Tracking & Verification Smokes
+- **Date:** 2026-09-26 | **Status:** ACCEPTED
+- **Context:**
+  1. The 5-iteration relentless agentic audit identified missing out-of-the-box working schemas for Antigravity Lifecycle Hooks (`hooks.json`) and vendor-neutral Model Context Protocol servers (`mcp_config.json`), leaving users to manually divine JSON schemas for safety guards and MCP tools.
+  2. Scaffolding scripts (`bootstrap_workspace.sh`) created empty directory topologies without `.gitkeep`, causing Git to ignore empty leaf folders upon commit and silently dropping scaffolded architecture trees.
+  3. Projects scaffolded via `lets-build` lacked a deterministic starter for the required Phase 5 Boundary Verification Smoke Test (`scripts/smoke_test.sh`).
+  4. Configuration validation symlink checks strictly matched `"AGENTS.md"`, failing if a symlink used `./AGENTS.md` or absolute paths.
+- **Decision:**
+  1. **Lifecycle Hooks & MCP Schema Blueprints**: Provide `.agents/hooks.json.example` (configuring `PreToolUse`, `PostToolUse`, `Stop` with `"enabled": false`) and `.agents/mcp_config.json.example` (Stdio and SSE server blueprints) out-of-the-box in the template root for zero-guesswork integration.
+  2. **Topology Git Preservation**: Update `bootstrap_workspace.sh` with a `create_leaf` helper that automatically places `.gitkeep` inside empty scaffolded leaf directories across all topologies (extension, game engine, CLI, backend).
+  3. **Deterministic Boundary Smoke Test Generation**: Update `bootstrap_workspace.sh` to generate an executable starter `scripts/smoke_test.sh` upon workspace bootstrapping, satisfying Phase 5 verification gates out-of-the-box.
+  4. **Path-Tolerant Symlink & Fallback Validation**: Enhance `validate_agentic_configs.sh` with `is_valid_agents_target` and `is_valid_text_pointer` helpers accepting relative (`./AGENTS.md`) and absolute paths, while adding non-breaking validation for `.github/copilot-instructions.md`.
+- **Enforced In:** [`.agents/hooks.json.example`](./.agents/hooks.json.example), [`.agents/mcp_config.json.example`](./.agents/mcp_config.json.example), [`.agents/skills/lets-build/scripts/bootstrap_workspace.sh`](./.agents/skills/lets-build/scripts/bootstrap_workspace.sh), [`.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh`](./.agents/skills/agentic-architect/scripts/validate_agentic_configs.sh), [`memory.md`](./memory.md).
+
 

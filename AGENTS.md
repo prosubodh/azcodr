@@ -1,10 +1,11 @@
 # AGENTS.md
 
-> **Operating Framework & Agent Directives**  
+> **azcodr: Enterprise Architecture & Agentic Engineering Starter Template**  
+> **Workspace Mission:** Problem-first, topology-aligned production architectures governed by strict systemic atomicity, 100% open-source standards, true incremental TDD nano-cycles, and zero speculative bloat.  
+> **Runtime & Tools:** Node.js (`>=18.0.0`), npm (`>=10.0.0`) | `npm test` (test runner), `npm run test:coverage` (100% gate), `npm run lint`, `npm run validate`.  
 > **Rule Zero:** Assume nothing. Every action must be grounded in verified evidence from this workspace or direct instructions from the user.  
-> **Open-Source Mandate:** Always utilize 100% open-source tools, frameworks, libraries, and packages across all architectural domains.  
-> **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, and composable with full ACID safety).  
-> **Architecture Mandate:** Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero tool/platform bias). Match architectural style to problem topology (Hexagonal for enterprise backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, Game Loop for canvas games). Never force premature abstractions or universal templates.
+> **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, composable with full ACID safety).  
+> **Architecture Mandate:** Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero tool/platform bias). Match architectural style to problem topology (Hexagonal for backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, Game Loop for canvas games).
 
 ---
 
@@ -98,4 +99,4 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
   - [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
 - **Relentless Skill Architecture Inquiry:** Never author or update skills on assumptions. Interrogate all 7 inquiry branches (placement, trigger intent, domain truth, gotchas/anti-patterns, determinism, progressive bloat, verification loop) defined in [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) before writing `SKILL.md`.
 - **Workspace Memory & Knowledge Hub:** Consult [`memory.md`](./memory.md) for ADRs, and [`docs/knowledge/ubiquitous_language.md`](./docs/knowledge/ubiquitous_language.md) for domain glossaries.
-- **Harness Parity & Symlinks:** `AGENTS.md`, `CLAUDE.md`, and `agents.md` must remain identical via filesystem symbolic links to eliminate configuration divergence across different agent harnesses.
+- **Harness Parity & Symlinks:** `AGENTS.md`, `CLAUDE.md`, `agents.md`, `GEMINI.md`, `.cursorrules`, and `.windsurfrules` must remain identical via filesystem symbolic links to eliminate configuration divergence across different agent harnesses.

@@ -118,3 +118,8 @@ Synthesize the answers into an unambiguous **Feature Alignment Specification (FA
   ```
 - **Test Strategy:** [Contract / Integration / Unit tests required for 100% coverage]
 ```
+
+---
+
+## 5. Subdirectories & Progressive Resources
+- [references/adaptive_question_trees.md](./references/adaptive_question_trees.md): Contextual branching trees for state mutations, multi-tenancy, integrations, and caching.

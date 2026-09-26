@@ -36,16 +36,29 @@ else
   fi
 fi
 
+# Helper to check if symlink target resolves to AGENTS.md
+is_valid_agents_target() {
+  local target="$1"
+  [[ "${target}" == "AGENTS.md" || "${target}" == "./AGENTS.md" || "${target}" == "${WORKSPACE_ROOT}/AGENTS.md" ]]
+}
+
+is_valid_text_pointer() {
+  local file="$1"
+  local content
+  content=$(< "${file}")
+  [[ "${content}" == "AGENTS.md" || "${content}" == "./AGENTS.md" || "${content}" == "${WORKSPACE_ROOT}/AGENTS.md" ]]
+}
+
 # Check CLAUDE.md symlink
 CLAUDE_FILE="${WORKSPACE_ROOT}/CLAUDE.md"
 if [[ -L "${CLAUDE_FILE}" ]]; then
   TARGET=$(readlink "${CLAUDE_FILE}")
-  if [[ "${TARGET}" == "AGENTS.md" ]]; then
+  if is_valid_agents_target "${TARGET}"; then
     log_pass "CLAUDE.md is a valid symlink to AGENTS.md."
   else
     log_fail "CLAUDE.md points to '${TARGET}' instead of 'AGENTS.md'."
   fi
-elif [[ -f "${CLAUDE_FILE}" ]] && [[ "$(< "${CLAUDE_FILE}")" == "AGENTS.md" ]]; then
+elif [[ -f "${CLAUDE_FILE}" ]] && is_valid_text_pointer "${CLAUDE_FILE}"; then
   log_pass "CLAUDE.md is a text pointer to AGENTS.md (symlink fallback)."
 else
   log_fail "CLAUDE.md is not a symbolic link."
@@ -68,13 +81,75 @@ else
   fi
   if [[ -L "${AGENTS_LOWER}" ]]; then
     TARGET=$(readlink "${AGENTS_LOWER}")
-    if [[ "${TARGET}" == "AGENTS.md" ]]; then
+    if is_valid_agents_target "${TARGET}"; then
       log_pass "agents.md is a valid symlink to AGENTS.md."
     else
       log_fail "agents.md points to '${TARGET}' instead of 'AGENTS.md'."
     fi
   else
     log_fail "agents.md is not a symbolic link."
+  fi
+fi
+
+# Check GEMINI.md symlink
+GEMINI_FILE="${WORKSPACE_ROOT}/GEMINI.md"
+if [[ -L "${GEMINI_FILE}" ]]; then
+  TARGET=$(readlink "${GEMINI_FILE}")
+  if is_valid_agents_target "${TARGET}"; then
+    log_pass "GEMINI.md is a valid symlink to AGENTS.md."
+  else
+    log_fail "GEMINI.md points to '${TARGET}' instead of 'AGENTS.md'."
+  fi
+elif [[ -f "${GEMINI_FILE}" ]] && is_valid_text_pointer "${GEMINI_FILE}"; then
+  log_pass "GEMINI.md is a text pointer to AGENTS.md (symlink fallback)."
+else
+  log_fail "GEMINI.md is not a symbolic link."
+fi
+
+# Check .cursorrules symlink
+CURSOR_FILE="${WORKSPACE_ROOT}/.cursorrules"
+if [[ -L "${CURSOR_FILE}" ]]; then
+  TARGET=$(readlink "${CURSOR_FILE}")
+  if is_valid_agents_target "${TARGET}"; then
+    log_pass ".cursorrules is a valid symlink to AGENTS.md."
+  else
+    log_fail ".cursorrules points to '${TARGET}' instead of 'AGENTS.md'."
+  fi
+elif [[ -f "${CURSOR_FILE}" ]] && is_valid_text_pointer "${CURSOR_FILE}"; then
+  log_pass ".cursorrules is a text pointer to AGENTS.md (symlink fallback)."
+else
+  log_fail ".cursorrules is not a symbolic link."
+fi
+
+# Check .windsurfrules symlink
+WINDSURF_FILE="${WORKSPACE_ROOT}/.windsurfrules"
+if [[ -L "${WINDSURF_FILE}" ]]; then
+  TARGET=$(readlink "${WINDSURF_FILE}")
+  if is_valid_agents_target "${TARGET}"; then
+    log_pass ".windsurfrules is a valid symlink to AGENTS.md."
+  else
+    log_fail ".windsurfrules points to '${TARGET}' instead of 'AGENTS.md'."
+  fi
+elif [[ -f "${WINDSURF_FILE}" ]] && is_valid_text_pointer "${WINDSURF_FILE}"; then
+  log_pass ".windsurfrules is a text pointer to AGENTS.md (symlink fallback)."
+else
+  log_fail ".windsurfrules is not a symbolic link."
+fi
+
+# Check .github/copilot-instructions.md symlink (if .github directory exists)
+COPILOT_FILE="${WORKSPACE_ROOT}/.github/copilot-instructions.md"
+if [[ -d "${WORKSPACE_ROOT}/.github" ]]; then
+  if [[ -L "${COPILOT_FILE}" ]]; then
+    TARGET=$(readlink "${COPILOT_FILE}")
+    if [[ "${TARGET}" == "../AGENTS.md" || "${TARGET}" == "${WORKSPACE_ROOT}/AGENTS.md" || "${TARGET}" == "AGENTS.md" ]]; then
+      log_pass ".github/copilot-instructions.md is a valid symlink to AGENTS.md."
+    else
+      log_fail ".github/copilot-instructions.md points to '${TARGET}' instead of '../AGENTS.md'."
+    fi
+  elif [[ -f "${COPILOT_FILE}" ]] && [[ "$(< "${COPILOT_FILE}")" == *"AGENTS.md"* ]]; then
+    log_pass ".github/copilot-instructions.md references AGENTS.md (symlink fallback)."
+  elif [[ -f "${COPILOT_FILE}" ]]; then
+    log_warn ".github/copilot-instructions.md exists but is neither a symlink to ../AGENTS.md nor references AGENTS.md."
   fi
 fi
 
@@ -128,6 +203,11 @@ else
       log_fail "Skill '${SKILL_NAME}' missing opening front matter delimiter (---)"
       continue
     fi
+
+    # Check closing front matter delimiter
+    if ! awk 'NR > 1 && /^---[[:space:]]*$/ { found=1; exit } END { exit !found }' "${SKILL_FILE}"; then
+      log_fail "Skill '${SKILL_NAME}' missing closing front matter delimiter (---)"
+    fi
     
     # Check name field in front matter
     if ! grep -E "^name:[[:space:]]*${SKILL_NAME}" "${SKILL_FILE}" > /dev/null; then
@@ -142,6 +222,11 @@ else
       # Check imperative phrasing
       if [[ ! "${DESC}" =~ ^Use[[:space:]]when ]]; then
         log_warn "Skill '${SKILL_NAME}' description should start with imperative 'Use when...'"
+      fi
+
+      # Check negative boundary phrasing (Do not use / Do NOT use)
+      if ! echo "${DESC}" | grep -qiE "(do not use|do NOT use)"; then
+        log_warn "Skill '${SKILL_NAME}' description should specify negative boundaries ('Do not use for...')"
       fi
       
       # Check character length (< 1024)
@@ -198,7 +283,7 @@ function checkFile(filePath) {
   let match;
   while ((match = regex.exec(content)) !== null) {
     const target = match[2].trim();
-    if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("mailto:") || target.startsWith("#") || target.startsWith("conversation://")) {
+    if (target.startsWith("http://") || target.startsWith("https://") || target.startsWith("mailto:") || target.startsWith("#") || target.startsWith("conversation://") || target.startsWith("file://")) {
       continue;
     }
     const cleanTarget = target.split("#")[0];

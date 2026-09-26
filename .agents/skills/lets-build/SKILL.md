@@ -90,14 +90,14 @@ Upon user confirmation:
    ```bash
    bash .agents/skills/lets-build/scripts/bootstrap_workspace.sh . <topology> <language>
    ```
-2. Generate base infrastructure strictly for the selected topology (zero speculative bloat):
+2. Generate base infrastructure strictly for the selected topology (zero speculative bloat) using layouts from [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md):
    - *Backend:* `specs/openapi/v1/openapi.yaml`, `specs/tokens/tokens.json`, `deploy/docker`, `deploy/compose`.
    - *Extension:* `manifest.json`, `src/background/index.ts`, `src/content/index.ts`, `src/popup/index.html`.
    - *Game / Engine:* `src/core/`, `src/ecs/`, asset manifest, frame loop entrypoint.
    - *CLI:* `src/cmd/`, `src/core/`, CLI entrypoint with exit code handling.
 3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`), linter configurations, and boundary smoke test (`scripts/smoke_test.sh`).
 4. **Replace Starter README with Project-Specific README**:
-   Generate a clean, project-specific `README.md` completely replacing meta-template content with the project's actual name, mission, stack highlights, quickstart commands, and directory tree.
+   Generate a clean, project-specific `README.md` using [references/project_readme_template.md](./references/project_readme_template.md), completely replacing meta-template content with the project's actual name, mission, stack highlights, quickstart commands, and directory tree.
 
 ---
 
@@ -155,3 +155,11 @@ Upon user confirmation:
 - **Code Health Gates:** 100.00% test coverage gate, zero lint errors
 - **DevSecOps:** <Semgrep / Trivy / Gitleaks / None>
 ```
+
+---
+
+## 5. Subdirectories & Progressive Resources
+- [references/architecture_interview_matrix.md](./references/architecture_interview_matrix.md): Exhaustive 5-tier problem-first architecture interview questions and branch logic.
+- [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md): Standardized directory trees and foundational templates across Go, Rust, Python, and TypeScript.
+- [references/project_readme_template.md](./references/project_readme_template.md): Boilerplate template for replacing starter documentation with project-specific README.
+- [scripts/bootstrap_workspace.sh](./scripts/bootstrap_workspace.sh): Topology-aware deterministic workspace initialization script.

@@ -98,19 +98,31 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(actions.some(a => a.includes('copy: .editorconfig')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: CLAUDE.md')), true);
     assert.strictEqual(actions.some(a => a.includes('symlink: agents.md')), true);
+    assert.strictEqual(actions.some(a => a.includes('symlink: GEMINI.md')), true);
+    assert.strictEqual(actions.some(a => a.includes('symlink: .cursorrules')), true);
+    assert.strictEqual(actions.some(a => a.includes('symlink: .windsurfrules')), true);
   });
 
-  test('copyTemplate creates valid symlinks for CLAUDE.md and agents.md', () => {
+  test('copyTemplate creates valid symlinks for CLAUDE.md, agents.md, GEMINI.md, .cursorrules, and .windsurfrules', () => {
     copyTemplate(tmpDir, templateDir);
 
     const claudePath = path.join(tmpDir, 'CLAUDE.md');
     const agentsLowerPath = path.join(tmpDir, 'agents.md');
+    const geminiPath = path.join(tmpDir, 'GEMINI.md');
+    const cursorPath = path.join(tmpDir, '.cursorrules');
+    const windsurfPath = path.join(tmpDir, '.windsurfrules');
 
     assert.strictEqual(fs.existsSync(claudePath), true);
     assert.strictEqual(fs.existsSync(agentsLowerPath), true);
+    assert.strictEqual(fs.existsSync(geminiPath), true);
+    assert.strictEqual(fs.existsSync(cursorPath), true);
+    assert.strictEqual(fs.existsSync(windsurfPath), true);
 
     const claudeStat = fs.lstatSync(claudePath);
     const agentsLowerStat = fs.lstatSync(agentsLowerPath);
+    const geminiStat = fs.lstatSync(geminiPath);
+    const cursorStat = fs.lstatSync(cursorPath);
+    const windsurfStat = fs.lstatSync(windsurfPath);
 
     if (agentsLowerStat.isSymbolicLink()) {
       assert.strictEqual(fs.readlinkSync(agentsLowerPath), 'AGENTS.md');
@@ -118,6 +130,18 @@ describe('Scaffold Core Unit Tests', () => {
 
     if (claudeStat.isSymbolicLink()) {
       assert.strictEqual(fs.readlinkSync(claudePath), 'AGENTS.md');
+    }
+
+    if (geminiStat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(geminiPath), 'AGENTS.md');
+    }
+
+    if (cursorStat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(cursorPath), 'AGENTS.md');
+    }
+
+    if (windsurfStat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(windsurfPath), 'AGENTS.md');
     }
   });
 

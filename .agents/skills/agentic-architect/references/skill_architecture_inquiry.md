@@ -41,7 +41,7 @@
 [Branch 6: Progressive Disclosure (< 500 Lines)]
        ├─ Is SKILL.md under 500 lines?
        ├─ Are deep manuals offloaded to references/?
-       └─ Are static schemas or templates offloaded to assets/?
+       └─ Are static schemas or templates offloaded to resources/?
        │
        ▼
 [Branch 7: Verification & Feedback Loop]

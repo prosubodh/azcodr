@@ -100,6 +100,9 @@ describe('CLI Outer-Loop Acceptance Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'CLAUDE.md')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'agents.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'GEMINI.md')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.cursorrules')), true);
+    assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.windsurfrules')), true);
     assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.editorconfig')), true);
 
     const validatorScript = path.join(

@@ -37,13 +37,25 @@ Different AI agents and IDE harnesses look for different configuration filenames
 - Standard: `AGENTS.md`
 - Lowercase: `agents.md`
 - Anthropic Claude Code: `CLAUDE.md`
+- Google Antigravity & Gemini CLI: `GEMINI.md`
+- Cursor: `.cursorrules`
+- Windsurf: `.windsurfrules`
 
 **Standard:** Maintain identical configuration across all harnesses by establishing filesystem symbolic links:
 ```bash
 ln -sf AGENTS.md agents.md
 ln -sf AGENTS.md CLAUDE.md
+ln -sf AGENTS.md GEMINI.md
+ln -sf AGENTS.md .cursorrules
+ln -sf AGENTS.md .windsurfrules
 ```
 Never duplicate content into separate files.
+
+### Context Budget & Token Economy Directives
+To prevent LLM context exhaustion, attention dilution, and model degradation:
+- **Per-File Rule Size Cap (24 KB / 24,000 bytes):** Every rule file in `docs/rules/` must strictly stay under 24,000 bytes. Files exceeding this ceiling risk truncation across agent runtimes.
+- **Aggregate Rules Token Budget (20,000 tokens):** Continuous and directory-scoped rules share an aggregate budget. Over-budget rules are demoted to file-pointer references. Always use concise, actionable directives rather than prose tutorials.
+- **Progressive Offloading:** Offload deep specifications, schemas, or large lookup matrices to dedicated reference files loaded on demand.
 
 ---
 
@@ -71,9 +83,23 @@ description: <Imperative trigger description under 1024 characters. MUST start w
 - Include structured response templates and self-validation checklists for deterministic output.
 
 ### Progressive Disclosure Subdirectories
-- `references/`: Detailed sub-domain markdown files loaded on demand by the skill.
+Adhere strictly to the standard agent skills folder taxonomy:
 - `scripts/`: Deterministic executable scripts (bash, node, python) for tasks where LLMs produce non-deterministic drift.
-- `assets/`: Static data, lookup tables, schemas, or boilerplate templates.
+- `references/`: Detailed sub-domain markdown manuals loaded on demand by the skill.
+- `resources/`: Static templates, lookup tables, JSON schemas, or mock artifacts.
+- `examples/`: Reference implementations and concrete code patterns.
+
+### Deterministic Lifecycle Hooks (`.agents/hooks.json`)
+To enforce non-negotiable safety guardrails and automated verification without stochastic agent failure:
+- **`PreToolUse`**: Intercept destructive or dangerous CLI commands (`rm -rf`, DROP DATABASE, git push --force) and force explicit confirmation (`decision: ask`).
+- **`PostToolUse`**: Automatically trigger fast linters (`npm run lint`), formatters, or unit test verification after tool runs.
+- **`Stop`**: Intercept premature agent termination when background tasks are running or tests remain failing (`decision: continue`).
+
+### Model Context Protocol (MCP) Integration (`.agents/mcp_config.json`)
+When external tool capabilities are required (database introspectors, cloud telemetry, documentation search):
+- Standardize on vendor-neutral **Model Context Protocol (MCP)** specifications.
+- Declare local or containerized MCP tool servers in `.agents/mcp_config.json`.
+- Treat MCP tools as secondary adapter driving ports, keeping domain logic decoupled from proprietary platform APIs.
 
 ### Explicit Prohibition: The "Library-as-a-Skill" Anti-Pattern
 Never author or dynamically generate skills for commodity open-source packages or libraries (e.g. `react`, `tanstack`, `shadcn`, `zustand`, `testing-library`, `vitest`):

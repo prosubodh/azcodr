@@ -38,10 +38,13 @@
 ├── docs/
 │   ├── knowledge/                    # Institutional knowledge & domain contracts
 │   │   └── ubiquitous_language.md    # Living Ubiquitous Language glossary template
-│   └── rules/                        # 44 atomic single-responsibility domain rules
+│   └── rules/                        # 28 cohesive single-responsibility domain rules
 ├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
-├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity
-├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity
+├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity (Claude Code)
+├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity (Codex / Standard)
+├── GEMINI.md -> AGENTS.md            # Filesystem symlink for harness parity (Antigravity / Gemini)
+├── .cursorrules -> AGENTS.md         # Filesystem symlink for harness parity (Cursor)
+├── .windsurfrules -> AGENTS.md       # Filesystem symlink for harness parity (Windsurf)
 ├── memory.md                         # Master memory hub & Lightweight ADR ledger
 └── README.md                         # Project documentation
 ```

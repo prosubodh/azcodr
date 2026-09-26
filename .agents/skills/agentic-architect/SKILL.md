@@ -65,15 +65,19 @@ When a task is complex, multi-step, or specialized, encapsulate it into `.agents
    - Include a mandatory **"Gotchas & What NOT to Do"** section.
    - Provide structured output templates.
 3. **Progressive Subdirectories:**
-   - `references/`: Reference docs loaded only on demand.
+   - `references/`: Reference manuals loaded only on demand.
    - `scripts/`: Deterministic code (bash/node) to prevent stochastic AI divergence.
-   - `assets/`: Static templates, lookup tables, and schemas.
+   - `resources/`: Static templates, lookup tables, and schemas.
+   - `examples/`: Reference implementations and code patterns.
 
 ### Step 6: Enforce Harness Parity via Symlinks
-Prevent divergence between Claude Code, standard AGENTS.md, and legacy tooling:
+Prevent divergence across Claude Code, Google Antigravity, Cursor, Windsurf, and standard AGENTS.md:
 ```bash
 ln -sf AGENTS.md CLAUDE.md
 ln -sf AGENTS.md agents.md
+ln -sf AGENTS.md GEMINI.md
+ln -sf AGENTS.md .cursorrules
+ln -sf AGENTS.md .windsurfrules
 ```
 
 ### Step 7: Apply the Continuous Refinement Loop
@@ -109,7 +113,7 @@ Before finalizing any agent configuration update, verify:
 - [ ] All skills have front matter with `name` and imperative `description` starting with `Use when...`.
 - [ ] All skills are under 500 lines or offload sub-content to `references/`.
 - [ ] Every skill contains a "Gotchas & What NOT to Do" section.
-- [ ] Symlinks (`CLAUDE.md`, `agents.md`) resolve to `AGENTS.md`.
+- [ ] Symlinks (`CLAUDE.md`, `agents.md`, `GEMINI.md`, `.cursorrules`, `.windsurfrules`) resolve to `AGENTS.md`.
 
 ---
 
