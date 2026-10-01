@@ -187,8 +187,9 @@ esac
 # Ensure memory.md in fresh projects starts with a clean ADR slate (ADR-001)
 MEMORY_FILE="${WORKSPACE_ROOT}/memory.md"
 if [[ -f "${MEMORY_FILE}" ]]; then
-  if grep -qE "ADR-00[2-9]|ADR-0[1-9][0-9]" "${MEMORY_FILE}"; then
-    echo "🧹 Sanitizing memory.md: Resetting legacy template ADRs to clean slate (ADR-001)..."
+  if grep -qE "ADR-00[1-9]|ADR-0[1-9][0-9]|#### ADR-" "${MEMORY_FILE}"; then
+    if ! grep -q "No decisions recorded yet" "${MEMORY_FILE}"; then
+      echo "🧹 Sanitizing memory.md: Resetting legacy template ADRs to clean slate (ADR-001)..."
     cat << 'EOF' > "${MEMORY_FILE}"
 # Workspace Memory, Architecture Decisions & Knowledge Hub
 
@@ -227,6 +228,7 @@ Format:
 - **Enforced In:** Relevant rule files in docs/rules/ or code paths.
 -->
 EOF
+    fi
   fi
 fi
 

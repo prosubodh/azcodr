@@ -9,6 +9,7 @@ const {
   validateTarget,
   copyTemplate,
   ensureSymlink,
+  ensureSymlinkOrPointer,
   isSameCaseInsensitiveFile,
   makeScriptsExecutable,
   isInsideGitWorkTree,
@@ -250,7 +251,14 @@ describe('Scaffold Core Unit Tests', () => {
     ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md');
     // Call again to ensure replacing works without error
     ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md');
-    assert.strictEqual(fs.readlinkSync(path.join(tmpDir, 'CLAUDE.md')), 'AGENTS.md');
+    const claudePath = path.join(tmpDir, 'CLAUDE.md');
+    const stat = fs.lstatSync(claudePath);
+    if (stat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(claudePath), 'AGENTS.md');
+    } else {
+      // Windows fallback without symlink privilege: verified as byte-identical copy
+      assert.strictEqual(fs.readFileSync(claudePath, 'utf-8'), '# Target');
+    }
   });
 
   test('ensureSymlink falls back to copyFileSync when symlinkSync fails', () => {
@@ -284,8 +292,12 @@ describe('Scaffold Core Unit Tests', () => {
     );
 
     // 4. Target exists, link exists as a symlink (case-sensitive system)
+    // On case-insensitive filesystems (Windows/macOS) claude.md collides with CLAUDE.md.
     ensureSymlink(tmpDir, 'CLAUDE.md', 'AGENTS.md');
-    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'claude.md', 'CLAUDE.md'), false);
+    assert.strictEqual(
+      isSameCaseInsensitiveFile(tmpDir, 'claude.md', 'CLAUDE.md'),
+      isCaseInsensitiveFs
+    );
 
     // 5. Target exists and link exists as a regular file (simulating case-insensitive filesystem)
     if (!isCaseInsensitiveFs) {
@@ -486,6 +498,8 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(typeof api.validateTarget, 'function');
     assert.strictEqual(typeof api.copyTemplate, 'function');
     assert.strictEqual(typeof api.ensureSymlink, 'function');
+    assert.strictEqual(typeof api.ensureSymlinkOrPointer, 'function');
+    assert.strictEqual(typeof api.isSameCaseInsensitiveFile, 'function');
     assert.strictEqual(typeof api.makeScriptsExecutable, 'function');
     assert.strictEqual(typeof api.isInsideGitWorkTree, 'function');
     assert.strictEqual(typeof api.initGit, 'function');
@@ -493,5 +507,84 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('LICENSE'), true);
+    assert.strictEqual(api.TEMPLATE_ITEMS.includes('scripts'), true);
+    assert.strictEqual(api.TEMPLATE_ITEMS.includes('.github'), true);
+  });
+
+  test('isSameCaseInsensitiveFile returns true for identical names and false on readdir failure', () => {
+    assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'AGENTS.md', 'AGENTS.md'), true);
+    const origReaddir = fs.readdirSync;
+    try {
+      fs.readdirSync = () => { throw new Error('disk error'); };
+      assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
+    } finally {
+      fs.readdirSync = origReaddir;
+    }
+  });
+
+  test('ensureSymlinkOrPointer creates symlink or text pointer fallback', () => {
+    assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'ptr.md', '../AGENTS.md', true), true);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'ptr.md')), false);
+    fs.writeFileSync(path.join(tmpDir, 'ptr.md'), '../AGENTS.md\n');
+    assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'ptr.md', '../AGENTS.md'), true);
+    assert.strictEqual(fs.readFileSync(path.join(tmpDir, 'ptr.md'), 'utf-8').trim(), '../AGENTS.md');
+    fs.writeFileSync(path.join(tmpDir, 'stale.md'), 'stale content');
+    assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'stale.md', '../AGENTS.md'), true);
+    const staleStat = fs.lstatSync(path.join(tmpDir, 'stale.md'));
+    if (staleStat.isSymbolicLink()) {
+      assert.strictEqual(fs.readlinkSync(path.join(tmpDir, 'stale.md')), '../AGENTS.md');
+    } else {
+      assert.strictEqual(fs.readFileSync(path.join(tmpDir, 'stale.md'), 'utf-8').trim(), '../AGENTS.md');
+    }
+    const origSymlink = fs.symlinkSync;
+    try {
+      fs.symlinkSync = () => { throw new Error('EPERM'); };
+      assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'fallback.md', '../AGENTS.md'), true);
+      assert.strictEqual(fs.readFileSync(path.join(tmpDir, 'fallback.md'), 'utf-8').trim(), '../AGENTS.md');
+    } finally {
+      fs.symlinkSync = origSymlink;
+    }
+  });
+
+  test('isSameCaseInsensitiveFile returns false when entries vanish before stat', () => {
+    const origReaddir = fs.readdirSync;
+    const origExists = fs.existsSync;
+    try {
+      fs.readdirSync = () => ['AGENTS.md', 'agents.md'];
+      fs.existsSync = () => false;
+      assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), false);
+    } finally {
+      fs.readdirSync = origReaddir;
+      fs.existsSync = origExists;
+    }
+  });
+
+  test('ensureSymlinkOrPointer handles dangling symlink probe', () => {
+    const dangling = path.join(tmpDir, 'dangling.md');
+    try {
+      fs.symlinkSync('non-existent-target.md', dangling, 'file');
+    } catch {
+      fs.writeFileSync(dangling, 'placeholder');
+      const origExists = fs.existsSync;
+      try {
+        fs.existsSync = (p) => (p === dangling ? false : origExists(p));
+        assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'dangling.md', '../AGENTS.md'), true);
+      } finally {
+        fs.existsSync = origExists;
+      }
+      return;
+    }
+    assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'dangling.md', '../AGENTS.md'), true);
+  });
+
+  test('ensureSymlink handles missing source without copy fallback', () => {
+    const origSymlink = fs.symlinkSync;
+    try {
+      fs.symlinkSync = () => { throw new Error('EPERM'); };
+      assert.strictEqual(ensureSymlink(tmpDir, 'ghost.md', 'no-such-source.md'), true);
+      assert.strictEqual(fs.existsSync(path.join(tmpDir, 'ghost.md')), false);
+    } finally {
+      fs.symlinkSync = origSymlink;
+    }
   });
 });

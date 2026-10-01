@@ -80,6 +80,16 @@ export function ensureSymlink(
 ): boolean;
 
 /**
+ * Creates a symlink, falling back to a text pointer (not a full copy).
+ */
+export function ensureSymlinkOrPointer(
+  targetDir: string,
+  linkName: string,
+  targetFileName: string,
+  dryRun?: boolean
+): boolean;
+
+/**
  * Detects whether linkName and targetFileName refer to the same entry on a case-insensitive filesystem.
  */
 export function isSameCaseInsensitiveFile(
@@ -113,6 +123,7 @@ declare const defaultExport: {
   validateTarget: typeof validateTarget;
   copyTemplate: typeof copyTemplate;
   ensureSymlink: typeof ensureSymlink;
+  ensureSymlinkOrPointer: typeof ensureSymlinkOrPointer;
   isSameCaseInsensitiveFile: typeof isSameCaseInsensitiveFile;
   makeScriptsExecutable: typeof makeScriptsExecutable;
   initGit: typeof initGit;

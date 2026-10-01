@@ -50,7 +50,7 @@ Extract continuous technical requirements into dedicated markdown files under `d
 ### Step 4: Streamline Root AGENTS.md
 Refactor root `AGENTS.md` to be strictly bounded:
 1. **Mission Statement & Open-Source Mandate:** 1–2 sentences defining project domain, purpose, and 100% open-source requirement.
-2. **Runtime & Scripts:** Declared package manager (Node 24 / npm 11) and core scripts.
+2. **Runtime & Scripts:** Declared package manager (Node >=18, recommended 24 / npm >=10) and core scripts.
 3. **Core Operating Framework:** Zero-Assumption Rule, Relentless Questioning Loop, 5-stage lifecycle, action boundaries.
 4. **Progressive Disclosure Index:** Markdown table mapping each domain to its `docs/rules/*.md` file.
 

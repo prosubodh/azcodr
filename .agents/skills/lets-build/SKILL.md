@@ -75,6 +75,7 @@ Inquire *only* into the dimensions relevant to the selected topology:
   - **If Fullstack Web Application:** Frontend framework & build tool (React + Vite, Vue 3, Svelte 5), styling & accessible headless component primitives (Tailwind CSS, Radix UI / shadcn/ui per [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md)), client directory structure (`client/` + `src/` backend), and persistent app shell layout per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md).
   - **Backend & Data:** API protocol (REST/OpenAPI 3.1 vs gRPC), DB migration engine (Atlas/Flyway), tenancy isolation model, authentication, and OCI distroless containers.
 - *If Browser Extension:* MV3 content script isolation (IIFE bundle), `chrome.storage.sync` flow, permissions. (Zero Docker/K8s/OpenAPI!).
+- *If Frontend-only (Topology A variant):* Framework & build tool (React + Vite, Vue 3, Svelte 5), styling & headless primitives (Tailwind + Radix/shadcn per [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md)), `src/components|pages|hooks|services` layout, app-shell triage per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md). (Zero Docker/SQL migrations!).
 - *If Game Engine:* Graphics backend (Vulkan/DirectX/wgpu), memory allocators (arena/frame), ECS archetype model. (Zero Docker/SQL!).
 - *If CLI:* Arg parsing library, POSIX exit codes, streaming I/O, `--json` formatting. (Zero Docker/SQL!).
 

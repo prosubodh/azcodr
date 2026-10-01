@@ -1,4 +1,9 @@
 {
+  "_notes": [
+    "Copy to .agents/mcp_config.json and replace placeholders before use.",
+    "Create ./data/ (shipped with .gitkeep) before starting the sqlite server.",
+    "Replace remote-service.url with your deployment; example.com is intentionally non-functional."
+  ],
   "mcpServers": {
     "sqlite": {
       "command": "npx",
@@ -18,7 +23,7 @@
       ]
     },
     "remote-service": {
-      "serverUrl": "https://mcp.example.com/sse"
+      "url": "https://mcp.example.com/sse"
     }
   }
 }

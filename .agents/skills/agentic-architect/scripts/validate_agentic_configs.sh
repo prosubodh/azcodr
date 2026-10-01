@@ -63,6 +63,11 @@ is_valid_text_pointer() {
   [[ "${content}" == "AGENTS.md" || "${content}" == "./AGENTS.md" || "${content}" == "${WORKSPACE_ROOT}/AGENTS.md" ]]
 }
 
+is_identical_copy() {
+  local file="$1"
+  [[ -f "${file}" ]] && [[ -f "${AGENTS_FILE}" ]] && cmp -s "${file}" "${AGENTS_FILE}"
+}
+
 # Check CLAUDE.md symlink
 CLAUDE_FILE="${WORKSPACE_ROOT}/CLAUDE.md"
 if [[ -L "${CLAUDE_FILE}" ]]; then
@@ -74,6 +79,8 @@ if [[ -L "${CLAUDE_FILE}" ]]; then
   fi
 elif [[ -f "${CLAUDE_FILE}" ]] && is_valid_text_pointer "${CLAUDE_FILE}"; then
   log_pass "CLAUDE.md is a text pointer to AGENTS.md (symlink fallback)."
+elif is_identical_copy "${CLAUDE_FILE}"; then
+  log_warn "CLAUDE.md is a byte-identical copy of AGENTS.md (Windows symlink fallback; drift risk)."
 else
   log_fail "CLAUDE.md is not a symbolic link."
 fi
@@ -81,7 +88,7 @@ fi
 # Check agents.md symlink (case-insensitive filesystem aware)
 AGENTS_LOWER="${WORKSPACE_ROOT}/agents.md"
 IS_CASE_INSENSITIVE=false
-if [[ "$(uname -s)" == "Darwin" ]] || [[ "$(uname -s)" =~ (MINGW|MSYS|CYGWIN) ]]; then
+if [[ "$(uname -s)" == "Darwin" ]] || [[ "$(uname -s)" =~ (MINGW|MSYS|CYGWIN) ]] || [[ "${OS:-}" == "Windows_NT" ]]; then
   IS_CASE_INSENSITIVE=true
 elif [[ -f "${AGENTS_FILE}" ]] && [[ -f "${AGENTS_LOWER}" ]] && [[ ! -L "${AGENTS_LOWER}" ]]; then
   IS_CASE_INSENSITIVE=true
@@ -103,6 +110,8 @@ else
     fi
   elif [[ -f "${AGENTS_LOWER}" ]] && is_valid_text_pointer "${AGENTS_LOWER}"; then
     log_pass "agents.md is a text pointer to AGENTS.md (symlink fallback)."
+  elif is_identical_copy "${AGENTS_LOWER}"; then
+    log_warn "agents.md is a byte-identical copy of AGENTS.md (Windows symlink fallback; drift risk)."
   else
     log_fail "agents.md is not a symbolic link."
   fi
@@ -119,6 +128,8 @@ if [[ -L "${GEMINI_FILE}" ]]; then
   fi
 elif [[ -f "${GEMINI_FILE}" ]] && is_valid_text_pointer "${GEMINI_FILE}"; then
   log_pass "GEMINI.md is a text pointer to AGENTS.md (symlink fallback)."
+elif is_identical_copy "${GEMINI_FILE}"; then
+  log_warn "GEMINI.md is a byte-identical copy of AGENTS.md (Windows symlink fallback; drift risk)."
 else
   log_fail "GEMINI.md is not a symbolic link."
 fi
@@ -134,6 +145,8 @@ if [[ -L "${CURSOR_FILE}" ]]; then
   fi
 elif [[ -f "${CURSOR_FILE}" ]] && is_valid_text_pointer "${CURSOR_FILE}"; then
   log_pass ".cursorrules is a text pointer to AGENTS.md (symlink fallback)."
+elif is_identical_copy "${CURSOR_FILE}"; then
+  log_warn ".cursorrules is a byte-identical copy of AGENTS.md (Windows symlink fallback; drift risk)."
 else
   log_fail ".cursorrules is not a symbolic link."
 fi
@@ -149,6 +162,8 @@ if [[ -L "${WINDSURF_FILE}" ]]; then
   fi
 elif [[ -f "${WINDSURF_FILE}" ]] && is_valid_text_pointer "${WINDSURF_FILE}"; then
   log_pass ".windsurfrules is a text pointer to AGENTS.md (symlink fallback)."
+elif is_identical_copy "${WINDSURF_FILE}"; then
+  log_warn ".windsurfrules is a byte-identical copy of AGENTS.md (Windows symlink fallback; drift risk)."
 else
   log_fail ".windsurfrules is not a symbolic link."
 fi
@@ -178,6 +193,13 @@ else
   log_fail "Missing .gitignore at ${GITIGNORE_FILE}"
 fi
 
+# Check .github/workflows exists (CI must propagate to scaffolded projects)
+if [[ -d "${WORKSPACE_ROOT}/.github/workflows" ]]; then
+  log_pass ".github/workflows exists."
+else
+  log_warn ".github/workflows is missing (CI will not run in scaffolded projects)."
+fi
+
 # 2. Checking Progressive Disclosure Rules (docs/rules)
 echo ""
 echo "2. Checking Progressive Disclosure Rules..."
@@ -190,15 +212,21 @@ else
     [[ -e "${rule_file}" ]] || continue
     RULE_COUNT=$((RULE_COUNT + 1))
     RULE_NAME=$(basename "${rule_file}")
-    
+
     # Check for title
     if ! grep -q "^# " "${rule_file}"; then
       log_fail "Rule ${RULE_NAME} missing H1 header (# Title)"
     fi
-    
+
     # Check for Core Mandate blockquote
     if ! grep -q "^> \*\*Core Mandate:\*\*" "${rule_file}"; then
       log_warn "Rule ${RULE_NAME} missing standardized '> **Core Mandate:**' summary"
+    fi
+
+    # Token-economy size cap (24KB)
+    RULE_SIZE=$(wc -c < "${rule_file}")
+    if [[ ${RULE_SIZE} -gt 24000 ]]; then
+      log_warn "Rule ${RULE_NAME} exceeds 24KB token-economy cap (${RULE_SIZE} bytes)"
     fi
   done
   log_pass "Validated ${RULE_COUNT} modular rule files in docs/rules/."
@@ -344,7 +372,24 @@ else
   log_fail "Markdown link validation failed unexpectedly: ${LINK_CHECK_RAW}"
 fi
 
-# 5. Summary Output
+# 5. Checking Memory & ADR Ledger
+echo ""
+echo "5. Checking Memory & ADR Ledger..."
+MEMORY_FILE="${WORKSPACE_ROOT}/memory.md"
+if [[ ! -f "${MEMORY_FILE}" ]]; then
+  log_fail "Missing memory.md ADR ledger."
+else
+  MEMORY_BODY=$(sed '/<!--/,/-->/d' "${MEMORY_FILE}")
+  if ! grep -q "^# " "${MEMORY_FILE}"; then
+    log_fail "memory.md missing H1 header"
+  elif echo "${MEMORY_BODY}" | grep -q "#### ADR-"; then
+    log_pass "memory.md contains ADR entries with valid envelope."
+  else
+    log_pass "memory.md is a clean slate (no ADRs yet; record ADR-001 during /lets-build)."
+  fi
+fi
+
+# 6. Summary Output
 echo ""
 echo "--------------------------------------------------------------"
 if [[ ${ERRORS} -eq 0 ]]; then

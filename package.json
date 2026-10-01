@@ -1,6 +1,6 @@
 {
   "name": "azcodr",
-  "version": "1.5.0",
+  "version": "1.5.1",
   "description": "Enterprise Architecture & Agentic Engineering Starter Template",
   "bin": {
     "azcodr": "bin/azcodr.js"
@@ -17,6 +17,9 @@
   "files": [
     "bin",
     "lib",
+    "scripts",
+    "data",
+    ".github",
     "AGENTS.md",
     "memory.md",
     "README.md",
@@ -52,8 +55,8 @@
   "scripts": {
     "test": "node --test",
     "test:coverage": "node scripts/test_coverage.js",
-    "lint": "node --check bin/azcodr.js lib/index.js lib/scaffold.js tests/cli.test.js tests/scaffold.test.js scripts/test_coverage.js",
-    "validate": "bash .agents/skills/agentic-architect/scripts/validate_agentic_configs.sh",
+    "lint": "node --check bin/azcodr.js lib/index.js lib/scaffold.js tests/cli.test.js tests/scaffold.test.js scripts/test_coverage.js scripts/validate.js",
+    "validate": "node scripts/validate.js",
     "prepublishOnly": "npm run lint && npm run test:coverage && npm run validate"
   }
 }
