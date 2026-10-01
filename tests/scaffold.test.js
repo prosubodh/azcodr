@@ -532,7 +532,8 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(ensureSymlinkOrPointer(tmpDir, 'stale.md', '../AGENTS.md'), true);
     const staleStat = fs.lstatSync(path.join(tmpDir, 'stale.md'));
     if (staleStat.isSymbolicLink()) {
-      assert.strictEqual(fs.readlinkSync(path.join(tmpDir, 'stale.md')), '../AGENTS.md');
+      // readlink may return backslash separators on Windows runners.
+      assert.strictEqual(fs.readlinkSync(path.join(tmpDir, 'stale.md')).replace(/\\/g, '/'), '../AGENTS.md');
     } else {
       assert.strictEqual(fs.readFileSync(path.join(tmpDir, 'stale.md'), 'utf-8').trim(), '../AGENTS.md');
     }
@@ -556,6 +557,24 @@ describe('Scaffold Core Unit Tests', () => {
     } finally {
       fs.readdirSync = origReaddir;
       fs.existsSync = origExists;
+    }
+  });
+
+  test('isSameCaseInsensitiveFile covers case-insensitive collision branch', () => {
+    // Deterministically simulate a case-insensitive filesystem on any platform
+    // so lines 83-88 stay covered where agents.md cannot exist on disk.
+    const origReaddir = fs.readdirSync;
+    const origExists = fs.existsSync;
+    const origLstat = fs.lstatSync;
+    try {
+      fs.readdirSync = () => ['AGENTS.md'];
+      fs.existsSync = () => true;
+      fs.lstatSync = () => ({ isSymbolicLink: () => false });
+      assert.strictEqual(isSameCaseInsensitiveFile(tmpDir, 'agents.md', 'AGENTS.md'), true);
+    } finally {
+      fs.readdirSync = origReaddir;
+      fs.existsSync = origExists;
+      fs.lstatSync = origLstat;
     }
   });
 
