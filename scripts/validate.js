@@ -40,7 +40,9 @@ function main() {
   const agentsContent = fs.existsSync(agentsFile) ? fs.readFileSync(agentsFile, 'utf-8') : '';
 
   function isValidAgentsTarget(target) {
-    return target === 'AGENTS.md' || target === './AGENTS.md' || target === agentsFile;
+    const normalized = target.replace(/\\/g, '/');
+    const rootNormalized = agentsFile.replace(/\\/g, '/');
+    return normalized === 'AGENTS.md' || normalized === './AGENTS.md' || normalized === rootNormalized;
   }
 
   function checkParity(filePath, label, allowCopyFallback) {
@@ -49,8 +51,9 @@ function main() {
     if (stat.isSymbolicLink()) {
       let target = '';
       try { target = fs.readlinkSync(filePath); } catch { fail(`${label} readlink failed.`); return; }
+      const normalized = target.replace(/\\/g, '/');
       const ok = label.endsWith('copilot-instructions.md')
-        ? (target === '../AGENTS.md' || target === agentsFile || target === 'AGENTS.md')
+        ? (normalized === '../AGENTS.md' || normalized === agentsFile.replace(/\\/g, '/') || normalized === 'AGENTS.md')
         : isValidAgentsTarget(target);
       if (ok) pass(`${label} is a valid symlink to AGENTS.md.`);
       else fail(`${label} points to '${target}' instead of 'AGENTS.md'.`);
@@ -98,6 +101,15 @@ function main() {
       if (appearsSame) {
         pass('agents.md is satisfied natively by AGENTS.md (case-insensitive filesystem).');
       } else {
+        // Case-sensitive filesystem gap (agents.md cannot be committed alongside
+        // AGENTS.md from case-insensitive systems): restore parity in place.
+        let created = false;
+        try { fs.symlinkSync('AGENTS.md', lowerPath); created = true; }
+        catch {
+          try { fs.writeFileSync(lowerPath, 'AGENTS.md\n', 'utf-8'); created = true; }
+          catch { created = false; }
+        }
+        if (created) pass('Created agents.md parity link to AGENTS.md (case-sensitive filesystem).');
         checkParity(lowerPath, 'agents.md', true);
       }
     } else {

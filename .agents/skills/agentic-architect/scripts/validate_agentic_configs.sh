@@ -173,6 +173,7 @@ COPILOT_FILE="${WORKSPACE_ROOT}/.github/copilot-instructions.md"
 if [[ -d "${WORKSPACE_ROOT}/.github" ]]; then
   if [[ -L "${COPILOT_FILE}" ]]; then
     TARGET=$(readlink "${COPILOT_FILE}")
+    TARGET="${TARGET//\\//}"
     if [[ "${TARGET}" == "../AGENTS.md" || "${TARGET}" == "${WORKSPACE_ROOT}/AGENTS.md" || "${TARGET}" == "AGENTS.md" ]]; then
       log_pass ".github/copilot-instructions.md is a valid symlink to AGENTS.md."
     else
