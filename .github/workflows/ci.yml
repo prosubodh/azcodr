@@ -36,6 +36,33 @@ jobs:
       - name: Validate Agentic Architecture
         run: npm run validate
 
+      - name: Run Test Suite
+        run: npm test
+
+  coverage:
+    name: 100.00% Coverage Gate (Node 24)
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js 24.x
+        uses: actions/setup-node@v4
+        with:
+          node-version: 24.x
+
+      # Native 100% threshold flags require Node >=22.8.0 (see scripts/test_coverage.js),
+      # so the coverage gate runs once on the newest runtime instead of every matrix cell.
+      - name: Verify 100.00% Test Coverage Gates
+        run: npm run test:coverage
+
+  security:
+    name: Secret & Vulnerability Scans
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
       - name: Secret Scan (Gitleaks)
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -46,11 +73,6 @@ jobs:
         with:
           scan-type: fs
           scan-ref: .
+          scanners: vuln
           severity: HIGH,CRITICAL
           exit-code: '1'
-
-      - name: Run Test Suite
-        run: npm test
-
-      - name: Verify 100.00% Test Coverage Gates
-        run: npm run test:coverage
