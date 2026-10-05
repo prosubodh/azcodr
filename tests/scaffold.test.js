@@ -15,6 +15,8 @@ const {
   isInsideGitWorkTree,
   initGit,
   getTemplateDir,
+  runGit,
+  assertInside,
   TEMPLATE_ITEMS
 } = require('../lib/scaffold.js');
 
@@ -194,16 +196,16 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.git')), false);
   });
 
-  test('initGit returns false when child_process execSync fails', () => {
-    const originalExecSync = childProcess.execSync;
+  test('initGit returns false when child_process execFileSync fails', () => {
+    const originalExecFileSync = childProcess.execFileSync;
     try {
-      childProcess.execSync = () => {
+      childProcess.execFileSync = () => {
         throw new Error('Command failed: git init');
       };
       const result = initGit(tmpDir, { noGit: false });
       assert.strictEqual(result, false);
     } finally {
-      childProcess.execSync = originalExecSync;
+      childProcess.execFileSync = originalExecFileSync;
     }
   });
 
@@ -426,15 +428,15 @@ describe('Scaffold Core Unit Tests', () => {
     const nonExistent = path.join(tmpDir, 'deep', 'does-not-exist');
     assert.strictEqual(isInsideGitWorkTree(nonExistent), false);
 
-    // Error in execSync returns false
-    const origExec = childProcess.execSync;
+    // Error in execFileSync returns false
+    const origExec = childProcess.execFileSync;
     try {
-      childProcess.execSync = () => {
+      childProcess.execFileSync = () => {
         throw new Error('git not found');
       };
       assert.strictEqual(isInsideGitWorkTree(templateDir), false);
     } finally {
-      childProcess.execSync = origExec;
+      childProcess.execFileSync = origExec;
     }
   });
 
@@ -446,22 +448,26 @@ describe('Scaffold Core Unit Tests', () => {
   });
 
   test('initGit handles branch main fallback, branch rename failures, and commit fallbacks', () => {
-    const origExec = childProcess.execSync;
+    const origExec = childProcess.execFileSync;
     const commandsRun = [];
 
     try {
-      childProcess.execSync = (cmd, opts) => {
-        commandsRun.push(cmd);
-        if (cmd === 'git rev-parse --is-inside-work-tree') {
+      childProcess.execFileSync = (file, args, opts) => {
+        commandsRun.push(`${file} ${(args || []).join(' ')}`);
+        const cmd = (args || []).join(' ');
+        if (args[0] === 'rev-parse') {
           return 'false\n';
         }
-        if (cmd.startsWith('git init -b main')) {
+        if (cmd.startsWith('init -b main')) {
           throw new Error('option -b not supported');
         }
-        if (cmd.startsWith('git branch -m main')) {
+        if (cmd.startsWith('branch -m main')) {
           throw new Error('branch rename failed');
         }
-        if (cmd.startsWith('git commit')) {
+        if (cmd.startsWith('commit')) {
+          if (opts && opts.env && opts.env.GIT_AUTHOR_NAME === 'Subodh Khanal') {
+            return '';
+          }
           throw new Error('author identity unknown');
         }
         return '';
@@ -469,26 +475,27 @@ describe('Scaffold Core Unit Tests', () => {
 
       const result = initGit(tmpDir, { noGit: false });
       assert.strictEqual(result, true);
-      assert.strictEqual(commandsRun.some(c => c.includes('git init -q')), true);
-      assert.strictEqual(commandsRun.some(c => c.includes('git branch -m main')), true);
-      assert.strictEqual(commandsRun.some(c => c.includes('user.name="azcodr"')), true);
+      assert.strictEqual(commandsRun.some(c => c.includes('init -q')), true);
+      assert.strictEqual(commandsRun.some(c => c.includes('branch -m main')), true);
+      assert.strictEqual(commandsRun.some(c => c.includes('commit')), true);
     } finally {
-      childProcess.execSync = origExec;
+      childProcess.execFileSync = origExec;
     }
   });
 
   test('initGit handles complete commit failure gracefully', () => {
-    const origExec = childProcess.execSync;
+    const origExec = childProcess.execFileSync;
     try {
-      childProcess.execSync = (cmd) => {
-        if (cmd === 'git rev-parse --is-inside-work-tree') return 'false\n';
-        if (cmd.includes('commit') || cmd.includes('add')) throw new Error('git disk full');
+      childProcess.execFileSync = (file, args) => {
+        const cmd = (args || []).join(' ');
+        if (args[0] === 'rev-parse') return 'false\n';
+        if (cmd.startsWith('commit') || cmd.startsWith('add')) throw new Error('git disk full');
         return '';
       };
       const result = initGit(tmpDir, { noGit: false });
       assert.strictEqual(result, true);
     } finally {
-      childProcess.execSync = origExec;
+      childProcess.execFileSync = origExec;
     }
   });
 
@@ -504,6 +511,8 @@ describe('Scaffold Core Unit Tests', () => {
     assert.strictEqual(typeof api.isInsideGitWorkTree, 'function');
     assert.strictEqual(typeof api.initGit, 'function');
     assert.strictEqual(typeof api.getTemplateDir, 'function');
+    assert.strictEqual(typeof api.runGit, 'function');
+    assert.strictEqual(typeof api.assertInside, 'function');
     assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('LICENSE'), true);
@@ -605,5 +614,53 @@ describe('Scaffold Core Unit Tests', () => {
     } finally {
       fs.symlinkSync = origSymlink;
     }
+  });
+
+  test('runGit allowlist wrapper exists', () => {
+    assert.strictEqual(typeof runGit, 'function');
+  });
+
+  test('runGit rejects empty argv', () => {
+    assert.throws(() => runGit([]), /non-empty argv/);
+  });
+
+  test('runGit blocks non-allowlisted subcommand', () => {
+    assert.throws(() => runGit(['rm', '-rf']), /Blocked git subcommand/);
+  });
+
+  test('runGit delegates to execFileSync without shell', () => {
+    const orig = childProcess.execFileSync;
+    try {
+      let seen = null;
+      childProcess.execFileSync = (file, args, opts) => {
+        seen = { file, args, opts };
+        return 'true\n';
+      };
+      // runGit looks up cp.execFileSync at call time via require cache object
+      require('node:child_process').execFileSync = childProcess.execFileSync;
+      const out = runGit(['rev-parse', '--is-inside-work-tree'], { cwd: tmpDir });
+      assert.strictEqual(out, 'true\n');
+      assert.strictEqual(seen.file, 'git');
+      assert.strictEqual(seen.opts.shell, false);
+    } finally {
+      childProcess.execFileSync = orig;
+      require('node:child_process').execFileSync = orig;
+    }
+  });
+
+  test('assertInside allows contained paths', () => {
+    assert.doesNotThrow(() => assertInside(tmpDir, path.join(tmpDir, 'a', 'b.txt')));
+  });
+
+  test('assertInside blocks traversal with default message', () => {
+    assert.throws(() => assertInside(tmpDir, '../escape.txt'), /escapes allowed root/);
+  });
+
+  test('assertInside honors custom message', () => {
+    assert.throws(() => assertInside(tmpDir, '../escape.txt', 'custom boundary'), /custom boundary/);
+  });
+
+  test('runGit rejects non-array input', () => {
+    assert.throws(() => runGit('rev-parse'), /non-empty argv/);
   });
 });

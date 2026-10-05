@@ -152,3 +152,14 @@ Once confirmed, the agent automatically executes:
 
 - 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative domain vocabulary contract.
 - 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records and governing rules.
+
+---
+
+## 🔒 Security & Supply-Chain Notes (Socket)
+
+Socket flags two expected capabilities for `azcodr@1.5.1`:
+
+- **Shell access (SUPPLY CHAIN RISK):** limited to `git` via `lib/scaffold.js:15` (`runGit`) using `execFileSync('git', argv, { shell: false })` with an allowlist of `rev-parse, init, branch, add, commit`. No shell strings, no network, `cwd` scoped to the scaffold target.
+- **Filesystem access (SUPPLY CHAIN RISK):** scoped to `templateDir -> targetDir` via `lib/scaffold.js:34` (`assertInside`). Template allowlist is `TEMPLATE_ITEMS`; symlinks and `package.json` creation stay inside the target.
+
+Initial-commit fallback identity is `Subodh Khanal <prosubodh@gmail.com>` via `GIT_AUTHOR_*` / `GIT_COMMITTER_*` env (no `git -c` shell flags).
