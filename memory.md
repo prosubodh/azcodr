@@ -26,6 +26,7 @@
 | [ADR-007](./memory.md#adr-007-publish-from-ci-never-from-a-workstation) | Publish from CI, never from a workstation | 2026-10-07 | ACCEPTED | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) |
 | [ADR-008](./memory.md#adr-008-jsr-publishing-blocked-pending-an-esm-port) | JSR publishing blocked pending an ESM port | 2026-10-07 | PROPOSED | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) |
 | [ADR-009](./memory.md#adr-009-memorymd-is-append-only-the-scaffolder-never-rewrites-the-ledger) | memory.md is append-only; the scaffolder never rewrites it | 2026-10-07 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
+| [ADR-010](./memory.md#adr-010-the-scaffolder-refuses-protected-targets) | The scaffolder refuses protected targets | 2026-10-07 | ACCEPTED | [`security_compliance.md`](./docs/rules/security_compliance.md) |
 
 ---
 
@@ -44,6 +45,13 @@
 - **Decision:** The library exposes `main(argv, exit)` with an injectable exit function and no self-execution; `scripts/validate-cli.js` is the two-line process entry. Coverage uses explicit `--test-coverage-include` paths rather than `scripts/**` so the shim is excluded by name, not by wildcard accident.
 - **Consequences:** ✅ 100% branch coverage reachable without suppressions. ✅ `require('scripts/validate.js')` is safe from any tool. ✅ Scaffolded projects get the shim automatically (it ships in `scripts/`) and their `validate` script points at it. ⚠️ One extra file in every scaffolded project.
 - **Enforced In:** `scripts/validate-cli.js`, `scripts/validate.js`, `lib/scaffold.js`, `tests/coverage-config.test.js`
+
+#### ADR-010: The Scaffolder Refuses Protected Targets
+- **Date:** 2026-10-07 | **Status:** ACCEPTED
+- **Context:** `validateTarget` allowed any non-empty directory when `force` was true, with exactly one exception (the template directory itself). So `azcodr ~ --force` would merge the template into the user's home directory, `azcodr / --force` into the filesystem root, and `azcodr D:\projects --force` into the template's own parent workspace. The `--force` confirmation prompt ("is not empty (N items), Continue?") never named the ~12 paths about to be destroyed, and there was no home/root/ancestor guard at all. `assertInside` could not help: it is a lexical containment check, and `~/docs` *is* lexically inside `~` — the problem is the root chosen, not an escape from it.
+- **Decision:** `isProtectedTarget()` refuses the filesystem root, the home directory, the home directory's parent (scaffolding into `/home` or `C:\Users` affects every user), ancestors of the template directory, and symlinks resolving to any of those (lexical comparison alone is bypassable; `realpath` is consulted for existing targets, compared case-insensitively on Windows). The refusal holds even with `--force` and even in `--dry-run`: `--force` means "overwrite files in a project directory", not "overwrite my home directory". The CLI fails fast before the non-empty prompt so answering "y" to a protected location is impossible; the library throws `E_TARGET_IS_PROTECTED` with a message naming the remedy. Programmatic callers can pass `allowProtected: true`; the CLI never does.
+- **Consequences:** ✅ The catastrophic `--force` paths are closed, locked by `tests/protected-target.test.js` (14 tests, including symlink-alias and fault-injection cases for the two defensive catches). ✅ Only the exact protected directories are blocked: `~/my-project` and any normal subdirectory still scaffold. ✅ New stable error code follows the existing contract (branch on `code`, never message). ⚠️ A user who genuinely wants a project AT `~` must pick a subdirectory; that friction is the point.
+- **Enforced In:** `lib/scaffold.js` (`isProtectedTarget`, `validateTarget`), `bin/azcodr.js` (fail-fast), `lib/index.d.ts`, `tests/protected-target.test.js`, `tests/error-codes.test.js`, `README.md` (security notes)
 
 #### ADR-009: memory.md Is Append-Only; the Scaffolder Never Rewrites the Ledger
 - **Date:** 2026-10-07 | **Status:** ACCEPTED

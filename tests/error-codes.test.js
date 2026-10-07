@@ -22,6 +22,7 @@ const {
 const EXPECTED_CODES = {
   E_TARGET_IS_TEMPLATE: 'scaffolding into the azcodr template directory itself',
   E_TARGET_NOT_EMPTY: 'target directory contains files and --force was not passed',
+  E_TARGET_IS_PROTECTED: 'scaffolding into a protected system location (root, home, template ancestor)',
   E_GIT_ARGS_INVALID: 'runGit called without a non-empty argv array',
   E_GIT_BLOCKED: 'runGit called with a subcommand outside the allowlist',
   E_PATH_ESCAPE: 'a path resolved outside its allowed root'
@@ -44,6 +45,15 @@ describe('Error contract: every throw site carries a stable code', () => {
     assert.strictEqual(
       codeOf(() => validateTarget(templateDir, { templateDir, force: true })),
       'E_TARGET_IS_TEMPLATE'
+    );
+  });
+
+  test('E_TARGET_IS_PROTECTED', () => {
+    const path = require('node:path');
+    const root = path.parse(templateDir).root;
+    assert.strictEqual(
+      codeOf(() => validateTarget(root, { templateDir, force: true })),
+      'E_TARGET_IS_PROTECTED'
     );
   });
 

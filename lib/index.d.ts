@@ -36,6 +36,11 @@ export interface ValidateTargetOptions {
   templateDir?: string;
   /** Force allow non-empty directory */
   force?: boolean;
+  /**
+   * Bypass the protected-target guard (filesystem root, home, home's parent,
+   * template ancestors). The CLI never passes this. Programmatic use only.
+   */
+  allowProtected?: boolean;
 }
 
 export interface InitGitOptions {
@@ -59,6 +64,7 @@ export interface CopyTemplateOptions {
 export type ScaffoldErrorCode =
   | 'E_TARGET_IS_TEMPLATE'
   | 'E_TARGET_NOT_EMPTY'
+  | 'E_TARGET_IS_PROTECTED'
   | 'E_GIT_ARGS_INVALID'
   | 'E_GIT_BLOCKED'
   | 'E_PATH_ESCAPE';
@@ -155,6 +161,13 @@ export function runGit(args: string[], options?: Record<string, unknown>): strin
 export function assertInside(root: string, candidate: string, message?: string): void;
 
 /**
+ * Returns true when `targetDir` is a protected system location the scaffolder
+ * must never write into (filesystem root, home, home's parent, template
+ * ancestors, symlink aliases). @throws never; pure predicate.
+ */
+export function isProtectedTarget(targetDir: string, options?: ValidateTargetOptions): boolean;
+
+/**
  * Returns the root path to the azcodr template files.
  */
 export function getTemplateDir(): string;
@@ -176,6 +189,7 @@ declare const defaultExport: {
   isInsideGitWorkTree: typeof isInsideGitWorkTree;
   runGit: typeof runGit;
   assertInside: typeof assertInside;
+  isProtectedTarget: typeof isProtectedTarget;
   getTemplateDir: typeof getTemplateDir;
   TEMPLATE_ITEMS: typeof TEMPLATE_ITEMS;
   ScaffoldError: typeof ScaffoldError;

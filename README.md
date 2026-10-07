@@ -161,6 +161,7 @@ The scaffolder declares two expected capabilities:
 
 - **Shell access (SUPPLY CHAIN RISK):** limited to `git` via `runGit()` using `execFileSync('git', argv, { shell: false })` with an allowlist of `rev-parse, init, branch, add, commit`. No shell strings, no network, `cwd` scoped to the scaffold target. Enforced by architecture tests that fail the build if `execSync`/`exec(` ever appear, if an `execFileSync` call omits `shell: false`, or if a mutating subcommand (`push`, `clone`, `reset`, `clean`) enters the allowlist.
 - **Filesystem access (SUPPLY CHAIN RISK):** scoped to `templateDir -> targetDir` via `assertInside()`. Template allowlist is `TEMPLATE_ITEMS`; symlinks and `package.json` creation stay inside the target.
+- **Protected targets:** the scaffolder refuses to write into the filesystem root (`/`, `C:\`), the user's home directory, the home directory's parent (e.g. `/home`, `C:\Users`), ancestors of the template itself, and symlinks resolving to any of those — even with `--force`. `--force` means "overwrite files in a project directory", not "overwrite my home directory". The CLI fails fast before prompting; the library throws `E_TARGET_IS_PROTECTED` (programmatic callers can pass `allowProtected: true`).
 
 Failures carry stable machine-readable codes (`E_TARGET_NOT_EMPTY`, `E_GIT_BLOCKED`, `E_PATH_ESCAPE`, ...). Branch on `err.code`, never on message text — see the exported `ERROR_CODES` map and `ScaffoldError` type.
 

@@ -4,7 +4,7 @@
 const path = require('node:path');
 const readline = require('node:readline');
 const fs = require('node:fs');
-const { scaffold, getTemplateDir } = require('../lib/scaffold.js');
+const { scaffold, getTemplateDir, isProtectedTarget } = require('../lib/scaffold.js');
 const pkg = require('../package.json');
 
 function printHelp(out = console.log) {
@@ -123,6 +123,16 @@ async function runCli(rawArgs = process.argv.slice(2), io = {}) {
 
   if (resolvedTarget === templateDir) {
     err(`❌ Error: Cannot scaffold into the template directory itself: ${resolvedTarget}`);
+    return exit(1);
+  }
+
+  // Fail fast on protected locations (filesystem root, home, home's parent,
+  // template ancestors) BEFORE the non-empty prompt. The prompt asks "Continue?
+  // (y/N)" for ordinary project directories; answering "y" for ~ or / must not
+  // be possible. The library enforces this again in validateTarget, so this is
+  // defence in depth with a clearer message, not the sole check.
+  if (isProtectedTarget(resolvedTarget, { templateDir })) {
+    err(`❌ Error: Refusing to scaffold into protected directory: ${resolvedTarget}. Choose a project subdirectory instead.`);
     return exit(1);
   }
 
