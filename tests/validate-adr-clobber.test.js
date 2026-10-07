@@ -75,6 +75,15 @@ function populateTemplateRepo(templateRoot) {
   writeWaivedGlossary(path.join(templateRoot, 'docs', 'knowledge'));
 }
 
+function assertSingleParityPath(root, lines) {
+  const satisfied = lines.some((l) => /agents\.md is satisfied natively by AGENTS\.md/.test(l));
+  const repaired = lines.some((l) => /Created agents\.md parity link/.test(l));
+  assert.ok(satisfied !== repaired, `exactly one path must be taken:\n${lines.join('\n')}`);
+  if (repaired) {
+    assert.ok(fs.existsSync(path.join(root, 'agents.md')), 'repair must create agents.md');
+  }
+}
+
 describe('self-healing must never overwrite AGENTS.md', () => {
   let root;
   beforeEach(() => {
@@ -93,11 +102,17 @@ describe('self-healing must never overwrite AGENTS.md', () => {
   });
 
   test('reports the case-insensitive satisfaction rather than repairing', () => {
+    // Platform-dependent by design: on a case-insensitive filesystem
+    // (Windows/macOS) the lower-case path already resolves to AGENTS.md, so
+    // the validator must report satisfaction and write nothing (ADR-004: the
+    // repair once overwrote AGENTS.md itself). On a case-sensitive filesystem
+    // (Linux) the paths are distinct entries, so the validator must repair by
+    // creating agents.md -- and AGENTS.md must still be untouched.
+    const before = fs.readFileSync(path.join(root, 'AGENTS.md'));
     const { lines } = collect(root);
-    assert.ok(
-      lines.some((l) => /agents\.md is satisfied natively by AGENTS\.md/.test(l)),
-      lines.join(' | ')
-    );
+    assertSingleParityPath(root, lines);
+    const after = fs.readFileSync(path.join(root, 'AGENTS.md'));
+    assert.ok(before.equals(after), 'AGENTS.md was modified by the parity repair');
   });
 });
 
