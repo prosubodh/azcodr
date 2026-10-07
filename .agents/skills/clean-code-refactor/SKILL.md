@@ -49,7 +49,7 @@ Target concrete flaws:
 - Ensure zero lint or type errors: workspace linter and compiler (e.g. `npm run lint && npm run typecheck`, `cargo clippy`, `golangci-lint`, `mypy`).
 
 ### Step 5: Verify Continuous Green State
-- Run tests after every single atomic change: `npm run coverage`.
+- Run tests after every single atomic change. Use the workspace's own command — do not assume one exists. Verify with the package manifest first (`node -p "JSON.stringify(require('./package.json').scripts)"`); for this template that is `npm test`, with `npm run test:coverage` for the coverage gate.
 - Ensure coverage remains at **100.00%**.
 
 ---

@@ -87,7 +87,7 @@ Scenario: Successful Digital Agreement Execution
 ## 4. Negative Scope & Edge Case Matrices
 
 - **Out-of-Scope (Non-Goals):** Explicitly document what will NOT be built in this increment to prevent scope creep and align expectations.
-- **Edge Case Matrix:** Map all potential failure states to standardized RFC 7807 problem details and HTTP status codes:
+- **Edge Case Matrix:** Map all potential failure states to standardized RFC 9457 problem details and HTTP status codes:
   - `400 Bad Request`: Schema validation failures, missing required fields.
   - `401 Unauthorized`: Missing or invalid session tokens.
   - `403 Forbidden`: Cross-tenant boundary violations, role privilege deficits.

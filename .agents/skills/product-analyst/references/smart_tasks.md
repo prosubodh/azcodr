@@ -45,7 +45,7 @@
 - **Time-Boxed:** 3 hours.
 
 #### Task 4: REST API Endpoint & Error Handling
-- **Specific:** Add `POST /api/v1/agreements/:id/sign` route to HTTP controller; validate request body; return RFC 7807 problem details on failure.
+- **Specific:** Add `POST /api/v1/agreements/:id/sign` route to HTTP controller; validate request body; return RFC 9457 problem details on failure.
 - **Measurable:** API acceptance tests pass; covers 200, 400 (validation), 404 (not found).
 - **Achievable:** Standard HTTP controller pattern.
 - **Relevant:** Exposes digital signing capability to web clients.

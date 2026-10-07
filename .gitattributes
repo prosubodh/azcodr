@@ -1,0 +1,34 @@
+# Normalize line endings so shell scripts survive a Windows checkout.
+#
+# Without this, a contributor on Windows with core.autocrlf=true commits CRLF,
+# `fs.cpSync` copies those bytes verbatim into every scaffolded project, and the
+# shipped hooks die at `set -euo pipefail` with
+#   "line 6: set: pipefail: invalid option name"
+# `bash -n` does NOT catch this (it parses fine), so it is invisible to lint.
+* text=auto eol=lf
+
+# Hooks and skill scripts are executed directly via shebang. Force LF.
+*.sh text eol=lf
+bin/* text eol=lf
+
+# Never rewrite these: they are binary or must keep exact bytes.
+*.png binary
+*.jpg binary
+*.jpeg binary
+*.gif binary
+*.ico binary
+*.pdf binary
+*.zip binary
+*.gz binary
+
+# Language/tooling noise for diffs and language stats.
+docs/** linguist-documentation
+*.md text eol=lf
+*.json text eol=lf
+*.jsonc text eol=lf
+*.yml text eol=lf
+*.yaml text eol=lf
+*.js text eol=lf
+*.mjs text eol=lf
+*.cjs text eol=lf
+*.ts text eol=lf

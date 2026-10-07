@@ -2,7 +2,8 @@
 
 > **azcodr: Enterprise Architecture & Agentic Engineering Starter Template**  
 > **Workspace Mission:** Problem-first, topology-aligned production architectures governed by strict systemic atomicity, 100% open-source standards, true incremental TDD nano-cycles, and zero speculative bloat.  
-> **Runtime & Tools:** Node.js (`>=18.0.0`), npm (`>=10.0.0`) | `npm test` (test runner), `npm run test:coverage` (100% gate), `npm run lint`, `npm run validate`.  
+> **Runtime & Tools:** Node.js (`>=22.8.0`), npm (`>=10.0.0`) | `npm test` (test runner), `npm run test:coverage` (coverage gate), `npm run lint`, `npm run validate`.
+> **Node floor rationale:** `>=22.8.0` is the first release with the native coverage-threshold flags `scripts/test_coverage.js` requires. Node 18 (EOL 2025-04-30) and 20 (EOL 2026-04-30) no longer receive security patches.  
 > **Rule Zero:** Assume nothing. Every action must be grounded in verified evidence from this workspace or direct instructions from the user.  
 > **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, composable with full ACID safety).  
 > **Architecture Mandate:** Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero tool/platform bias). Match architectural style to problem topology (Hexagonal for backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, Game Loop for canvas games).
@@ -72,7 +73,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Security & Compliance** | [docs/rules/security_compliance.md](./docs/rules/security_compliance.md) | OWASP Top 10 defenses, rate limiting, crypto, SOC 2 Type II, ISO 27001, GDPR data erasure. |
 | **DevOps & CI/CD** | [docs/rules/devops_ci_cd.md](./docs/rules/devops_ci_cd.md) | Shift-left trunk-based CI, OCI distroless containers, Secretlint/Trivy DevSecOps, zero-downtime CD. |
 | **Cloud-Native 12-Factor** | [docs/rules/cloud_native.md](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
-| **Error Architecture** | [docs/rules/error_handling.md](./docs/rules/error_handling.md) | Fail-fast schema validation, structured OTel/Pino tracing, RFC 7807 envelopes. |
+| **Error Architecture** | [docs/rules/error_handling.md](./docs/rules/error_handling.md) | Fail-fast schema validation, structured OTel/Pino tracing, RFC 9457 envelopes. |
 | **Feature Flags** | [docs/rules/feature_flags.md](./docs/rules/feature_flags.md) | OpenFeature standard, Flipt/Unleash backends, targeting, kill switches & YAGNI gate. |
 | **Transactional Email** | [docs/rules/transactional_email.md](./docs/rules/transactional_email.md) | Declarative templates (MJML/JSON), safe interpolation, SMTP integration testing. |
 | **UI/UX Architecture** | [docs/rules/ui_ux_architecture.md](./docs/rules/ui_ux_architecture.md) | Design triage gate, persistent app shell, collapsible sidebar, dual-experience portals, dev persona. |

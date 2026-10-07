@@ -74,7 +74,7 @@ For engineering execution, translate INVEST user stories into Bill Wake's **SMAR
 - **T - Time-boxed:** Limited to 2–4 hours (never exceeding 1 day).
 
 ### Step 6: Construct the Edge Case & Failure Matrix
-Map all failure paths to HTTP status codes (`400`, `401`, `403`, `404`, `409`, `422`, `429`, `500`) and RFC 7807 problem details.
+Map all failure paths to HTTP status codes (`400`, `401`, `403`, `404`, `409`, `422`, `429`, `500`) and RFC 9457 problem details.
 
 ---
 
@@ -133,7 +133,7 @@ Scenario: [Edge case / Failure path]
 ## 5. SMART Developer Tasks (Inner-Loop Breakdown)
 - [ ] **Task 1 [Specific & Time-boxed: 2h]:** [Technical description, e.g. Domain entity and value object invariants with unit test RED-GREEN]
 - [ ] **Task 2 [Specific & Time-boxed: 3h]:** [Use case & secondary repository implementation with integration tests]
-- [ ] **Task 3 [Specific & Time-boxed: 2h]:** [HTTP controller endpoint & RFC 7807 error handling]
+- [ ] **Task 3 [Specific & Time-boxed: 2h]:** [HTTP controller endpoint & RFC 9457 error handling]
 - [ ] **Task 4 [Specific & Time-boxed: 3h]:** [UI view integration, TanStack query hooks, accessible Radix primitives]
 
 ## 6. Edge Case & Error Response Matrix

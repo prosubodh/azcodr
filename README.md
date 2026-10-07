@@ -72,7 +72,7 @@ The architecture enforces 28 cohesive, single-responsibility domain rules. Read 
 | **Security & Compliance** | [`security_compliance.md`](./docs/rules/security_compliance.md) | OWASP Top 10 defenses, rate limiting, crypto, SOC 2 Type II, ISO 27001, GDPR data erasure. |
 | **DevOps & CI/CD** | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) | Shift-left trunk-based CI, OCI distroless containers, Secretlint/Trivy DevSecOps, zero-downtime CD. |
 | **Cloud-Native 12-Factor** | [`cloud_native.md`](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
-| **Error Architecture** | [`error_handling.md`](./docs/rules/error_handling.md) | Fail-fast schema validation, structured OTel/Pino tracing, RFC 7807 envelopes. |
+| **Error Architecture** | [`error_handling.md`](./docs/rules/error_handling.md) | Fail-fast schema validation, structured OTel/Pino tracing, RFC 9457 envelopes. |
 | **Feature Flags** | [`feature_flags.md`](./docs/rules/feature_flags.md) | OpenFeature standard, Flipt/Unleash backends, targeting, kill switches & YAGNI gate. |
 | **Transactional Email** | [`transactional_email.md`](./docs/rules/transactional_email.md) | Declarative templates (MJML/JSON), safe interpolation, SMTP integration testing. |
 | **UI/UX Architecture** | [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md) | Design triage gate, persistent app shell, collapsible sidebar, dual-experience portals, dev persona. |
@@ -157,9 +157,11 @@ Once confirmed, the agent automatically executes:
 
 ## 🔒 Security & Supply-Chain Notes (Socket)
 
-Socket flags two expected capabilities for `azcodr@1.5.1`:
+The scaffolder declares two expected capabilities:
 
-- **Shell access (SUPPLY CHAIN RISK):** limited to `git` via `lib/scaffold.js:15` (`runGit`) using `execFileSync('git', argv, { shell: false })` with an allowlist of `rev-parse, init, branch, add, commit`. No shell strings, no network, `cwd` scoped to the scaffold target.
-- **Filesystem access (SUPPLY CHAIN RISK):** scoped to `templateDir -> targetDir` via `lib/scaffold.js:34` (`assertInside`). Template allowlist is `TEMPLATE_ITEMS`; symlinks and `package.json` creation stay inside the target.
+- **Shell access (SUPPLY CHAIN RISK):** limited to `git` via `runGit()` using `execFileSync('git', argv, { shell: false })` with an allowlist of `rev-parse, init, branch, add, commit`. No shell strings, no network, `cwd` scoped to the scaffold target. Enforced by architecture tests that fail the build if `execSync`/`exec(` ever appear, if an `execFileSync` call omits `shell: false`, or if a mutating subcommand (`push`, `clone`, `reset`, `clean`) enters the allowlist.
+- **Filesystem access (SUPPLY CHAIN RISK):** scoped to `templateDir -> targetDir` via `assertInside()`. Template allowlist is `TEMPLATE_ITEMS`; symlinks and `package.json` creation stay inside the target.
+
+Failures carry stable machine-readable codes (`E_TARGET_NOT_EMPTY`, `E_GIT_BLOCKED`, `E_PATH_ESCAPE`, ...). Branch on `err.code`, never on message text — see the exported `ERROR_CODES` map and `ScaffoldError` type.
 
 Initial-commit fallback identity is `Subodh Khanal <prosubodh@gmail.com>` via `GIT_AUTHOR_*` / `GIT_COMMITTER_*` env (no `git -c` shell flags).

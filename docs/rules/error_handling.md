@@ -1,6 +1,6 @@
 # Error Handling, Request Tracing & Schema Validation
 
-> **Core Mandate:** Enforce fail-fast schema validation at startup, structured OpenTelemetry/JSON request tracing, standardized RFC 7807 problem details, and an explicit canonical DomainError hierarchy.
+> **Core Mandate:** Enforce fail-fast schema validation at startup, structured OpenTelemetry/JSON request tracing, standardized RFC 9457 problem details, and an explicit canonical DomainError hierarchy.
 
 ---
 
@@ -19,9 +19,11 @@ Validate all configuration parameters and environment variables at process boots
 
 ---
 
-## 3. Standardized Error Response Envelope (RFC 7807)
+## 3. Standardized Error Response Envelope (RFC 9457)
 
-Enforce a uniform error envelope across all external HTTP/REST endpoints conforming to the **RFC 7807 Problem Details** standard:
+Enforce a uniform error envelope across all external HTTP/REST endpoints conforming to the **RFC 9457 Problem Details** standard.
+
+> **Spec currency:** RFC 7807 was **obsoleted by RFC 9457** (July 2023). The wire format is unchanged — `type`/`title`/`status`/`detail`/`instance` plus the `application/problem+json` media type — so this is a citation correction, not a migration. Cite RFC 9457; do not reference RFC 7807 as a current standard.
 
 ```json
 {

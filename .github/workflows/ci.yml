@@ -5,16 +5,35 @@ on:
     branches: [ main ]
   pull_request:
     branches: [ main ]
+  merge_group:
+    branches: [ main ]
+
+# Least privilege by default. Every job here only needs to read the repository.
+# A write-capable token executing `node --test` over PR-controlled content is a
+# supply-chain exposure; grant write scopes only where a job genuinely needs them.
+permissions:
+  contents: read
+
+# Cancel superseded runs. Without this, five pushes to a PR queue five full
+# matrix runs; with a publish workflow it also prevents two release runs racing
+# the same version.
+concurrency:
+  group: ci-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
 
 jobs:
   test:
     name: Node ${{ matrix.node-version }} on ${{ matrix.os }}
     runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
     strategy:
       fail-fast: false
       matrix:
         os: [ ubuntu-24.04, macos-latest, windows-latest ]
-        node-version: [ 18.x, 20.x, 22.x, 24.x ]
+        # Node 18 (EOL 2025-04-30) and 20 (EOL 2026-04-30) are no longer
+        # patched. Half the matrix was verifying unpatched runtimes. Supported
+        # lines as of Oct 2026: 24 (Active LTS), 22 (Maintenance), 26 (Current).
+        node-version: [ 22.x, 24.x, 26.x ]
 
     steps:
       - name: Checkout Repository
@@ -40,8 +59,9 @@ jobs:
         run: npm test
 
   coverage:
-    name: 100.00% Coverage Gate (Node 24)
+    name: Coverage Gate (Node 24)
     runs-on: ubuntu-24.04
+    timeout-minutes: 15
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -51,20 +71,68 @@ jobs:
         with:
           node-version: 24.x
 
-      # Native 100% threshold flags require Node >=22.8.0 (see scripts/test_coverage.js),
+      # Native threshold flags require Node >=22.8.0 (see scripts/test_coverage.js),
       # so the coverage gate runs once on the newest runtime instead of every matrix cell.
-      - name: Verify 100.00% Test Coverage Gates
+      - name: Verify Coverage Gates
         run: npm run test:coverage
 
-  security:
-    name: Secret & Vulnerability Scans
+  shell-syntax:
+    name: Shell Script Syntax (shipped hooks)
     runs-on: ubuntu-24.04
+    timeout-minutes: 10
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
 
+      # The .sh files ship to every scaffolded project and auto-run as agent
+      # hooks. `bash -n` catches a CRLF checkout or a syntax slip that the
+      # Node-only lint is blind to.
+      - name: Parse every shipped shell script
+        run: |
+          set -euo pipefail
+          failed=0
+          while IFS= read -r script; do
+            if bash -n "$script"; then
+              echo "ok: $script"
+            else
+              echo "FAIL: $script"
+              failed=1
+            fi
+          done < <(find .agents -name '*.sh' -not -path './node_modules/*')
+          exit $failed
+
+      - name: Verify hooks use LF line endings
+        run: |
+          set -euo pipefail
+          bad=0
+          while IFS= read -r script; do
+            if grep -qU $'\r' "$script"; then
+              echo "CRLF found (breaks shebang + 'set -euo pipefail'): $script"
+              bad=1
+            fi
+          done < <(find .agents -name '*.sh' -not -path './node_modules/*')
+          [ "$bad" -eq 0 ] && echo "all hook scripts are LF"
+
+  security:
+    name: Secret & Vulnerability Scans
+    runs-on: ubuntu-24.04
+    timeout-minutes: 20
+    permissions:
+      contents: read
+      # gitleaks-action comments on PRs when it finds a leak; without these it
+      # degrades gracefully to scan-only.
+      pull-requests: write
+    steps:
+      - name: Checkout Repository (full history for secret scanning)
+        uses: actions/checkout@v7
+        with:
+          fetch-depth: 0
+
+      # gitleaks-action v2 runs on the Node 20 action runtime, which GitHub
+      # removed from hosted runners on 2026-09-16 -- the job was failing for
+      # every PR. v3 targets Node 24.
       - name: Secret Scan (Gitleaks)
-        uses: gitleaks/gitleaks-action@v2
+        uses: gitleaks/gitleaks-action@v3
         env:
           GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
 
@@ -76,3 +144,16 @@ jobs:
           scanners: vuln
           severity: HIGH,CRITICAL
           exit-code: '1'
+
+      - name: Software Bill of Materials (CycloneDX)
+        uses: anchore/sbom-action@v0
+        with:
+          format: cyclonedx-json
+          output-file: sbom.cdx.json
+          artifact-name: sbom.cdx.json
+
+      - name: Dependency Review
+        if: github.event_name == 'pull_request'
+        uses: actions/dependency-review-action@v4
+        with:
+          fail-on-severity: high

@@ -19,7 +19,7 @@ APIs must adhere strictly to standard HTTP semantics. Never return `200 OK` for 
 | **`403 Forbidden`** | Authenticated but insufficient permission | Role, tenant boundary, or policy guard denial. |
 | **`404 Not Found`** | Resource does not exist | Unknown entity identifier (or masked tenant resource). |
 | **`409 Conflict`** | State conflict or race condition | Concurrency mismatch (`If-Match`), unique constraint, or in-flight idempotency. |
-| **`422 Unprocessable`** | Semantic validation failure | Schema constraint violation (RFC 7807 problem details). |
+| **`422 Unprocessable`** | Semantic validation failure | Schema constraint violation (RFC 9457 problem details). |
 | **`500 Internal Error`** | Unhandled server exception | Unexpected server failure; never leak internal stack traces. |
 
 ### Subresource URL Conventions

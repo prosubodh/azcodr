@@ -48,7 +48,7 @@ flowchart TD
 
 1. **Outer Acceptance / Contract Test First**: Every feature begins with a failing outer acceptance test:
    - **Frontend (UI)**: Component or page tests asserting user interactions, form submissions, accessibility, and visual states.
-   - **Backend (API)**: Black-box REST route tests asserting HTTP verbs, request schemas, RFC 7807 problem details, and status codes.
+   - **Backend (API)**: Black-box REST route tests asserting HTTP verbs, request schemas, RFC 9457 problem details, and status codes.
 2. **Collaborator Discovery**: Outer tests do not implement business logic directly; they discover and shape the contracts of their immediate collaborators (Use Cases, Domain Services, Repositories).
 3. **Inner Unit Tests with Test Doubles**: Unit test collaborators in isolation using test doubles and mocks (`Controllers/Handlers` ➔ `Use Cases` ➔ `Ports/Adapters`).
 4. **Mock Ownership Principle**: **Only mock types you own**. Always wrap third-party libraries, database drivers, and external network clients in application-owned port adapters before mocking.
@@ -167,7 +167,7 @@ flowchart TD
 - **The 4 Universal UI Presentation States**: Component tests must explicitly assert:
   1. *Loading State:* Accessible spinner / skeleton is rendered while request is in flight.
   2. *Success State:* Data grid / list renders items with correct semantic markup.
-  3. *Error State:* RFC 7807 error banner renders with retry button when API returns `500` or `422`.
+  3. *Error State:* RFC 9457 error banner renders with retry button when API returns `500` or `422`.
   4. *Empty State:* Meaningful empty-state message and CTA when API returns `[]`.
 
 ### 8.3. Automated Headless Accessibility Gates (axe-core)

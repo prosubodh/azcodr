@@ -51,6 +51,34 @@ export interface CopyTemplateOptions {
 }
 
 /**
+ * Machine-readable failure codes thrown by this library.
+ *
+ * Branch on `error.code`, never on `error.message`: message wording may change
+ * between releases, codes are part of the public contract.
+ */
+export type ScaffoldErrorCode =
+  | 'E_TARGET_IS_TEMPLATE'
+  | 'E_TARGET_NOT_EMPTY'
+  | 'E_GIT_ARGS_INVALID'
+  | 'E_GIT_BLOCKED'
+  | 'E_PATH_ESCAPE';
+
+/** Error type thrown by every azcodr API. Always carries a `code`. */
+export interface ScaffoldErrorShape extends Error {
+  name: 'ScaffoldError';
+  code: ScaffoldErrorCode;
+}
+
+export declare class ScaffoldError extends Error implements ScaffoldErrorShape {
+  constructor(code: ScaffoldErrorCode, message: string);
+  name: 'ScaffoldError';
+  code: ScaffoldErrorCode;
+}
+
+/** Human-readable prefix for each code, as thrown. */
+export declare const ERROR_CODES: Readonly<Record<ScaffoldErrorCode, string>>;
+
+/**
  * High-level orchestration function to scaffold the azcodr workspace into targetDir.
  */
 export function scaffold(options?: ScaffoldOptions): ScaffoldResult;
@@ -109,6 +137,24 @@ export function makeScriptsExecutable(targetDir: string, dryRun?: boolean): stri
 export function initGit(targetDir: string, options?: InitGitOptions): boolean;
 
 /**
+ * Detects whether targetDir is already inside an existing Git worktree.
+ * Shell access is limited to `git rev-parse` via a shell-free allowlisted spawn.
+ */
+export function isInsideGitWorkTree(targetDir: string): boolean;
+
+/**
+ * Spawns `git` with argv (never a shell string) through an explicit
+ * subcommand allowlist. @throws ScaffoldError with E_GIT_ARGS_INVALID or E_GIT_BLOCKED.
+ */
+export function runGit(args: string[], options?: Record<string, unknown>): string;
+
+/**
+ * Scope guard: throws if `candidate` resolves outside `root`.
+ * @throws ScaffoldError with E_PATH_ESCAPE.
+ */
+export function assertInside(root: string, candidate: string, message?: string): void;
+
+/**
  * Returns the root path to the azcodr template files.
  */
 export function getTemplateDir(): string;
@@ -127,8 +173,13 @@ declare const defaultExport: {
   isSameCaseInsensitiveFile: typeof isSameCaseInsensitiveFile;
   makeScriptsExecutable: typeof makeScriptsExecutable;
   initGit: typeof initGit;
+  isInsideGitWorkTree: typeof isInsideGitWorkTree;
+  runGit: typeof runGit;
+  assertInside: typeof assertInside;
   getTemplateDir: typeof getTemplateDir;
   TEMPLATE_ITEMS: typeof TEMPLATE_ITEMS;
+  ScaffoldError: typeof ScaffoldError;
+  ERROR_CODES: typeof ERROR_CODES;
 };
 
 export default defaultExport;

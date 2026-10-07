@@ -20,6 +20,21 @@ Thumbs.db
 .env
 .env.local
 .env.*.local
+# npm auto-excludes .npmrc when packing, but git does not: a local
+# .npmrc holding _authToken is committable and would leak a registry credential.
+.npmrc
+.envrc
+
+# Local databases (data/ ships in the tarball as a placeholder)
+*.db
+*.db-journal
+*.sqlite
+*.sqlite3
+
+# Agent scratch space
+.tmp/
+.tmp-scratch/
+opencode.json
 
 # Case-insensitive filesystem parity (agents.md is generated/symlinked on Linux, native on macOS/Windows)
 agents.md
