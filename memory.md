@@ -25,6 +25,7 @@
 | [ADR-006](./memory.md#adr-006-the-validator-fails-closed-on-degraded-input) | The validator fails closed on degraded input | 2026-10-07 | ACCEPTED | [`test_driven_development.md`](./docs/rules/test_driven_development.md) |
 | [ADR-007](./memory.md#adr-007-publish-from-ci-never-from-a-workstation) | Publish from CI, never from a workstation | 2026-10-07 | ACCEPTED | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) |
 | [ADR-008](./memory.md#adr-008-jsr-publishing-blocked-pending-an-esm-port) | JSR publishing blocked pending an ESM port | 2026-10-07 | PROPOSED | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) |
+| [ADR-009](./memory.md#adr-009-memorymd-is-append-only-the-scaffolder-never-rewrites-the-ledger) | memory.md is append-only; the scaffolder never rewrites it | 2026-10-07 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
 
 ---
 
@@ -43,6 +44,13 @@
 - **Decision:** The library exposes `main(argv, exit)` with an injectable exit function and no self-execution; `scripts/validate-cli.js` is the two-line process entry. Coverage uses explicit `--test-coverage-include` paths rather than `scripts/**` so the shim is excluded by name, not by wildcard accident.
 - **Consequences:** ✅ 100% branch coverage reachable without suppressions. ✅ `require('scripts/validate.js')` is safe from any tool. ✅ Scaffolded projects get the shim automatically (it ships in `scripts/`) and their `validate` script points at it. ⚠️ One extra file in every scaffolded project.
 - **Enforced In:** `scripts/validate-cli.js`, `scripts/validate.js`, `lib/scaffold.js`, `tests/coverage-config.test.js`
+
+#### ADR-009: memory.md Is Append-Only; the Scaffolder Never Rewrites the Ledger
+- **Date:** 2026-10-07 | **Status:** ACCEPTED
+- **Context:** `.agents/skills/lets-build/scripts/bootstrap_workspace.sh` overwrote `memory.md` with a heredoc whenever the file contained any ADR heading that was not the untouched "No decisions recorded yet" placeholder. Reproduced directly: a project whose ADR read "we will never drop SQLite support" was silently replaced with an empty template after one `/lets-build` run — no error, no backup. It also fired on *high* numbering, so a mature project's ledger was equally destroyed. The intent was to strip template ADRs leaked from this repo; the trigger was the presence of real ones. ADRs are immutable history by rule (`docs/rules/agentic_configuration.md`), so a scaffolder rewriting them was a category error. Two further determinism defects in the same script: Topologies D (Canvas Game) and F (Systems Library) were documented in `SKILL.md` but had no `case` arm, so they fell through to a generic tree and **exited 0** — a wrong-but-successful scaffold the agent would report as done; and the `$LANGUAGE` argument was echoed and never used, so every language produced an identical tree while the skill claimed determinism.
+- **Decision:** `memory.md` is never rewritten automatically. Recorded ADRs are detected by an anchored `^####\s+ADR-\d+` match and reported as preserved. Reset requires an explicit `AZCODR_RESET_MEMORY=1`, and even then writes `memory.md.bak` first and announces the action on stderr. Unknown topology and unknown language values are rejected with exit 2 and a list of valid values, instead of silently falling back. The decided profile is recorded to `.azcodr/workspace-profile.env` so downstream phases read it rather than re-deriving it.
+- **Consequences:** ✅ The data-loss path is closed, and `tests/bootstrap-scripts.test.js` proves it: 4 of its tests fail against the prior destructive logic and pass against the fix, so it is a real guard rather than a passing assertion. ✅ A wrong topology can no longer masquerade as success. ✅ A mistyped language argument is caught immediately instead of silently ignored. ⚠️ `AZCODR_RESET_MEMORY=1` remains a genuinely destructive option by design; the backup plus announcement make it recoverable and visible rather than silent.
+- **Enforced In:** `.agents/skills/lets-build/scripts/bootstrap_workspace.sh`, `tests/bootstrap-scripts.test.js`, `tests/shell-scripts.test.js`
 
 #### ADR-008: JSR Publishing Blocked Pending an ESM Port
 - **Date:** 2026-10-07 | **Status:** PROPOSED

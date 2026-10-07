@@ -55,7 +55,7 @@
   "scripts": {
     "test": "node --test",
     "test:coverage": "node scripts/test_coverage.js",
-    "lint": "node --check bin/azcodr.js lib/index.js lib/scaffold.js tests/architecture.test.js tests/cli.test.js tests/coverage-config.test.js tests/error-codes.test.js tests/safety-guard.test.js tests/scaffold.test.js tests/shell-scripts.test.js tests/validate.test.js tests/validate-adr.test.js tests/validate-boundaries.test.js tests/validate-coverage-paths.test.js tests/validate-faults.test.js tests/validate-hardening.test.js tests/validate-parity.test.js tests/validate-self.test.js scripts/test_coverage.js scripts/validate.js scripts/validate-cli.js",
+    "lint": "node --check bin/azcodr.js lib/index.js lib/scaffold.js tests/architecture.test.js tests/bootstrap-scripts.test.js tests/cli.test.js tests/coverage-config.test.js tests/error-codes.test.js tests/safety-guard.test.js tests/scaffold.test.js tests/shell-scripts.test.js tests/validate.test.js tests/validate-adr.test.js tests/validate-boundaries.test.js tests/validate-coverage-paths.test.js tests/validate-faults.test.js tests/validate-hardening.test.js tests/validate-parity.test.js tests/validate-self.test.js scripts/test_coverage.js scripts/validate.js scripts/validate-cli.js",
     "validate": "node scripts/validate-cli.js",
     "prepublishOnly": "npm run lint && npm run test:coverage && npm run validate"
   }

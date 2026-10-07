@@ -15,6 +15,35 @@ echo "🏗️ Target Topology: ${TOPOLOGY}"
 echo "📦 Target Language Profile: ${LANGUAGE}"
 echo "--------------------------------------------------------------"
 
+# ------------------------------------------------------------------------------
+# LANGUAGE is validated, not merely echoed. It previously appeared in the
+# banner and nowhere else: every language produced an identical tree, which
+# made the "deterministic scaffolder" claim false and hid typos from the agent.
+# Unknown values are rejected instead of silently producing a generic layout.
+# ------------------------------------------------------------------------------
+case "${LANGUAGE}" in
+  typescript|javascript|python|rust|go|java|csharp|cpp|c|generic|deno|bun)
+    ;;
+  *)
+    echo "❌ Unknown language profile: '${LANGUAGE}'" >&2
+    cat >&2 << 'EOF'
+
+Supported language profiles:
+  typescript  javascript  deno  bun  python  rust  go  java  csharp  cpp  c
+  generic
+
+Use 'generic' when the language has not been decided yet.
+EOF
+    exit 2
+    ;;
+esac
+
+# Record the decided language so downstream phases can read it instead of
+# re-deriving it (and so the scaffolder's own claim is verifiable).
+mkdir -p "${WORKSPACE_ROOT}/.azcodr"
+printf 'topology=%s\nlanguage=%s\n' "${TOPOLOGY}" "${LANGUAGE}" \
+  > "${WORKSPACE_ROOT}/.azcodr/workspace-profile.env"
+
 # Helper to create leaf directory with .gitkeep to ensure Git tracks empty structures
 create_leaf() {
   local dir="$1"
@@ -177,20 +206,93 @@ EOF
     create_leaf "${WORKSPACE_ROOT}/tests/acceptance"
     ;;
 
-  *)
-    echo "1. Scaffolding Generic / Library Source Tree (src/)..."
-    create_leaf "${WORKSPACE_ROOT}/src"
+  canvas-game|canvas|webgame)
+    # Topology D: Browser / Canvas Game (HTML5 Canvas / WebGL / WebGPU).
+    # Game Loop shaped: Input -> Update -> Render.
+    echo "1. Scaffolding Canvas Game Source Tree (game loop shaped)..."
+    create_leaf "${WORKSPACE_ROOT}/src/entities"
+    create_leaf "${WORKSPACE_ROOT}/src/systems/update"
+    create_leaf "${WORKSPACE_ROOT}/src/systems/render"
+    create_leaf "${WORKSPACE_ROOT}/src/input"
+    create_leaf "${WORKSPACE_ROOT}/src/audio"
+    create_leaf "${WORKSPACE_ROOT}/src/ui"
+    create_leaf "${WORKSPACE_ROOT}/src/scenes"
+    create_leaf "${WORKSPACE_ROOT}/src/config"
+
+    echo "2. Scaffolding Canvas Game Tests (tests/)..."
     create_leaf "${WORKSPACE_ROOT}/tests/unit"
+    create_leaf "${WORKSPACE_ROOT}/tests/e2e"
+
+    echo "3. Scaffolding Public Assets (public/)..."
+    create_leaf "${WORKSPACE_ROOT}/public/assets"
+    ;;
+
+  systems-library|embedded|systems)
+    # Topology F: Embedded / Systems Library.
+    # No heap assumptions, no dynamic allocation in the hot path.
+    echo "1. Scaffolding Systems Library Source Tree (src/)..."
+    create_leaf "${WORKSPACE_ROOT}/src/core"
+    create_leaf "${WORKSPACE_ROOT}/src/hal"
+    create_leaf "${WORKSPACE_ROOT}/src/drivers"
+    create_leaf "${WORKSPACE_ROOT}/src/protocol"
+    create_leaf "${WORKSPACE_ROOT}/src/utils"
+
+    echo "2. Scaffolding Systems Library Tests (tests/)..."
+    create_leaf "${WORKSPACE_ROOT}/tests/unit"
+    create_leaf "${WORKSPACE_ROOT}/tests/hal"
+    create_leaf "${WORKSPACE_ROOT}/tests/benchmarks"
+    ;;
+
+  *)
+    # Fail loudly rather than scaffolding a generic tree and exiting 0. A
+    # wrong-but-successful scaffold is worse than a refusal: the agent reports
+    # success to the user and the mismatch surfaces much later.
+    echo "❌ Unknown topology: '${TOPOLOGY}'" >&2
+    cat >&2 << 'EOF'
+
+Supported topologies:
+  extension        Topology B  Browser Extension (Manifest V3)
+  game|engine      Topology C  Game Engine / High-Performance Simulator
+  canvas-game      Topology D  Browser / Canvas Game (Canvas/WebGL/WebGPU)
+  cli              Topology E  Desktop Application / CLI Utility
+  backend          Topology A  Headless API / Service
+  web|saas|fullstack Topology A  Fullstack Web Application
+  frontend         Topology A  Frontend-only Client
+  systems-library  Topology F  Embedded / Systems Library
+EOF
+    echo >&2
+    echo "Re-run with one of the above." >&2
+    exit 2
     ;;
 esac
 
-# Ensure memory.md in fresh projects starts with a clean ADR slate (ADR-001)
+# ------------------------------------------------------------------------------
+# memory.md is an APPEND-ONLY LEDGER. It is never rewritten automatically.
+#
+# HISTORY (this was a data-loss bug): this script previously overwrote
+# memory.md with a template whenever the file contained any ADR heading that
+# was not the untouched placeholder. Re-running /lets-build on a live project
+# silently destroyed every recorded architectural decision -- irreplaceable
+# work, with no backup and no error. ADRs are immutable history by rule
+# (docs/rules/agentic_configuration.md); a scaffolder has no business
+# rewriting them.
+#
+# Resetting the ledger is now opt-in, always backed up, and always announced.
+# ------------------------------------------------------------------------------
 MEMORY_FILE="${WORKSPACE_ROOT}/memory.md"
 if [[ -f "${MEMORY_FILE}" ]]; then
-  if grep -qE "ADR-00[1-9]|ADR-0[1-9][0-9]|#### ADR-" "${MEMORY_FILE}"; then
-    if ! grep -q "No decisions recorded yet" "${MEMORY_FILE}"; then
-      echo "🧹 Sanitizing memory.md: Resetting legacy template ADRs to clean slate (ADR-001)..."
-    cat << 'EOF' > "${MEMORY_FILE}"
+  # Only a genuinely recorded decision counts as "has content": an h4 ADR
+  # heading outside of an HTML comment.
+  RECORDED_ADRS="$(grep -cE '^####[[:space:]]+ADR-[0-9]+' "${MEMORY_FILE}" 2>/dev/null || true)"
+  RECORDED_ADRS="${RECORDED_ADRS:-0}"
+
+  if [[ "${RECORDED_ADRS}" -gt 0 ]]; then
+    if [[ "${AZCODR_RESET_MEMORY:-0}" == "1" ]]; then
+      BACKUP="${MEMORY_FILE}.bak"
+      cp -p "${MEMORY_FILE}" "${BACKUP}"
+      echo "⚠️  AZCODR_RESET_MEMORY=1 -- RESETTING ${RECORDED_ADRS} recorded ADR(s) in memory.md"
+      echo "    Backup written to ${BACKUP}"
+      cat << 'EOF' > "${MEMORY_FILE}"
 # Workspace Memory, Architecture Decisions & Knowledge Hub
 
 > **Core Purpose:** Authoritative persistent memory ledger for the workspace repository (`./`), maintaining Lightweight Architectural Decision Records (ADRs), system topologies, and living domain contracts.
@@ -228,6 +330,10 @@ Format:
 - **Enforced In:** Relevant rule files in docs/rules/ or code paths.
 -->
 EOF
+    else
+      echo "🧠 Preserving memory.md: ${RECORDED_ADRS} recorded ADR(s) found."
+      echo "    memory.md is append-only and is never rewritten by the scaffolder."
+      echo "    To intentionally reset the ledger: AZCODR_RESET_MEMORY=1 <this command>"
     fi
   fi
 fi
