@@ -27,6 +27,7 @@
 | [ADR-008](./memory.md#adr-008-jsr-publishing-blocked-pending-an-esm-port) | JSR publishing blocked pending an ESM port | 2026-10-07 | PROPOSED | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) |
 | [ADR-009](./memory.md#adr-009-memorymd-is-append-only-the-scaffolder-never-rewrites-the-ledger) | memory.md is append-only; the scaffolder never rewrites it | 2026-10-07 | ACCEPTED | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) |
 | [ADR-010](./memory.md#adr-010-the-scaffolder-refuses-protected-targets) | The scaffolder refuses protected targets | 2026-10-07 | ACCEPTED | [`security_compliance.md`](./docs/rules/security_compliance.md) |
+| [ADR-011](./memory.md#adr-011-the-bash-scaffolder-refuses-protected-targets) | The bash scaffolder refuses protected targets | 2026-10-07 | ACCEPTED | [`security_compliance.md`](./docs/rules/security_compliance.md) |
 
 ---
 
@@ -45,6 +46,13 @@
 - **Decision:** The library exposes `main(argv, exit)` with an injectable exit function and no self-execution; `scripts/validate-cli.js` is the two-line process entry. Coverage uses explicit `--test-coverage-include` paths rather than `scripts/**` so the shim is excluded by name, not by wildcard accident.
 - **Consequences:** ✅ 100% branch coverage reachable without suppressions. ✅ `require('scripts/validate.js')` is safe from any tool. ✅ Scaffolded projects get the shim automatically (it ships in `scripts/`) and their `validate` script points at it. ⚠️ One extra file in every scaffolded project.
 - **Enforced In:** `scripts/validate-cli.js`, `scripts/validate.js`, `lib/scaffold.js`, `tests/coverage-config.test.js`
+
+#### ADR-011: The Bash Scaffolder Refuses Protected Targets
+- **Date:** 2026-10-07 | **Status:** ACCEPTED
+- **Context:** ADR-010 closed the protected-target hole for the Node scaffolder (`lib/scaffold.js`), but the same hole existed in `.agents/skills/lets-build/scripts/bootstrap_workspace.sh`, which runs with no guard at all: invoked with `/` or `~` as the workspace root it would create `src/`, `tests/`, `deploy/`, `specs/` trees there. Its blast radius is smaller than the Node scaffolder's (every file write is create-only — `tokens.json` and `smoke_test.sh` are written only if absent, and `memory.md` is append-only since ADR-009 — except the explicit `AZCODR_RESET_MEMORY=1` reset), so this is pollution rather than destruction. Pollution of `/` or `~` is still unacceptable for a script agents run autonomously.
+- **Decision:** A protected-target check runs before anything is created — including the `.azcodr` profile write. It refuses `/`, Git-Bash and native drive roots (`/c`, `C:\`), the home directory, and the home directory's parent, with exit 2 and a message naming the remedy. `AZCODR_ALLOW_PROTECTED=1` bypasses it for embedders, mirroring the Node side's `allowProtected` option (which the CLI never passes, just as the skill never sets this variable unless instructed). Existing targets are resolved with `pwd -P` so symlink aliases are caught; comparisons are lowercased via `tr` rather than `${var,,}` because macOS ships bash 3.2.
+- **Consequences:** ✅ `tests/bootstrap-scripts.test.js` proves it: the three refusal tests fail against the unguarded script and pass with the guard. ✅ The bypass and the normal-subdirectory case are tested, so the guard cannot over-block. ✅ Both scaffolders now enforce the same invariant, stated in one place per tool. ⚠️ Drive-root detection covers `/x` and `X:\` spellings; a UNC path (`\\server\share`) is not specially handled and falls through to the normal flow.
+- **Enforced In:** `.agents/skills/lets-build/scripts/bootstrap_workspace.sh`, `tests/bootstrap-scripts.test.js`
 
 #### ADR-010: The Scaffolder Refuses Protected Targets
 - **Date:** 2026-10-07 | **Status:** ACCEPTED

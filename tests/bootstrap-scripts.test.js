@@ -34,10 +34,11 @@ function findBash() {
 const bash = findBash();
 const skip = bash ? false : 'bash not available';
 
-function runBootstrap(root, topology = 'backend', language = 'typescript') {
+function runBootstrap(root, topology = 'backend', language = 'typescript', extraEnv = {}) {
   const r = spawnSync(bash, [SCRIPT, root, topology, language], {
     encoding: 'utf-8',
-    timeout: 30000
+    timeout: 30000,
+    env: { ...process.env, ...extraEnv }
   });
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 }
@@ -264,5 +265,71 @@ describe('bootstrap_workspace.sh: topology dispatch is deterministic', { skip },
     // scaffolder produced an identical tree for every language.
     const r = runBootstrap(root, 'backend', 'rust');
     assert.match(r.out, /rust/i, 'the language argument must be reflected in output');
+  });
+});
+
+describe('bootstrap_workspace.sh: refuses protected targets', { skip }, () => {
+  let root;
+  beforeEach(() => {
+    root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-guard-'));
+  });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
+
+  test('refuses the filesystem root without creating anything', () => {
+    const r = runBootstrap('/', 'backend', 'typescript');
+    assert.notStrictEqual(r.code, 0, `root must be refused:\n${r.out}`);
+    assert.match(r.out, /protected/i);
+  });
+
+  test('refuses the home directory without creating anything', () => {
+    // Point HOME at a scratch dir so the test never touches the real home,
+    // then use that scratch dir as the target: the guard must still fire and
+    // must not create a single file inside it.
+    const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-fakehome-'));
+    try {
+      const r = runBootstrap(fakeHome, 'backend', 'typescript', { HOME: fakeHome });
+      assert.notStrictEqual(r.code, 0, `home must be refused:\n${r.out}`);
+      assert.match(r.out, /protected/i);
+      assert.deepStrictEqual(
+        fs.readdirSync(fakeHome),
+        [],
+        'a refused target must be left completely untouched'
+      );
+    } finally {
+      fs.rmSync(fakeHome, { recursive: true, force: true });
+    }
+  });
+
+  test('refuses the home directory parent', () => {
+    const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-fakehome-'));
+    try {
+      const parent = path.dirname(fakeHome);
+      const r = runBootstrap(parent, 'backend', 'typescript', { HOME: fakeHome });
+      assert.notStrictEqual(r.code, 0, `home parent must be refused:\n${r.out}`);
+      assert.match(r.out, /protected/i);
+    } finally {
+      fs.rmSync(fakeHome, { recursive: true, force: true });
+    }
+  });
+
+  test('AZCODR_ALLOW_PROTECTED=1 bypasses the guard for embedders', () => {
+    const fakeHome = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-fakehome-'));
+    try {
+      const r = runBootstrap(
+        fakeHome, 'backend', 'typescript',
+        { HOME: fakeHome, AZCODR_ALLOW_PROTECTED: '1' }
+      );
+      assert.strictEqual(r.code, 0, r.out);
+      assert.ok(fs.existsSync(path.join(fakeHome, 'src', 'domain')));
+    } finally {
+      fs.rmSync(fakeHome, { recursive: true, force: true });
+    }
+  });
+
+  test('a normal subdirectory still scaffolds', () => {
+    const target = path.join(root, 'my-project');
+    const r = runBootstrap(target, 'backend', 'typescript');
+    assert.strictEqual(r.code, 0, r.out);
+    assert.ok(fs.existsSync(path.join(target, 'src', 'domain')));
   });
 });

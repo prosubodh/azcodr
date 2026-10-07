@@ -38,6 +38,64 @@ EOF
     ;;
 esac
 
+# ------------------------------------------------------------------------------
+# PROTECTED TARGETS. The scaffolder creates directories and files, so it must
+# never run against the filesystem root, the user's home directory, or the
+# home directory's parent (scaffolding into /home or C:\Users affects every
+# user on the machine). This mirrors lib/scaffold.js isProtectedTarget(), which
+# enforces the same rule -- plus template-ancestor and symlink checks -- for
+# the Node scaffolder with E_TARGET_IS_PROTECTED.
+#
+# The check runs BEFORE anything is created: even the .azcodr profile write
+# below must not execute for a protected target.
+# ------------------------------------------------------------------------------
+resolve_absolute() {
+  local p="$1"
+  if [[ -e "$p" ]]; then
+    (cd "$p" 2>/dev/null && pwd -P)
+  elif [[ -d "$(dirname "$p")" ]]; then
+    printf '%s/%s' "$(cd "$(dirname "$p")" 2>/dev/null && pwd -P)" "$(basename "$p")"
+  elif [[ "$p" = /* ]]; then
+    printf '%s' "$p"
+  else
+    printf '%s/%s' "$(pwd -P)" "$p"
+  fi
+}
+
+lowercase() {
+  # ${var,,} needs bash 4+; macOS ships bash 3.2, so use tr.
+  printf '%s' "$1" | tr '[:upper:]' '[:lower:]'
+}
+
+RESOLVED_ROOT="$(resolve_absolute "${WORKSPACE_ROOT}")"
+RESOLVED_HOME="$(resolve_absolute "${HOME:-/nonexistent-home}")"
+LOWER_ROOT="$(lowercase "${RESOLVED_ROOT}")"
+LOWER_HOME="$(lowercase "${RESOLVED_HOME}")"
+HOME_PARENT="$(dirname "${RESOLVED_HOME}")"
+LOWER_HOME_PARENT="$(lowercase "${HOME_PARENT}")"
+
+PROTECTED_REASON=""
+if [[ "${RESOLVED_ROOT}" == "/" ]]; then
+  PROTECTED_REASON="the filesystem root"
+elif [[ "${RESOLVED_ROOT}" =~ ^/[a-zA-Z]$ ]]; then
+  # Git-Bash drive root (/c, /d, ...).
+  PROTECTED_REASON="a drive root"
+elif [[ "$RESOLVED_ROOT" =~ ^[a-zA-Z]:[\\/]?$ ]]; then
+  # Native Windows drive root (C:\, D:).
+  PROTECTED_REASON="a drive root"
+elif [[ "${LOWER_ROOT}" == "${LOWER_HOME}" ]]; then
+  PROTECTED_REASON="the home directory (${RESOLVED_HOME})"
+elif [[ "${LOWER_ROOT}" == "${LOWER_HOME_PARENT}" ]]; then
+  PROTECTED_REASON="the home directory's parent (${HOME_PARENT})"
+fi
+
+if [[ -n "${PROTECTED_REASON}" && "${AZCODR_ALLOW_PROTECTED:-0}" != "1" ]]; then
+  echo "❌ Refusing to scaffold into protected directory: ${RESOLVED_ROOT} (${PROTECTED_REASON})." >&2
+  echo "   Choose a project subdirectory instead." >&2
+  echo "   Embedders that genuinely need this path: AZCODR_ALLOW_PROTECTED=1 <this command>" >&2
+  exit 2
+fi
+
 # Record the decided language so downstream phases can read it instead of
 # re-deriving it (and so the scaffolder's own claim is verifiable).
 mkdir -p "${WORKSPACE_ROOT}/.azcodr"
