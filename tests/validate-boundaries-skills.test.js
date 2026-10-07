@@ -38,145 +38,7 @@ function baseFixture() {
   return root;
 }
 
-/**
- * Builds a file whose `split('\n').length` is exactly `n`, which is how the
- * validator counts. (Naive trailing-newline padding is off by one.)
- */
-function agentsMdWithLines(n) {
-  return new Array(n).fill('line').join('\n');
-}
-
-describe('break: AGENTS.md line budget boundaries (120 warn / 150 fail)', () => {
-  let root;
-  beforeEach(() => { root = baseFixture(); });
-  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
-
-  test('120 lines passes the lean budget', () => {
-    fs.writeFileSync(path.join(root, 'AGENTS.md'), agentsMdWithLines(120));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /AGENTS\.md line count is lean: 120 lines/.test(l)), lines.join(' | '));
-    assert.ok(!lines.some((l) => /^FAIL AGENTS\.md line count/.test(l)));
-  });
-
-  test('121 lines warns (crosses the warn threshold)', () => {
-    fs.writeFileSync(path.join(root, 'AGENTS.md'), agentsMdWithLines(121));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /WARN AGENTS\.md line count is getting large: 121 lines/.test(l)), lines.join(' | '));
-    assert.ok(!lines.some((l) => /^FAIL AGENTS\.md line count/.test(l)));
-  });
-
-  test('150 lines warns but does not fail', () => {
-    fs.writeFileSync(path.join(root, 'AGENTS.md'), agentsMdWithLines(150));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /WARN AGENTS\.md line count is getting large: 150 lines/.test(l)), lines.join(' | '));
-    assert.ok(!lines.some((l) => /^FAIL AGENTS\.md line count/.test(l)));
-  });
-
-  test('151 lines fails the hard limit', () => {
-    fs.writeFileSync(path.join(root, 'AGENTS.md'), agentsMdWithLines(151));
-    const { lines, result } = collect(root);
-    assert.ok(lines.some((l) => /FAIL AGENTS\.md exceeds maximum line limit: 151 lines/.test(l)), lines.join(' | '));
-    assert.ok(result.errors > 0);
-  });
-});
-
-describe('break: missing AGENTS.md', () => {
-  let root;
-  beforeEach(() => { root = baseFixture(); });
-  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
-
-  test('fails when AGENTS.md is absent', () => {
-    fs.rmSync(path.join(root, 'AGENTS.md'));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /^FAIL Missing root AGENTS\.md/.test(l)), lines.join(' | '));
-  });
-
-  test('reports each missing parity file individually', () => {
-    fs.rmSync(path.join(root, 'CLAUDE.md'));
-    fs.rmSync(path.join(root, 'GEMINI.md'));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /FAIL CLAUDE\.md is missing/.test(l)), lines.join(' | '));
-    assert.ok(lines.some((l) => /FAIL GEMINI\.md is missing/.test(l)), lines.join(' | '));
-  });
-
-  test('fails when .gitignore is absent', () => {
-    fs.rmSync(path.join(root, '.gitignore'));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /FAIL Missing \.gitignore/.test(l)), lines.join(' | '));
-  });
-});
-
-describe('break: harness parity drift', () => {
-  let root;
-  beforeEach(() => { root = baseFixture(); });
-  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
-
-  test('fails a parity file pointing at the wrong target', () => {
-    fs.writeFileSync(path.join(root, 'CLAUDE.md'), 'README.md\n');
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /FAIL CLAUDE\.md is not a symbolic link/.test(l)), lines.join(' | '));
-  });
-
-  test('warns on a byte-identical copy of AGENTS.md (Windows symlink fallback)', () => {
-    const content = fs.readFileSync(path.join(root, 'AGENTS.md'), 'utf-8');
-    fs.writeFileSync(path.join(root, 'CLAUDE.md'), content);
-    const { lines } = collect(root);
-    assert.ok(
-      lines.some((l) => /WARN CLAUDE\.md is a byte-identical copy of AGENTS\.md/.test(l)),
-      lines.join(' | ')
-    );
-  });
-
-  test('warns when copilot-instructions.md is missing but .github exists', () => {
-    const gh = path.join(root, '.github');
-    fs.mkdirSync(gh, { recursive: true });
-    const { lines } = collect(root);
-    assert.ok(
-      lines.some((l) => /WARN \.github\/copilot-instructions\.md is missing/.test(l)),
-      lines.join(' | ')
-    );
-  });
-
-  test('warns when .github/workflows is missing', () => {
-    const gh = path.join(root, '.github');
-    fs.mkdirSync(gh, { recursive: true });
-    fs.writeFileSync(path.join(gh, 'copilot-instructions.md'), '../AGENTS.md\n');
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /WARN \.github\/workflows is missing/.test(l)), lines.join(' | '));
-  });
-});
-
-describe('break: rules directory defects', () => {
-  let root;
-  beforeEach(() => { root = baseFixture(); });
-  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
-
-  test('fails when docs/rules is absent', () => {
-    fs.rmSync(path.join(root, 'docs', 'rules'), { recursive: true });
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /^FAIL Missing docs\/rules directory/.test(l)), lines.join(' | '));
-  });
-
-  test('fails a rule file with no H1 header', () => {
-    fs.writeFileSync(path.join(root, 'docs', 'rules', 'bad.md'), 'no header here\n');
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /FAIL Rule bad\.md missing H1 header/.test(l)), lines.join(' | '));
-  });
-
-  test('warns a rule file missing the Core Mandate line', () => {
-    fs.writeFileSync(path.join(root, 'docs', 'rules', 'nomad.md'), '# Title\n');
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /WARN Rule nomad\.md missing standardized/.test(l)), lines.join(' | '));
-  });
-
-  test('warns a rule file over the 24KB cap', () => {
-    fs.writeFileSync(path.join(root, 'docs', 'rules', 'big.md'), '# B\n\n' + 'x'.repeat(24001));
-    const { lines } = collect(root);
-    assert.ok(lines.some((l) => /WARN Rule big\.md exceeds 24KB/.test(l)), lines.join(' | '));
-  });
-});
-
-describe('break: skills front-matter defects', () => {
+describe('skills front-matter: presence', () => {
   let root;
   let skillFile;
   beforeEach(() => {
@@ -196,6 +58,16 @@ describe('break: skills front-matter defects', () => {
     const { lines } = collect(root);
     assert.ok(lines.some((l) => /FAIL Skill 'demo' missing SKILL\.md/.test(l)), lines.join(' | '));
   });
+});
+
+describe('skills front-matter: delimiters', () => {
+  let root;
+  let skillFile;
+  beforeEach(() => {
+    root = baseFixture();
+    skillFile = path.join(root, '.agents', 'skills', 'demo', 'SKILL.md');
+  });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('fails when the opening front-matter delimiter is absent', () => {
     fs.writeFileSync(skillFile, 'name: demo\ndescription: Use when x. Do not use y.\n');
@@ -208,6 +80,16 @@ describe('break: skills front-matter defects', () => {
     const { lines } = collect(root);
     assert.ok(lines.some((l) => /missing closing front matter delimiter/.test(l)), lines.join(' | '));
   });
+});
+
+describe('skills front-matter: name and description', () => {
+  let root;
+  let skillFile;
+  beforeEach(() => {
+    root = baseFixture();
+    skillFile = path.join(root, '.agents', 'skills', 'demo', 'SKILL.md');
+  });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('fails when front-matter name does not match the directory', () => {
     fs.writeFileSync(skillFile, '---\nname: wrong\ndescription: Use when x. Do not use y.\n---\n\n## Gotchas\n');
@@ -220,6 +102,16 @@ describe('break: skills front-matter defects', () => {
     const { lines } = collect(root);
     assert.ok(lines.some((l) => /missing front matter 'description:'/.test(l)), lines.join(' | '));
   });
+});
+
+describe('skills front-matter: description style', () => {
+  let root;
+  let skillFile;
+  beforeEach(() => {
+    root = baseFixture();
+    skillFile = path.join(root, '.agents', 'skills', 'demo', 'SKILL.md');
+  });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('warns a description not starting with "Use when"', () => {
     fs.writeFileSync(skillFile, '---\nname: demo\ndescription: Helps with x. Do not use in prod.\n---\n\n## Gotchas\n');
@@ -232,6 +124,16 @@ describe('break: skills front-matter defects', () => {
     const { lines } = collect(root);
     assert.ok(lines.some((l) => /should specify negative boundaries/.test(l)), lines.join(' | '));
   });
+});
+
+describe('skills front-matter: size limits', () => {
+  let root;
+  let skillFile;
+  beforeEach(() => {
+    root = baseFixture();
+    skillFile = path.join(root, '.agents', 'skills', 'demo', 'SKILL.md');
+  });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('fails a description over 1024 chars', () => {
     const desc = 'Use when ' + 'a'.repeat(1100) + ' Do not use.';
@@ -254,7 +156,7 @@ describe('break: skills front-matter defects', () => {
   });
 });
 
-describe('break: markdown link integrity', () => {
+describe('markdown link integrity', () => {
   let root;
   beforeEach(() => { root = baseFixture(); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
@@ -273,8 +175,6 @@ describe('break: markdown link integrity', () => {
     );
     const { result } = collect(root);
     assert.strictEqual(result.brokenLinks.length, 0);
-    // Only the fragment-suffixed relative link is counted (1); the four
-    // skipped targets must not inflate the total.
     assert.strictEqual(result.totalLinks, 1);
   });
 
@@ -287,7 +187,7 @@ describe('break: markdown link integrity', () => {
   });
 });
 
-describe('break: memory.md ADR ledger', () => {
+describe('memory.md ADR ledger: presence', () => {
   let root;
   beforeEach(() => { root = baseFixture(); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
@@ -308,6 +208,12 @@ describe('break: memory.md ADR ledger', () => {
     const { lines } = collect(root);
     assert.ok(lines.some((l) => /PASS memory\.md is a clean slate/.test(l)), lines.join(' | '));
   });
+});
+
+describe('memory.md ADR ledger: entries', () => {
+  let root;
+  beforeEach(() => { root = baseFixture(); });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('passes when ADR entries are present', () => {
     fs.writeFileSync(

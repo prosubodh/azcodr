@@ -1,10 +1,7 @@
 /**
- * Regression tests for validator hardening.
+ * Regression tests for link checker, empty workspaces, and strip helpers.
  *
- * Each test corresponds to a FALSE NEGATIVE that was proven against a prior
- * version of scripts/validate.js -- a broken workspace that reported
- * "SUCCESS" with exit 0. They are written so the fixture is genuinely broken
- * and the assertion is on the verdict, not on incidental output.
+ * Split from tests/validate-hardening.test.js.
  */
 const { test, describe, beforeEach, afterEach } = require('node:test');
 const assert = require('node:assert/strict');
@@ -55,75 +52,14 @@ function fixture(name) {
   return root;
 }
 
-describe('hardening: phase 6 cannot be disabled by a heading typo', () => {
-  let root;
-  beforeEach(() => { root = fixture('adr'); });
-  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
+/** Plants a rule-shaped and a skill-shaped directory to provoke EISDIR reads. */
+function plantEisdirShapes(root) {
+  fs.mkdirSync(path.join(root, 'docs', 'rules', 'DIR.md'));
+  fs.rmSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'));
+  fs.mkdirSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'));
+}
 
-  function writeLedger(headingPrefix, count = 2) {
-    const rows = [];
-    const entries = [];
-    for (let i = 1; i <= count; i += 1) {
-      rows.push(`| ADR-00${i} | Decision ${i} |`);
-      entries.push(`${headingPrefix}ADR-00${i}: Decision ${i}`);
-    }
-    fs.writeFileSync(path.join(root, 'memory.md'), [
-      '# Memory',
-      '',
-      '| ID | Title |',
-      '|---|---|',
-      ...rows,
-      '',
-      entries.join('\n')
-    ].join('\n'));
-  }
-
-  for (const [label, headingPrefix] of [
-    ['h3 instead of h4', '### '],
-    ['h5 instead of h4', '##### '],
-    ['blockquote', '> #### '],
-    ['no space after hashes', '####']
-  ]) {
-    test(`FAILS when an ADR uses ${label}`, () => {
-      writeLedger(headingPrefix);
-      const { result, joined } = collect(root);
-      assert.ok(result.errors > 0, `expected failure for ${label}:\n${joined}`);
-      assert.match(joined, /non-standard heading|missing from the ADR Master Index|but no matching entry/);
-    });
-  }
-
-  test('a malformed ledger still triggers the glossary requirement', () => {
-    writeLedger('### ');
-    fs.rmSync(path.join(root, 'docs', 'knowledge', 'ubiquitous_language.md'));
-    const { result, joined } = collect(root);
-    assert.ok(result.errors > 0);
-    assert.match(joined, /ubiquitous_language\.md \(required once ADRs exist\)/);
-  });
-
-  test('FAILS on duplicate ADR headings', () => {
-    fs.writeFileSync(path.join(root, 'memory.md'), [
-      '# Memory', '',
-      '| ID | Title |', '|---|---|', '| ADR-001 | One |', '',
-      '#### ADR-001: One', '', '#### ADR-001: Again'
-    ].join('\n'));
-    const { result, joined } = collect(root);
-    assert.ok(result.errors > 0, joined);
-    assert.match(joined, /more than one entry heading/);
-  });
-
-  test('a well-formed ledger still passes', () => {
-    writeLedger('#### ');
-    fs.writeFileSync(
-      path.join(root, 'docs', 'knowledge', 'ubiquitous_language.md'),
-      '# UL\n\n| Term | Def |\n|---|---|\n| Thing | A thing |\n'
-    );
-    const ledgerLines = collect(root).lines.filter((l) => /ADR Master Index|ubiquitous/.test(l));
-    assert.ok(ledgerLines.some((l) => /matches all 2 ADR entries/.test(l)), ledgerLines.join('\n'));
-    assert.ok(!ledgerLines.some((l) => /^FAIL/.test(l)), ledgerLines.join('\n'));
-  });
-});
-
-describe('hardening: phase 4 link checker', () => {
+describe('hardening: link checker catches missing targets', () => {
   let root;
   beforeEach(() => { root = fixture('links'); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
@@ -148,12 +84,30 @@ describe('hardening: phase 4 link checker', () => {
     assert.ok(result.errors > 0);
     assert.match(joined, /Broken markdown link/);
   });
+});
+
+describe('hardening: link checker text and fence edges', () => {
+  let root;
+  beforeEach(() => { root = fixture('links'); });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('catches nested-bracket link text', () => {
     fs.writeFileSync(path.join(root, 'D.md'), '[click [here] now](./NOPE.md)\n');
     const { result } = collect(root);
     assert.ok(result.errors > 0, 'nested bracket link should be caught');
   });
+
+  test('does not flag links inside fenced code examples', () => {
+    fs.writeFileSync(path.join(root, 'F.md'), '```md\n[a](./NOPE.md)\n```\n');
+    const { joined } = collect(root);
+    assert.ok(!/Broken markdown link/.test(joined), joined);
+  });
+});
+
+describe('hardening: link checker allows legitimate forms', () => {
+  let root;
+  beforeEach(() => { root = fixture('links'); });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('does not flag legitimate link forms', () => {
     fs.writeFileSync(path.join(root, 'exists.md'), '# exists\n');
@@ -175,21 +129,18 @@ describe('hardening: phase 4 link checker', () => {
     const { joined } = collect(root);
     assert.ok(!/Broken markdown link/.test(joined), joined);
   });
+});
 
-  test('does not flag links inside fenced code examples', () => {
-    fs.writeFileSync(path.join(root, 'F.md'), '```md\n[a](./NOPE.md)\n```\n');
-    const { joined } = collect(root);
-    assert.ok(!/Broken markdown link/.test(joined), joined);
-  });
+describe('hardening: link checker survives unreadable files', () => {
+  let root;
+  beforeEach(() => { root = fixture('links'); });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('reports rather than crashes on an unreadable markdown file', () => {
     // A directory named like a rule or skill file used to abort the whole run
     // (EISDIR) so phases 3-6 never executed. Two variants: a rule-shaped
     // directory and a SKILL-shaped directory.
-    fs.mkdirSync(path.join(root, 'docs', 'rules', 'DIR.md'));
-    fs.rmSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'));
-    fs.mkdirSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'));
-
+    plantEisdirShapes(root);
     let threw = null;
     const lines = [];
     const phases = [];
@@ -206,14 +157,11 @@ describe('hardening: phase 4 link checker', () => {
     }
     assert.strictEqual(threw, null, `validation threw: ${threw && threw.message}`);
     assert.ok(lines.some((l) => /not a regular file/.test(l)), lines.join('\n'));
-    assert.ok(
-      phases.some((p) => /6\. Checking ADR Index Consistency/.test(p)),
-      `phase 6 never ran: ${phases.join(' | ')}`
-    );
+    assert.ok(phases.some((p) => /6\. Checking ADR Index Consistency/.test(p)), `phase 6 never ran: ${phases.join(' | ')}`);
   });
 });
 
-describe('hardening: empty and degenerate workspaces fail', () => {
+describe('hardening: empty workspaces fail on missing content', () => {
   let root;
   beforeEach(() => { root = fixture('empty'); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
@@ -231,12 +179,16 @@ describe('hardening: empty and degenerate workspaces fail', () => {
     assert.ok(result.errors > 0, joined);
     assert.match(joined, /AGENTS\.md is empty/);
   });
+});
+
+describe('hardening: rule headers and recursion', () => {
+  let root;
+  beforeEach(() => { root = fixture('empty'); });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('FAILS when a rule file has no H1 outside of code fences', () => {
-    fs.writeFileSync(
-      path.join(root, 'docs', 'rules', 'fake.md'),
-      '```md\n# Example Title\n> **Core Mandate:** pretend\n```\n\nno real header\n'
-    );
+    const body = '```md\n# Example Title\n> **Core Mandate:** pretend\n```\n\nno real header\n';
+    fs.writeFileSync(path.join(root, 'docs', 'rules', 'fake.md'), body);
     const { result, joined } = collect(root);
     assert.ok(result.errors > 0, joined);
     assert.match(joined, /missing H1 header/);
@@ -250,29 +202,31 @@ describe('hardening: empty and degenerate workspaces fail', () => {
   });
 });
 
-describe('hardening: skill front matter is scoped to the front-matter block', () => {
+describe('hardening: skill front matter stays in its block', () => {
   let root;
   beforeEach(() => { root = fixture('fm'); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('body prose does not satisfy name/description requirements', () => {
-    fs.writeFileSync(
-      path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'),
-      '---\nauthor: nobody\nversion: 1\n---\n\n# Demo\nname: demo\ndescription: Use when demoing. Do not use in prod.\n\n## Gotchas\n'
-    );
+    const body = '---\nauthor: nobody\nversion: 1\n---\n\n# Demo\nname: demo\ndescription: Use when demoing. Do not use in prod.\n\n## Gotchas\n';
+    fs.writeFileSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'), body);
     const { result, joined } = collect(root);
     assert.ok(result.errors > 0, `front matter is missing:\n${joined}`);
     assert.match(joined, /missing front matter 'description:'|does not match directory name/);
   });
 
   test('a fenced example does not satisfy front-matter requirements', () => {
-    fs.writeFileSync(
-      path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'),
-      '---\ntitle: x\n---\n```\nname: demo\ndescription: Use when fenced. Do not use fenced.\n```\n'
-    );
+    const body = '---\ntitle: x\n---\n```\nname: demo\ndescription: Use when fenced. Do not use fenced.\n```\n';
+    fs.writeFileSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'), body);
     const { result, joined } = collect(root);
     assert.ok(result.errors > 0, joined);
   });
+});
+
+describe('hardening: block-scalar descriptions are measured', () => {
+  let root;
+  beforeEach(() => { root = fixture('fm'); });
+  afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
   test('a YAML block-scalar description is measured at its real length', () => {
     const long = 'Use when ' + 'x'.repeat(1200) + ' Do not use.';
@@ -312,7 +266,7 @@ describe('hardening: walkMarkdown helper', () => {
   });
 });
 
-describe('hardening: comment stripping and fence stripping helpers', () => {
+describe('hardening: comment and fence stripping', () => {
   test('stripHtmlComments removes closed comments', () => {
     assert.strictEqual(stripHtmlComments('a<!-- x -->b'), 'ab');
   });
@@ -326,7 +280,9 @@ describe('hardening: comment stripping and fence stripping helpers', () => {
     const input = 'before\n```js\nconst a = 1;\n```\nafter';
     assert.strictEqual(stripFencedCode(input), 'before\n\nafter');
   });
+});
 
+describe('hardening: ADR entries hidden in fences or comments', () => {
   test('an ADR inside a fence is not counted as an entry', () => {
     const text = ['# M', '', '```md', '#### ADR-001: example', '```', ''].join('\n');
     assert.deepStrictEqual(parseAdrLedger(text).entryIds, []);

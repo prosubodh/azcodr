@@ -65,10 +65,10 @@ describe('Self-validation: package scripts are runnable as declared', () => {
     assert.ok(fs.existsSync(path.join(ROOT, script)), `validate script target missing: ${script}`);
   });
 
-  test('every script path referenced by lint exists', () => {
-    for (const token of pkg.scripts.lint.split(' ')) {
-      if (token === 'node' || token === '--check') continue;
-      assert.ok(fs.existsSync(path.join(ROOT, token)), `lint target missing: ${token}`);
-    }
+  test('lint resolves through the eslint config, which must exist', () => {
+    // The old form named every file explicitly; the config now owns the file
+    // list, so this asserts the config exists and actually gates the tree.
+    assert.match(pkg.scripts.lint, /eslint/);
+    assert.ok(fs.existsSync(path.join(ROOT, 'eslint.config.js')), 'eslint.config.js is missing');
   });
 });

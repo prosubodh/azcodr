@@ -24,6 +24,14 @@ const args = [
   // that only runs when invoked directly, so it cannot be covered in-process.
   // Every other script IS gated.
   '--test-coverage-include=scripts/validate.js',
+  '--test-coverage-include=scripts/validate/io.js',
+  '--test-coverage-include=scripts/validate/text.js',
+  '--test-coverage-include=scripts/validate/parity.js',
+  '--test-coverage-include=scripts/validate/adr.js',
+  '--test-coverage-include=scripts/validate/root.js',
+  '--test-coverage-include=scripts/validate/rules.js',
+  '--test-coverage-include=scripts/validate/skills.js',
+  '--test-coverage-include=scripts/validate/links.js',
   '--test-coverage-include=scripts/test_coverage.js',
   // bin/, lib/ and test_coverage.js hold no environment-dependent defensive
   // branches and are held at 100%. validate.js is a filesystem auditor: it

@@ -4,7 +4,6 @@ const fs = require('node:fs');
 const path = require('node:path');
 const os = require('node:os');
 
-const VALIDATE_PATH = path.resolve(__dirname, '..', 'scripts', 'validate.js');
 const validateModule = require('../scripts/validate.js');
 
 /**
@@ -26,37 +25,40 @@ function runValidation(root) {
   return { result, lines };
 }
 
+function writeParityFiles(root) {
+  for (const name of ['CLAUDE.md', 'GEMINI.md', '.cursorrules', '.windsurfrules']) {
+    fs.writeFileSync(path.join(root, name), 'AGENTS.md\n');
+  }
+  fs.writeFileSync(path.join(root, '.gitignore'), 'node_modules/\n');
+}
+
+function writeRuleFixture(rulesDir) {
+  fs.mkdirSync(rulesDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(rulesDir, 'good.md'),
+    '# Good Rule\n\n> **Core Mandate:** Be good.\n\n## What NOT to do\n\nNope.\n'
+  );
+}
+
+function writeSkillFixture(skillsDir) {
+  const skillDir = path.join(skillsDir, 'demo');
+  fs.mkdirSync(skillDir, { recursive: true });
+  fs.writeFileSync(
+    path.join(skillDir, 'SKILL.md'),
+    '---\nname: demo\ndescription: "Use when testing. Do not use for production."\n---\n\n# Demo\n\n## Gotchas\n\nNone.\n'
+  );
+}
+
 function createFixture(overrides = {}) {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-validate-'));
   const agentsLines = overrides.agentsLines || 40;
   const agents = overrides.agentsContent || '# Agents\n' + 'x\n'.repeat(agentsLines);
   fs.writeFileSync(path.join(root, 'AGENTS.md'), agents);
-  fs.writeFileSync(path.join(root, 'CLAUDE.md'), 'AGENTS.md\n');
-  fs.writeFileSync(path.join(root, 'GEMINI.md'), 'AGENTS.md\n');
-  fs.writeFileSync(path.join(root, '.cursorrules'), 'AGENTS.md\n');
-  fs.writeFileSync(path.join(root, '.windsurfrules'), 'AGENTS.md\n');
-  fs.writeFileSync(path.join(root, '.gitignore'), 'node_modules/\n');
-
-  const rulesDir = path.join(root, 'docs', 'rules');
-  fs.mkdirSync(rulesDir, { recursive: true });
-  if (overrides.rules !== false) {
-    fs.writeFileSync(
-      path.join(rulesDir, 'good.md'),
-      '# Good Rule\n\n> **Core Mandate:** Be good.\n\n## What NOT to do\n\nNope.\n'
-    );
-  }
-
-  const skillsDir = path.join(root, '.agents', 'skills');
-  fs.mkdirSync(skillsDir, { recursive: true });
-  if (overrides.skills !== false) {
-    const skillDir = path.join(skillsDir, 'demo');
-    fs.mkdirSync(skillDir, { recursive: true });
-    fs.writeFileSync(
-      path.join(skillDir, 'SKILL.md'),
-      '---\nname: demo\ndescription: "Use when testing. Do not use for production."\n---\n\n# Demo\n\n## Gotchas\n\nNone.\n'
-    );
-  }
-
+  writeParityFiles(root);
+  if (overrides.rules !== false) writeRuleFixture(path.join(root, 'docs', 'rules'));
+  else fs.mkdirSync(path.join(root, 'docs', 'rules'), { recursive: true });
+  if (overrides.skills !== false) writeSkillFixture(path.join(root, '.agents', 'skills'));
+  else fs.mkdirSync(path.join(root, '.agents', 'skills'), { recursive: true });
   fs.writeFileSync(path.join(root, 'memory.md'), '# Memory\n\nClean slate.\n');
   if (overrides.markdown) {
     fs.writeFileSync(path.join(root, 'NOTES.md'), overrides.markdown);

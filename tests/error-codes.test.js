@@ -5,7 +5,7 @@
  * message text, so a rewording never breaks their error handling. That only
  * holds if every throw site actually carries a stable machine-readable code.
  */
-const { test, describe, beforeEach, afterEach } = require('node:test');
+const { test, describe } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
@@ -38,7 +38,7 @@ function codeOf(fn) {
   assert.fail('expected the call to throw');
 }
 
-describe('Error contract: every throw site carries a stable code', () => {
+describe('Error contract: target codes', () => {
   const templateDir = getTemplateDir();
 
   test('E_TARGET_IS_TEMPLATE', () => {
@@ -57,6 +57,21 @@ describe('Error contract: every throw site carries a stable code', () => {
     );
   });
 
+  test('E_TARGET_NOT_EMPTY', () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-code-'));
+    try {
+      fs.writeFileSync(path.join(dir, 'existing.txt'), 'x');
+      assert.strictEqual(
+        codeOf(() => validateTarget(dir, { templateDir, force: false })),
+        'E_TARGET_NOT_EMPTY'
+      );
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+});
+
+describe('Error contract: git and path codes', () => {
   test('E_GIT_ARGS_INVALID', () => {
     assert.strictEqual(codeOf(() => runGit([])), 'E_GIT_ARGS_INVALID');
     assert.strictEqual(codeOf(() => runGit('init')), 'E_GIT_ARGS_INVALID');
@@ -72,24 +87,21 @@ describe('Error contract: every throw site carries a stable code', () => {
     assert.strictEqual(codeOf(() => assertInside('/tmp/root', '../escape')), 'E_PATH_ESCAPE');
   });
 
-  test('E_TARGET_NOT_EMPTY', () => {
-    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-code-'));
-    try {
-      fs.writeFileSync(path.join(dir, 'existing.txt'), 'x');
-      assert.strictEqual(
-        codeOf(() => validateTarget(dir, { templateDir, force: false })),
-        'E_TARGET_NOT_EMPTY'
-      );
-    } finally {
-      fs.rmSync(dir, { recursive: true, force: true });
-    }
-  });
-
   test('every code named in this file is distinct', () => {
     const codes = Object.keys(EXPECTED_CODES);
     assert.strictEqual(new Set(codes).size, codes.length);
   });
 });
+
+function assertTargetNotEmpty(dir) {
+  try {
+    validateTarget(dir, { templateDir: getTemplateDir(), force: false });
+    assert.fail('expected throw');
+  } catch (e) {
+    assert.strictEqual(e.code, 'E_TARGET_NOT_EMPTY');
+    assert.match(e.message, /--force/, 'message must tell the user how to proceed');
+  }
+}
 
 describe('Error contract: messages stay human-readable', () => {
   test('each coded error still carries an actionable message', () => {
@@ -107,13 +119,7 @@ describe('Error contract: messages stay human-readable', () => {
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-msg-'));
     try {
       fs.writeFileSync(path.join(dir, 'a.txt'), 'x');
-      try {
-        validateTarget(dir, { templateDir: getTemplateDir(), force: false });
-        assert.fail('expected throw');
-      } catch (e) {
-        assert.strictEqual(e.code, 'E_TARGET_NOT_EMPTY');
-        assert.match(e.message, /--force/, 'message must tell the user how to proceed');
-      }
+      assertTargetNotEmpty(dir);
     } finally {
       fs.rmSync(dir, { recursive: true, force: true });
     }

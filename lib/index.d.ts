@@ -106,22 +106,22 @@ export function copyTemplate(
 /**
  * Safely creates or updates a symbolic link, falling back to a file copy if symlinks are unsupported.
  */
-export function ensureSymlink(
-  targetDir: string,
-  linkName: string,
-  targetFileName: string,
-  dryRun?: boolean
-): boolean;
+export function ensureSymlink(options: {
+  targetDir: string;
+  linkName: string;
+  targetFileName: string;
+  dryRun?: boolean;
+}): boolean;
 
 /**
  * Creates a symlink, falling back to a text pointer (not a full copy).
  */
-export function ensureSymlinkOrPointer(
-  targetDir: string,
-  linkName: string,
-  targetFileName: string,
-  dryRun?: boolean
-): boolean;
+export function ensureSymlinkOrPointer(options: {
+  targetDir: string;
+  linkName: string;
+  targetFileName: string;
+  dryRun?: boolean;
+}): boolean;
 
 /**
  * Detects whether linkName and targetFileName refer to the same entry on a case-insensitive filesystem.

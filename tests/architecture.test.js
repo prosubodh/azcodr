@@ -23,7 +23,7 @@ function readAll(dir, filter = () => true) {
 
 const codeFiles = [...readAll(LIB_DIR, (f) => f.endsWith('.js')), ...readAll(BIN_DIR, (f) => f.endsWith('.js'))];
 
-describe('Architecture: shell-free process boundary', () => {
+describe('Architecture: no shell-string spawning', () => {
   test('no shell-string process spawning anywhere in lib/ or bin/', () => {
     // Regression guard for 0dbdde0: every cp.execSync('git ...') call was a
     // shell-injection surface. The fix must not silently regress.
@@ -38,18 +38,26 @@ describe('Architecture: shell-free process boundary', () => {
 
   test('every execFileSync call passes shell:false', () => {
     for (const { path: file, source } of codeFiles) {
-      if (!source.includes('execFileSync')) continue;
+      if (!/execFileSync\s*\(/.test(source)) continue;
       assert.ok(
         /shell:\s*false/.test(source),
         `${path.relative(ROOT, file)} calls execFileSync without an explicit shell:false`
       );
     }
   });
+});
+
+describe('Architecture: git allowlist and scope guard', () => {
 
   test('git invocation is confined to an explicit subcommand allowlist', () => {
-    const scaffold = fs.readFileSync(path.join(LIB_DIR, 'scaffold.js'), 'utf-8');
-    assert.ok(/GIT_ALLOWED_SUBCOMMANDS/.test(scaffold));
-    const allowed = scaffold.match(/GIT_ALLOWED_SUBCOMMANDS\s*=\s*new Set\(\[([^\]]+)\]/);
+    // Scans every lib file: the allowlist must exist exactly once, wherever
+    // the git boundary lives after refactoring, and must never admit a
+    // history-mutating or remote-touching subcommand.
+    const hits = codeFiles
+      .map(({ path: file, source }) => ({ file: path.relative(ROOT, file), source }))
+      .filter(({ source }) => /GIT_ALLOWED_SUBCOMMANDS\s*=\s*new Set\(\[/.test(source));
+    assert.strictEqual(hits.length, 1, `expected one allowlist, found in: ${hits.map((h) => h.file).join(', ')}`);
+    const allowed = hits[0].source.match(/GIT_ALLOWED_SUBCOMMANDS\s*=\s*new Set\(\[([^\]]+)\]/);
     assert.ok(allowed, 'expected a GIT_ALLOWED_SUBCOMMANDS Set literal');
     const members = [...allowed[1].matchAll(/'([^']+)'/g)].map((m) => m[1]);
     // No history-mutating or remote-touching subcommand may be reachable.
@@ -59,20 +67,51 @@ describe('Architecture: shell-free process boundary', () => {
   });
 
   test('filesystem writes stay inside a scope guard', () => {
-    const scaffold = fs.readFileSync(path.join(LIB_DIR, 'scaffold.js'), 'utf-8');
-    assert.ok(/function assertInside/.test(scaffold), 'expected an assertInside scope guard');
-    assert.ok(/assertInside\(resolvedTemplate, srcPath\)/.test(scaffold), 'template read must be scoped');
-    assert.ok(/assertInside\(resolvedTarget, destPath\)/.test(scaffold), 'target write must be scoped');
+    // The guard may live in any lib module after refactoring, but the two
+    // enforcement points must exist: the template read and the target write.
+    const combined = codeFiles.map(({ source }) => source).join('\n');
+    assert.ok(/function assertInside/.test(combined), 'expected an assertInside scope guard');
+    assert.ok(/assertInside\(resolvedTemplate, srcPath\)/.test(combined), 'template read must be scoped');
+    assert.ok(/assertInside\(resolvedTarget, destPath\)/.test(combined), 'target write must be scoped');
   });
 });
 
-describe('Architecture: zero runtime dependencies', () => {
-  test('no dependencies or devDependencies are declared', () => {
+describe('Architecture: no runtime dependencies', () => {
+  test('no runtime dependencies are declared', () => {
+    // The consumer supply-chain guarantee: nothing a user installs executes
+    // third-party code. Dev tooling is governed by the test below, not this one.
     const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
     assert.strictEqual(pkg.dependencies, undefined);
-    assert.strictEqual(pkg.devDependencies, undefined);
   });
+});
 
+describe('Architecture: dev tooling pins', () => {
+
+  test('dev tooling is exact-pinned and lockfile-committed', () => {
+    // ADR-012: contributor tooling (ESLint, mandated by clean_code.md) is
+    // allowed as devDependencies IFF every entry is an exact version (no ^, ~,
+    // >=, or tags -- a floating range reintroduces the supply-chain risk the
+    // zero-dep rule exists to prevent) and package-lock.json is committed, so
+    // every contributor installs byte-identical tooling. devDependencies never
+    // ship: the published tarball is bounded by the files[] allowlist and npm
+    // never installs a dependency's devDependencies.
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
+    const devDeps = pkg.devDependencies || {};
+    for (const [name, range] of Object.entries(devDeps)) {
+      assert.match(
+        String(range),
+        /^\d+\.\d+\.\d+(-[\w.]+)?$/,
+        `devDependency '${name}@${range}' must be an exact version, not a range`
+      );
+    }
+    assert.ok(
+      fs.existsSync(path.join(ROOT, 'package-lock.json')),
+      'package-lock.json must be committed while devDependencies exist'
+    );
+  });
+});
+
+describe('Architecture: require hygiene', () => {
   test('runtime code requires only node: builtins', () => {
     for (const { path: file, source } of codeFiles) {
       const requires = [...source.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]);
@@ -117,8 +156,12 @@ test('the shipped .d.ts declares the exports the runtime actually provides', () 
     assert.ok(dts.includes(name), `lib/index.d.ts is missing runtime export '${name}'`);
   }
 });
+});
 
-test('LICENSE is shipped so downstream projects inherit a license', () => {
+describe('Architecture: license and provenance', () => {
+  const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
+
+  test('LICENSE is shipped so downstream projects inherit a license', () => {
     assert.ok(pkg.files.includes('LICENSE'));
     assert.ok(fs.existsSync(path.join(ROOT, 'LICENSE')));
   });
@@ -156,6 +199,9 @@ describe('Architecture: validator governance guarantees', () => {
       assert.strictEqual(claimed, actual, `README claims ${claimed} rules, ${actual} exist`);
     }
   });
+});
+
+describe('Architecture: rules and ledger hygiene', () => {
 
   test('every rule file carries an H1 and the standardized Core Mandate', () => {
     const dir = path.join(ROOT, 'docs', 'rules');

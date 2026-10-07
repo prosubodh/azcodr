@@ -18,7 +18,7 @@
  * False positives are treated as first-class failures too: a guard that blocks
  * `npm test` gets switched off, which is strictly worse than no guard.
  */
-const { test, describe, before, after } = require('node:test');
+const { test, describe, before } = require('node:test');
 const assert = require('node:assert/strict');
 const fs = require('node:fs');
 const path = require('node:path');
