@@ -1,17 +1,16 @@
 #!/usr/bin/env node
-'use strict';
 
-const fs = require('node:fs');
-const path = require('node:path');
-const { createReporter, readTextOrFail } = require('./validate/io.js');
-const textHelpers = require('./validate/text.js');
-const parityHelpers = require('./validate/parity.js');
-const ioHelpers = require('./validate/io.js');
-const { parseAdrLedger, checkAdrIndexConsistency, checkGlossaryPopulated } = require('./validate/adr.js');
-const { phaseRootConfig } = require('./validate/root.js');
-const { phaseRules } = require('./validate/rules.js');
-const { phaseSkills } = require('./validate/skills.js');
-const { phaseLinks } = require('./validate/links.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import process from 'node:process';
+import { createReporter, readTextOrFail, walkMarkdown } from './validate/io.js';
+import * as textHelpers from './validate/text.js';
+import * as parityHelpers from './validate/parity.js';
+import { parseAdrLedger, checkAdrIndexConsistency, checkGlossaryPopulated } from './validate/adr.js';
+import { phaseRootConfig } from './validate/root.js';
+import { phaseRules } from './validate/rules.js';
+import { phaseSkills } from './validate/skills.js';
+import { phaseLinks } from './validate/links.js';
 
 /**
  * NOTE: this module is a library. It never self-executes, so importing it from
@@ -123,7 +122,10 @@ function main(argv = process.argv.slice(2), exit = process.exit) {
   return exit(result.errors === 0 ? 0 : 1);
 }
 
-module.exports = {
+const { evaluateParityTarget, isValidAgentsTarget, createLowercaseParityLink } = parityHelpers;
+const { stripHtmlComments, stripFencedCode } = textHelpers;
+
+export {
   runValidation,
   parseArgs,
   createReporter,
@@ -131,10 +133,26 @@ module.exports = {
   parseAdrLedger,
   checkAdrIndexConsistency,
   checkGlossaryPopulated,
-  evaluateParityTarget: parityHelpers.evaluateParityTarget,
-  isValidAgentsTarget: parityHelpers.isValidAgentsTarget,
-  createLowercaseParityLink: parityHelpers.createLowercaseParityLink,
-  stripHtmlComments: textHelpers.stripHtmlComments,
-  stripFencedCode: textHelpers.stripFencedCode,
-  walkMarkdown: ioHelpers.walkMarkdown
+  evaluateParityTarget,
+  isValidAgentsTarget,
+  createLowercaseParityLink,
+  stripHtmlComments,
+  stripFencedCode,
+  walkMarkdown
+};
+
+export default {
+  runValidation,
+  parseArgs,
+  createReporter,
+  main,
+  parseAdrLedger,
+  checkAdrIndexConsistency,
+  checkGlossaryPopulated,
+  evaluateParityTarget,
+  isValidAgentsTarget,
+  createLowercaseParityLink,
+  stripHtmlComments,
+  stripFencedCode,
+  walkMarkdown
 };

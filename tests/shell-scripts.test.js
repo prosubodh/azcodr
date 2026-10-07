@@ -15,13 +15,13 @@
  * These tests fail the build when either regresses. The CRLF check reads bytes
  * directly because Node's text APIs normalise newlines and would hide it.
  */
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
-const AGENTS_DIR = path.resolve(__dirname, '..', '.agents');
+const AGENTS_DIR = path.resolve(import.meta.dirname, '..', '.agents');
 
 function shellScripts(dir = AGENTS_DIR, acc = []) {
   for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
@@ -96,7 +96,7 @@ describe('shipped shell scripts: shebangs and set flags', () => {
   });
 
   test('.gitattributes forces LF for shell scripts', () => {
-    const ga = fs.readFileSync(path.resolve(__dirname, '..', '.gitattributes'), 'utf-8');
+    const ga = fs.readFileSync(path.resolve(import.meta.dirname, '..', '.gitattributes'), 'utf-8');
     assert.match(ga, /\*\.sh text eol=lf/, 'missing "*.sh text eol=lf" rule');
   });
 });

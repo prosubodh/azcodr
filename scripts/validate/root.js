@@ -1,9 +1,7 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
-const { readTextOrFail } = require('./io.js');
-const { evaluateParityTarget, createLowercaseParityLink } = require('./parity.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import { readTextOrFail } from './io.js';
+import { evaluateParityTarget, createLowercaseParityLink } from './parity.js';
 
 function reportAgentsLineBudget(agentsText, ctx) {
   const lines = agentsText.split('\n').length;
@@ -181,4 +179,5 @@ function phaseRootConfig(ctx) {
   checkGitignore(ctx);
 }
 
-module.exports = { phaseRootConfig, checkParity, checkAgentsFile };
+export { phaseRootConfig, checkParity, checkAgentsFile };
+export default { phaseRootConfig, checkParity, checkAgentsFile };

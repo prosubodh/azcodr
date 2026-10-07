@@ -1,6 +1,4 @@
-'use strict';
-
-const fs = require('node:fs');
+import fs from 'node:fs';
 
 /**
  * Harness-parity verdicts, kept free of filesystem I/O.
@@ -15,7 +13,7 @@ const fs = require('node:fs');
  * The three target spellings a harness-parity file may legitimately use.
  * Pure so it can be unit-tested without touching the filesystem.
  */
-function isValidAgentsTarget(target, agentsFile) {
+export function isValidAgentsTarget(target, agentsFile) {
   const normalized = target.replace(/\\/g, '/');
   const rootNormalized = agentsFile.replace(/\\/g, '/');
   return normalized === 'AGENTS.md' || normalized === './AGENTS.md' || normalized === rootNormalized;
@@ -82,7 +80,7 @@ function fileVerdict(ctx) {
 /**
  * Decides whether a harness-parity entry is healthy, drifted, or outright wrong.
  */
-function evaluateParityTarget(ctx) {
+export function evaluateParityTarget(ctx) {
   if (ctx.isSymlink) return symlinkVerdict(ctx);
   if (ctx.isFile) return fileVerdict(ctx);
   // Anything lstat saw that is neither a symlink nor a regular file (a
@@ -97,7 +95,7 @@ function evaluateParityTarget(ctx) {
  *
  * @returns {{created: boolean, strategy: 'symlink'|'pointer'|null, reason: string|null}}
  */
-function createLowercaseParityLink(lowerPath, fsImpl = fs) {
+export function createLowercaseParityLink(lowerPath, fsImpl = fs) {
   try {
     fsImpl.symlinkSync('AGENTS.md', lowerPath);
     return { created: true, strategy: 'symlink', reason: null };
@@ -117,7 +115,7 @@ function createLowercaseParityLink(lowerPath, fsImpl = fs) {
   }
 }
 
-module.exports = {
+export default {
   isValidAgentsTarget,
   evaluateParityTarget,
   createLowercaseParityLink

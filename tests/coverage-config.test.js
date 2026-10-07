@@ -1,22 +1,22 @@
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
 
-const COVERAGE_SCRIPT = path.resolve(__dirname, '..', 'scripts', 'test_coverage.js');
+const COVERAGE_SCRIPT = path.resolve(import.meta.dirname, '..', 'scripts', 'test_coverage.js');
 
 function readCoverageSource() {
   return fs.readFileSync(COVERAGE_SCRIPT, 'utf-8');
 }
 
 function readEslintConfig() {
-  return fs.readFileSync(path.resolve(__dirname, '..', 'eslint.config.js'), 'utf-8');
+  return fs.readFileSync(path.resolve(import.meta.dirname, '..', 'eslint.config.js'), 'utf-8');
 }
 
 function collectScriptFiles() {
   // Walks recursively: a new scripts/validate/*.js module must be gated the
   // moment it lands, or coverage silently stops covering it.
-  const scriptsDir = path.resolve(__dirname, '..', 'scripts');
+  const scriptsDir = path.resolve(import.meta.dirname, '..', 'scripts');
   const files = [];
   const stack = [scriptsDir];
   while (stack.length > 0) {
@@ -47,7 +47,7 @@ describe('coverage includes', () => {
 
   test('every script with real logic is inside the coverage gate', () => {
     const source = readCoverageSource();
-    const root = path.resolve(__dirname, '..');
+    const root = path.resolve(import.meta.dirname, '..');
     const files = collectScriptFiles();
     assert.ok(files.length > 0);
     for (const full of files) {
@@ -127,7 +127,7 @@ function assertRuleEnforced(config, rule) {
 }
 
 describe('package.json gate wiring', () => {
-  const pkg = JSON.parse(fs.readFileSync(path.resolve(__dirname, '..', 'package.json'), 'utf-8'));
+  const pkg = JSON.parse(fs.readFileSync(path.resolve(import.meta.dirname, '..', 'package.json'), 'utf-8'));
 
   test('lint is a real linter over the whole tree, not a per-file checklist', () => {
     // The old form was `node --check <explicit file list>`: syntax-only, and
@@ -145,10 +145,10 @@ describe('package.json gate wiring', () => {
     }
   });
 
-  test('prepublishOnly runs lint, coverage and validate', () => {
+  test('prepublishOnly runs build, lint, coverage and validate', () => {
     assert.strictEqual(
       pkg.scripts.prepublishOnly,
-      'npm run lint && npm run test:coverage && npm run validate'
+      'npm run build && npm run lint && npm run test:coverage && npm run validate'
     );
   });
 });

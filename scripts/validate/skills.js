@@ -1,10 +1,8 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { readTextOrFail, readSkillFolders } from './io.js';
 
-const fs = require('node:fs');
-const path = require('node:path');
-const { readTextOrFail, readSkillFolders } = require('./io.js');
-
-function frontMatterBlock(content, skill, fail) {
+export function frontMatterBlock(content, skill, fail) {
   const lines = content.split('\n');
   if (lines[0].trim() !== '---') {
     fail(`Skill '${skill}' missing opening front matter delimiter (---)`);
@@ -26,7 +24,7 @@ function frontMatterBlock(content, skill, fail) {
   return frontMatter;
 }
 
-function extractSkillDescription(frontMatter) {
+export function extractSkillDescription(frontMatter) {
   const descMatch = frontMatter.match(/^description:\s*(.+)$/m);
   const desc = descMatch ? descMatch[1].trim() : '';
   if (!/^[>|][-+]?$/.test(desc)) return desc;
@@ -60,7 +58,7 @@ function checkSkillBody(checked, ctx) {
   }
 }
 
-function checkOneSkill(skill, skillsDir, ctx) {
+export function checkOneSkill(skill, skillsDir, ctx) {
   const skillFile = path.join(skillsDir, skill, 'SKILL.md');
   if (!fs.existsSync(skillFile)) {
     ctx.fail(`Skill '${skill}' missing SKILL.md`);
@@ -75,7 +73,7 @@ function checkOneSkill(skill, skillsDir, ctx) {
   checkSkillBody({ content, desc, skill }, ctx);
 }
 
-function phaseSkills(ctx) {
+export function phaseSkills(ctx) {
   ctx.log('');
   ctx.heading('3. Checking Specialized Skills (.agents/skills)...');
   const skillsDir = path.join(ctx.workspaceRoot, '.agents', 'skills');
@@ -93,4 +91,4 @@ function phaseSkills(ctx) {
   return count;
 }
 
-module.exports = { phaseSkills, checkOneSkill, extractSkillDescription, frontMatterBlock };
+export default { phaseSkills, checkOneSkill, extractSkillDescription, frontMatterBlock };

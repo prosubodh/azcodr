@@ -5,18 +5,18 @@
  * message text, so a rewording never breaks their error handling. That only
  * holds if every throw site actually carries a stable machine-readable code.
  */
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
 
-const {
+import {
   runGit,
   assertInside,
   validateTarget,
   getTemplateDir
-} = require('../lib/scaffold.js');
+} from '../lib/scaffold.js';
 
 /** Every documented failure code, with the condition that must produce it. */
 const EXPECTED_CODES = {
@@ -49,7 +49,6 @@ describe('Error contract: target codes', () => {
   });
 
   test('E_TARGET_IS_PROTECTED', () => {
-    const path = require('node:path');
     const root = path.parse(templateDir).root;
     assert.strictEqual(
       codeOf(() => validateTarget(root, { templateDir, force: true })),

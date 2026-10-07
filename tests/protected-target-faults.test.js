@@ -4,11 +4,13 @@
  * Symlink aliases, throwing host APIs, and TOCTOU races: the guard must fall
  * back to its lexical verdict, never throw, and never allow.
  */
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const path = require('node:path');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import fs from 'node:fs';
+import os from 'node:os';
 
-const { validateTarget, getTemplateDir, isProtectedTarget } = require('../lib/scaffold.js');
+import { validateTarget, getTemplateDir, isProtectedTarget } from '../lib/scaffold.js';
 
 function codeOf(fn) {
   try {
@@ -27,15 +29,12 @@ function override(obj, name, impl) {
 }
 
 function fakeHomeLink(dir, home) {
-  const fs = require('node:fs');
   const link = path.join(dir, 'home-link');
   fs.symlinkSync(home, link, 'junction');
   return link;
 }
 
 function createHomeLink(home) {
-  const os = require('node:os');
-  const fs = require('node:fs');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-link-'));
   try {
     return { dir, link: fakeHomeLink(dir, home) };
@@ -46,7 +45,6 @@ function createHomeLink(home) {
 }
 
 function destroyHomeLink(handle) {
-  const fs = require('node:fs');
   fs.rmSync(handle.link, { force: true });
   fs.rmSync(handle.dir, { recursive: true, force: true });
 }
@@ -55,7 +53,7 @@ describe('Protected target guard: symlink aliases', () => {
   const templateDir = getTemplateDir();
 
   test('a symlink pointing at home is protected', () => {
-    const handle = createHomeLink(require('node:os').homedir());
+    const handle = createHomeLink(os.homedir());
     if (handle === null) return; // no symlink privilege on this host; skip rather than fake
     try {
       assert.strictEqual(isProtectedTarget(handle.link, { templateDir }), true);
@@ -68,8 +66,6 @@ describe('Protected target guard: symlink aliases', () => {
 });
 
 function withTempDir(prefix, fn) {
-  const os = require('node:os');
-  const fs = require('node:fs');
   const dir = fs.mkdtempSync(path.join(os.tmpdir(), prefix));
   try {
     fn(dir);
@@ -79,7 +75,6 @@ function withTempDir(prefix, fn) {
 }
 
 function installGhostRace() {
-  const fs = require('node:fs');
   const realExists = fs.existsSync;
   const realRealpath = fs.realpathSync;
   const restoreExists = override(fs, 'existsSync', (p) => (
@@ -100,7 +95,6 @@ describe('Protected target guard: degraded host APIs', () => {
   const templateDir = getTemplateDir();
 
   test('a throwing os.homedir degrades to the lexical verdict', () => {
-    const os = require('node:os');
     const restore = override(os, 'homedir', () => { throw new Error('no home'); });
     try {
       assert.strictEqual(isProtectedTarget(path.parse(process.cwd()).root, { templateDir }), true);

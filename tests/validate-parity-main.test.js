@@ -1,10 +1,10 @@
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const os = require('node:os');
-const path = require('node:path');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
+import path from 'node:path';
 
-const { main } = require('../scripts/validate.js');
+import { main } from '../scripts/validate.js';
 
 function workspace() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-main-'));

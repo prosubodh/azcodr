@@ -1,13 +1,11 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
+import fs from 'node:fs';
+import path from 'node:path';
 
 /**
  * Reporter seam. Tests inject a collector so assertions can read the exact
  * pass/warn/fail outcome instead of scraping stdout.
  */
-function createReporter(sink = console) {
+export function createReporter(sink = console) {
   return {
     pass: (msg) => sink.log(`  ✅ ${msg}`),
     warn: (msg) => sink.log(`  ⚠️  ${msg}`),
@@ -24,7 +22,7 @@ function createReporter(sink = console) {
  * `*.md`, an unreadable file, or a broken symlink, aborting every later phase
  * and emitting a stack trace instead of a verdict.
  */
-function readTextOrFail(filePath, label, fail) {
+export function readTextOrFail(filePath, label, fail) {
   try {
     const st = fs.statSync(filePath);
     if (!st.isFile()) {
@@ -39,7 +37,7 @@ function readTextOrFail(filePath, label, fail) {
 }
 
 /** Recursively collects markdown files under `root`. */
-function walkMarkdown(root, label, fail) {
+export function walkMarkdown(root, label, fail) {
   const out = [];
   const stack = [root];
   while (stack.length > 0) {
@@ -65,7 +63,7 @@ function walkMarkdown(root, label, fail) {
 }
 
 /** Lists skill directories, skipping symlinks that cannot be resolved. */
-function readSkillFolders(skillsDir, fail) {
+export function readSkillFolders(skillsDir, fail) {
   let entries = [];
   try {
     entries = fs.readdirSync(skillsDir, { withFileTypes: true });
@@ -81,4 +79,4 @@ function readSkillFolders(skillsDir, fail) {
   return folders;
 }
 
-module.exports = { createReporter, readTextOrFail, walkMarkdown, readSkillFolders };
+export default { createReporter, readTextOrFail, walkMarkdown, readSkillFolders };

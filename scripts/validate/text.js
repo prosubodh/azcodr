@@ -1,5 +1,3 @@
-'use strict';
-
 /**
  * Text helpers shared by the validator phases.
  *
@@ -8,7 +6,7 @@
  * would mistake documentation ABOUT the contract for the contract itself.
  */
 
-function stripHtmlComments(text) {
+export function stripHtmlComments(text) {
   // Remove HTML comments, tolerating unclosed ones. A stray `<!--` from an
   // editor's "comment selection" must not silently hide every ADR after it.
   return text
@@ -22,8 +20,8 @@ function stripHtmlComments(text) {
  * "Core Mandate" lines sit inside a ```md fence satisfies both checks, and a
  * `#### ADR-001` shown as an example is counted as a real decision.
  */
-function stripFencedCode(text) {
+export function stripFencedCode(text) {
   return text.replace(/^([ \t]*)(```|~~~)[\s\S]*?^\1\2[ \t]*$/gm, '');
 }
 
-module.exports = { stripHtmlComments, stripFencedCode };
+export default { stripHtmlComments, stripFencedCode };

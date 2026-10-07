@@ -1,7 +1,7 @@
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
 
-const { evaluateParityTarget, isValidAgentsTarget, createReporter } = require('../scripts/validate.js');
+import { evaluateParityTarget, isValidAgentsTarget, createReporter } from '../scripts/validate.js';
 
 const AGENTS_CONTENT = '# AGENTS\nbody\n';
 const AGENTS_FILE = '/workspace/AGENTS.md';

@@ -1,11 +1,9 @@
-'use strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { readTextOrFail, walkMarkdown } from './io.js';
+import { stripFencedCode } from './text.js';
 
-const fs = require('node:fs');
-const path = require('node:path');
-const { readTextOrFail, walkMarkdown } = require('./io.js');
-const { stripFencedCode } = require('./text.js');
-
-function checkOneRule(fp, name, ctx) {
+export function checkOneRule(fp, name, ctx) {
   const content = readTextOrFail(fp, `Rule ${name}`, ctx.fail);
   if (content === null) return;
   const stat = fs.statSync(fp);
@@ -17,7 +15,7 @@ function checkOneRule(fp, name, ctx) {
   if (stat.size > 24000) ctx.warn(`Rule ${name} exceeds 24KB token-economy cap (${stat.size} bytes)`);
 }
 
-function phaseRules(ctx) {
+export function phaseRules(ctx) {
   ctx.log('');
   ctx.heading('2. Checking Progressive Disclosure Rules...');
   const rulesDir = path.join(ctx.workspaceRoot, 'docs', 'rules');
@@ -41,4 +39,4 @@ function phaseRules(ctx) {
   return count;
 }
 
-module.exports = { phaseRules, checkOneRule };
+export default { phaseRules, checkOneRule };

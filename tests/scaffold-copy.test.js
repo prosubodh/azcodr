@@ -1,9 +1,10 @@
-const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
-const { copyTemplate, getTemplateDir } = require('../lib/scaffold.js');
+import { test, describe, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { copyTemplate, getTemplateDir } from '../lib/scaffold.js';
+import * as api from '../lib/index.js';
 
 let tmpDir;
 const templateDir = getTemplateDir();
@@ -174,7 +175,6 @@ describe('copyTemplate handles ignore and package edge cases', () => {
 
 describe('index.js public API surface', () => {
   test('index.js exports scaffold, constants, and helper methods', () => {
-    const api = require('../lib/index.js');
     assert.strictEqual(typeof api.scaffold, 'function');
     assert.strictEqual(typeof api.validateTarget, 'function');
     assert.strictEqual(typeof api.copyTemplate, 'function');

@@ -1,7 +1,8 @@
 {
   "name": "azcodr",
-  "version": "2.0.0",
+  "version": "2.1.0",
   "description": "Enterprise Architecture & Agentic Engineering Starter Template",
+  "type": "module",
   "bin": {
     "azcodr": "bin/azcodr.js"
   },
@@ -17,6 +18,7 @@
   "files": [
     "bin",
     "lib",
+    "src",
     "scripts",
     "data",
     ".github",
@@ -53,13 +55,21 @@
     "node": ">=22.8.0"
   },
   "scripts": {
+    "build": "tsc",
     "test": "node --test",
     "test:coverage": "node scripts/test_coverage.js",
+    "test:jest": "jest --coverage",
     "lint": "eslint .",
+    "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-cli.js",
-    "prepublishOnly": "npm run lint && npm run test:coverage && npm run validate"
+    "prepublishOnly": "npm run build && npm run lint && npm run test:coverage && npm run validate"
   },
   "devDependencies": {
-    "eslint": "10.12.0"
+    "@types/jest": "29.5.14",
+    "@types/node": "22.13.10",
+    "eslint": "10.12.0",
+    "jest": "29.7.0",
+    "ts-jest": "29.2.6",
+    "typescript": "5.7.3"
   }
 }

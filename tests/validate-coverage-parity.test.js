@@ -4,17 +4,17 @@
  * Split from tests/validate-coverage-paths.test.js: pure unit describes that
  * need no filesystem fixture.
  */
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
 
-const {
+import {
   evaluateParityTarget,
   isValidAgentsTarget,
   createLowercaseParityLink,
   createReporter,
   stripHtmlComments,
   stripFencedCode
-} = require('../scripts/validate.js');
+} from '../scripts/validate.js';
 
 const AGENTS_FILE = '/workspace/AGENTS.md';
 const AGENTS_CONTENT = '# AGENTS\nbody\n';

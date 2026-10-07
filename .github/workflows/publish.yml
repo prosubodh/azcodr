@@ -181,10 +181,6 @@ jobs:
   publish-jsr:
     name: Publish to JSR
     needs: verify
-    # Requires a native ESM entrypoint. The npm package is CommonJS, which JSR
-    # explicitly forbids ("You cannot publish CommonJS modules"). Disabled with
-    # a stated reason rather than failing every release.
-    if: false
     runs-on: ubuntu-24.04
     timeout-minutes: 15
     steps:

@@ -18,13 +18,13 @@
  * False positives are treated as first-class failures too: a guard that blocks
  * `npm test` gets switched off, which is strictly worse than no guard.
  */
-const { test, describe, before } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const { spawnSync } = require('node:child_process');
+import { test, describe, before } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { spawnSync } from 'node:child_process';
 
-const GUARD = path.resolve(__dirname, '..', '.agents', 'scripts', 'safety_guard.sh');
+const GUARD = path.resolve(import.meta.dirname, '..', '.agents', 'scripts', 'safety_guard.sh');
 
 let bash = null;
 let bashUnavailable = false;

@@ -1,16 +1,16 @@
-const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
-const childProcess = require('node:child_process');
-const {
+import { test, describe, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import childProcess from 'node:child_process';
+import {
   isInsideGitWorkTree,
   initGit,
   getTemplateDir,
   runGit,
   assertInside
-} = require('../lib/scaffold.js');
+} from '../lib/scaffold.js';
 
 let tmpDir;
 const templateDir = getTemplateDir();
@@ -171,15 +171,12 @@ describe('runGit delegation and assertInside boundaries', () => {
         seen = { file, args, opts };
         return 'true\n';
       };
-      // runGit looks up cp.execFileSync at call time via require cache object
-      require('node:child_process').execFileSync = childProcess.execFileSync;
       const out = runGit(['rev-parse', '--is-inside-work-tree'], { cwd: tmpDir });
       assert.strictEqual(out, 'true\n');
       assert.strictEqual(seen.file, 'git');
       assert.strictEqual(seen.opts.shell, false);
     } finally {
       childProcess.execFileSync = orig;
-      require('node:child_process').execFileSync = orig;
     }
   });
 

@@ -5,11 +5,14 @@
  * The first tests below proved that hole (RED); the guard closed it. Fault
  * injection cases live in protected-target-faults.test.js.
  */
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const path = require('node:path');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import path from 'node:path';
+import os from 'node:os';
+import fs from 'node:fs';
 
-const { validateTarget, getTemplateDir, isProtectedTarget } = require('../lib/scaffold.js');
+import { validateTarget, getTemplateDir, isProtectedTarget } from '../lib/scaffold.js';
+import { runCli } from '../bin/azcodr.js';
 
 function codeOf(fn) {
   try {
@@ -45,7 +48,6 @@ function mockCliIo(templateDir) {
 }
 
 async function assertCliRefuses(target) {
-  const { runCli } = require('../bin/azcodr.js');
   const { io, state } = mockCliIo(getTemplateDir());
   const code = await runCli([target, '--force'], io);
   assert.strictEqual(code, 1);
@@ -62,11 +64,10 @@ describe('Protected target guard: refusals', () => {
   });
 
   test('refuses the user home directory even with force:true', () => {
-    assertProtected(require('node:os').homedir());
+    assertProtected(os.homedir());
   });
 
   test('refuses the home directory parent (e.g. /home, C:\\Users)', () => {
-    const os = require('node:os');
     assertProtected(path.dirname(path.resolve(os.homedir())));
   });
 
@@ -75,7 +76,7 @@ describe('Protected target guard: refusals', () => {
   });
 
   test('refuses in dryRun mode too', () => {
-    assertProtected(require('node:os').homedir(), { dryRun: true });
+    assertProtected(os.homedir(), { dryRun: true });
   });
 });
 
@@ -83,7 +84,6 @@ describe('Protected target guard: escape hatch and messages', () => {
   const templateDir = getTemplateDir();
 
   test('allowProtected:true bypasses the guard for programmatic callers', () => {
-    const os = require('node:os');
     assert.strictEqual(isProtectedTarget(os.homedir(), { templateDir }), true);
     assert.doesNotThrow(
       () => validateTarget(os.homedir(), { templateDir, force: true, allowProtected: true })
@@ -92,7 +92,7 @@ describe('Protected target guard: escape hatch and messages', () => {
 
   test('the error message tells the user what to do instead', () => {
     try {
-      validateTarget(require('node:os').homedir(), { templateDir, force: true });
+      validateTarget(os.homedir(), { templateDir, force: true });
       assert.fail('expected throw');
     } catch (e) {
       assert.strictEqual(e.code, 'E_TARGET_IS_PROTECTED');
@@ -106,8 +106,6 @@ describe('Protected target guard: safe paths stay open', () => {
   const templateDir = getTemplateDir();
 
   test('a normal project subdirectory is not protected', () => {
-    const os = require('node:os');
-    const fs = require('node:fs');
     const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-safe-'));
     try {
       assert.strictEqual(isProtectedTarget(dir, { templateDir }), false);
@@ -118,14 +116,13 @@ describe('Protected target guard: safe paths stay open', () => {
   });
 
   test('a home subdirectory (e.g. ~/my-project) is not protected', () => {
-    const os = require('node:os');
     assert.strictEqual(isProtectedTarget(path.join(os.homedir(), 'my-project'), { templateDir }), false);
   });
 });
 
 describe('Protected target guard: CLI fails fast', () => {
   test('CLI refuses the home directory with --force and never scaffolds', async () => {
-    await assertCliRefuses(require('node:os').homedir());
+    await assertCliRefuses(os.homedir());
   });
 
   test('CLI refuses the filesystem root with --force and never scaffolds', async () => {

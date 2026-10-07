@@ -19,23 +19,20 @@
  * asserted as tests, which need no ESLint plugins and therefore no extra
  * supply-chain surface.
  */
-'use strict';
 
-module.exports = [
+export default [
+  {
+    ignores: ['coverage/**', 'scratch/**']
+  },
   {
     files: ['bin/**/*.js', 'lib/**/*.js', 'scripts/**/*.js', 'tests/**/*.test.js', 'eslint.config.js'],
     languageOptions: {
       ecmaVersion: 2022,
-      sourceType: 'commonjs',
+      sourceType: 'module',
       globals: {
         console: 'readonly',
         process: 'readonly',
-        Buffer: 'readonly',
-        __dirname: 'readonly',
-        __filename: 'readonly',
-        module: 'writable',
-        require: 'readonly',
-        exports: 'writable'
+        Buffer: 'readonly'
       }
     },
     rules: {

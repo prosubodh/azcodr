@@ -4,13 +4,17 @@
  * Split from tests/validate-faults.test.js: read-fault paths that must report
  * a failure rather than degrade into a pass.
  */
-const { test, describe, beforeEach, afterEach } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
-const os = require('node:os');
+import { test, describe, beforeEach, afterEach } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import os from 'node:os';
+import { execFileSync } from 'node:child_process';
+import { pathToFileURL } from 'node:url';
 
-const validatePath = path.resolve(__dirname, '..', 'scripts', 'validate.js');
+import { runValidation } from '../scripts/validate.js';
+
+const validateUrl = pathToFileURL(path.resolve(import.meta.dirname, '..', 'scripts', 'validate.js')).href;
 
 /**
  * Runs the validator against a fixture with `node:fs` fault injection.
@@ -18,9 +22,9 @@ const validatePath = path.resolve(__dirname, '..', 'scripts', 'validate.js');
  * fs reference, exactly as it would in a broken environment.
  */
 function runWithFaults(root, patch) {
-  const harness = path.join(root, '__fault_harness.js');
+  const harness = path.join(root, '__fault_harness.mjs');
   fs.writeFileSync(harness, `
-    const fs = require('node:fs');
+    import fs from 'node:fs';
     const orig = {};
     for (const name of Object.keys(${patch})) orig[name] = fs[name];
     // Node exposes some fs bindings as getter-only properties, so a blanket
@@ -29,7 +33,7 @@ function runWithFaults(root, patch) {
     for (const [name, impl] of Object.entries(overrides)) {
       Object.defineProperty(fs, name, { value: impl, configurable: true, writable: true });
     }
-    const validator = require(${JSON.stringify(validatePath)});
+    const validator = await import(${JSON.stringify(validateUrl)});
     const lines = [];
     const reporter = {
       pass: (m) => lines.push('PASS ' + m),
@@ -41,7 +45,6 @@ function runWithFaults(root, patch) {
     const result = validator.runValidation(${JSON.stringify(root)}, reporter);
     console.log(JSON.stringify({ result, lines }));
   `);
-  const { execFileSync } = require('node:child_process');
   const out = execFileSync(process.execPath, [harness], { encoding: 'utf-8' });
   fs.rmSync(harness, { force: true });
   return JSON.parse(out);
@@ -70,7 +73,6 @@ function fixture() {
 /** In-process validation of `root`, returning the reporter lines. */
 function collectDirect(root) {
   const lines = [];
-  const { runValidation } = require('../scripts/validate.js');
   runValidation(root, {
     pass: (m) => lines.push(`PASS ${m}`),
     warn: (m) => lines.push(`WARN ${m}`),

@@ -1,7 +1,7 @@
 #!/usr/bin/env node
-'use strict';
 
-const { spawnSync } = require('node:child_process');
+import { spawnSync } from 'node:child_process';
+import process from 'node:process';
 
 // Native threshold flags and include filtering were added in Node v22.8.0.
 // Fail closed on older runtimes instead of silently passing without a gate.

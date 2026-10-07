@@ -1,9 +1,7 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
-const { readTextOrFail } = require('./io.js');
-const { stripFencedCode } = require('./text.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import { readTextOrFail } from './io.js';
+import { stripFencedCode } from './text.js';
 
 function normalizeLinkTarget(rawTarget) {
   let target = rawTarget.trim();
@@ -164,4 +162,5 @@ function phaseLinks(ctx) {
   else for (const b of ctx.broken) ctx.fail(`Broken markdown link: ${b}`);
 }
 
-module.exports = { phaseLinks, checkFile, normalizeLinkTarget };
+export { phaseLinks, checkFile, normalizeLinkTarget };
+export default { phaseLinks, checkFile, normalizeLinkTarget };

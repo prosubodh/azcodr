@@ -1,9 +1,7 @@
-'use strict';
-
-const fs = require('node:fs');
-const path = require('node:path');
-const { readTextOrFail } = require('./io.js');
-const { stripHtmlComments, stripFencedCode } = require('./text.js');
+import fs from 'node:fs';
+import path from 'node:path';
+import { readTextOrFail } from './io.js';
+import { stripHtmlComments, stripFencedCode } from './text.js';
 
 function parseAdrLedger(memoryText) {
   const withoutComments = stripFencedCode(stripHtmlComments(memoryText));
@@ -144,7 +142,13 @@ function reportWaiverOutcome(workspaceRoot, pass, warn) {
   }
 }
 
-module.exports = {
+export {
+  parseAdrLedger,
+  checkAdrIndexConsistency,
+  checkGlossaryPopulated
+};
+
+export default {
   parseAdrLedger,
   checkAdrIndexConsistency,
   checkGlossaryPopulated

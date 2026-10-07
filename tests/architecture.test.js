@@ -2,12 +2,14 @@
  * Architecture tests: invariants enforced as code, not as README prose.
  * Each test fails the build when a documented guarantee regresses.
  */
-const { test, describe } = require('node:test');
-const assert = require('node:assert/strict');
-const fs = require('node:fs');
-const path = require('node:path');
+import { test, describe } from 'node:test';
+import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import path from 'node:path';
+import { TEMPLATE_ITEMS, ERROR_CODES } from '../lib/scaffold.js';
+import * as runtime from '../lib/index.js';
 
-const ROOT = path.resolve(__dirname, '..');
+const ROOT = path.resolve(import.meta.dirname, '..');
 const LIB_DIR = path.join(ROOT, 'lib');
 const BIN_DIR = path.join(ROOT, 'bin');
 
@@ -114,11 +116,14 @@ describe('Architecture: dev tooling pins', () => {
 describe('Architecture: require hygiene', () => {
   test('runtime code requires only node: builtins', () => {
     for (const { path: file, source } of codeFiles) {
-      const requires = [...source.matchAll(/require\(\s*['"]([^'"]+)['"]\s*\)/g)].map((m) => m[1]);
-      for (const spec of requires) {
+      const imports = [
+        ...source.matchAll(/(?:import\s+(?:[^'"]*from\s+)?|export\s+[^'"]*from\s+)['"]([^'"]+)['"]/g),
+        ...source.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)
+      ].map((m) => m[1]);
+      for (const spec of imports) {
         assert.ok(
           spec.startsWith('node:') || spec.startsWith('./') || spec.startsWith('../'),
-          `${path.relative(ROOT, file)} requires third-party module '${spec}'`
+          `${path.relative(ROOT, file)} imports third-party module '${spec}'`
         );
       }
     }
@@ -127,7 +132,6 @@ describe('Architecture: require hygiene', () => {
 
 describe('Architecture: manifest and template stay in sync', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
-  const { TEMPLATE_ITEMS } = require('../lib/scaffold.js');
 
   test('every scaffolded template item exists in this repo', () => {
     const missing = TEMPLATE_ITEMS.filter((item) => !fs.existsSync(path.join(ROOT, item)));
@@ -142,7 +146,6 @@ describe('Architecture: manifest and template stay in sync', () => {
   test('the shipped .d.ts declares every error code the runtime can throw', () => {
   // The runtime is the source of truth; a code present in ERROR_CODES but
   // absent from the public type declarations makes `err.code` untypeable.
-  const { ERROR_CODES } = require('../lib/scaffold.js');
   const dts = fs.readFileSync(path.join(ROOT, 'lib', 'index.d.ts'), 'utf-8');
   for (const code of Object.keys(ERROR_CODES)) {
     assert.ok(dts.includes(`'${code}'`), `lib/index.d.ts must declare error code ${code}`);
@@ -150,7 +153,6 @@ describe('Architecture: manifest and template stay in sync', () => {
 });
 
 test('the shipped .d.ts declares the exports the runtime actually provides', () => {
-  const runtime = require('../lib/index.js');
   const dts = fs.readFileSync(path.join(ROOT, 'lib', 'index.d.ts'), 'utf-8');
   for (const name of Object.keys(runtime)) {
     assert.ok(dts.includes(name), `lib/index.d.ts is missing runtime export '${name}'`);
