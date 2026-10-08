@@ -24,6 +24,62 @@
 
 ---
 
+## ⚡ 60-Second Demo: See Drift Prevention in Action
+
+Azcodr turns architectural philosophy into machine-checked constraints your agent cannot skip.
+
+### 1. Standalone Architectural Check
+Run the validator on any repository without scaffolding:
+```bash
+npx azcodr check
+```
+```text
+🔍 Validating Architecture & Agent Invariants in: ./
+--------------------------------------------------------------
+1. Root Config & Symlinks        -> PASS
+2. Progressive Disclosure Rules  -> PASS (28 rules verified)
+3. Specialized Skills (.agents)  -> PASS (6 skills active)
+4. Markdown Cross-References    -> PASS (0 broken links)
+5. Memory & ADR Ledger           -> PASS (16 ADRs verified)
+6. ADR Index Consistency         -> PASS
+🎉 SUCCESS: All architectural invariants are healthy! (0 warnings)
+```
+
+### 2. Real-Time PreToolUse Guard: Refactor-Before-Add
+When an AI coding agent attempts to dump new logic into a file already exceeding 300 lines, Azcodr's agent hook intercepts the tool call at runtime before it touches the disk:
+```text
+🚨 TOOL USE BLOCKED: Refactor-Before-Add Violation
+   File 'src/auth.ts' has 315 lines (limit: 300).
+   Mutations that add code are blocked.
+   Extract strategy classes or helper modules to reduce file size before adding new features.
+```
+
+### 3. Zero-Dependency Boundary & Cycle Enforcement
+When an agent attempts to create a circular dependency or import infrastructure directly into domain logic:
+```text
+🚨 ARCHITECTURAL VIOLATIONS DETECTED:
+   - Circular Dependency: src/billing.ts -> src/tenant.ts -> src/billing.ts
+   - Layer Boundary Breach: src/domain/payment.ts illegally imports src/infrastructure/db.ts
+   Action Required: Invert dependency via Hexagonal Port (PaymentRepoPort).
+```
+
+### 4. Empirical Benchmark Proof (3 Arms, 10 Sequential Tickets)
+In an automated empirical trial across 10 sequential tickets with 3 architectural traps ([`benchmark/RESULTS.md`](./benchmark/RESULTS.md)):
+
+| Metric | Arm A (Control) | Arm B (Hooks Only) | Arm C (Full Azcodr) |
+|---|:---:|:---:|:---:|
+| **Files >300 Lines** | 1 (365 lines in `auth.ts`) | **0** (Modularized) | **0** (Modularized) |
+| **Circular Dependency Cycles** | 1 (`billing <-> tenant`) | 1 (`billing <-> tenant`) | **0** (Decoupled Port) |
+| **Layer Boundary Breaches** | 1 (`domain -> infra`) | 1 (`domain -> infra`) | **0** (Hexagonal Port) |
+| **Overall Drift Reduction** | ❌ FAILED | ❌ FAILED | ✅ **100% DRIFT-FREE** |
+
+Run the empirical benchmark yourself:
+```bash
+node benchmark/run-benchmark.js
+```
+
+---
+
 ## 🗂️ Workspace Architecture
 
 ```
