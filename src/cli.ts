@@ -130,7 +130,13 @@ async function handleCheckCommand(
   const checkDir = parsed.targetDir ? path.resolve(fullIo.cwd, parsed.targetDir) : fullIo.cwd;
   const reporter = parsed.silent ? createSilentReporter() : undefined;
   const result = await fullIo.validateFn(checkDir, reporter);
-  return fullIo.exit(result.errors === 0 ? 0 : 1);
+  if (result.errors !== 0) return fullIo.exit(1);
+
+  const srcDir = path.join(checkDir, 'src');
+  if (fs.existsSync(srcDir)) {
+    return fullIo.boundariesFn({ ...parsed, targetDir: srcDir }, fullIo);
+  }
+  return fullIo.exit(0);
 }
 
 function reportDryRun(result: ScaffoldResult, out: (msg: string) => void): void {

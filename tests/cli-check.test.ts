@@ -108,6 +108,29 @@ describe('CLI Check & Validate Command (Track 1)', () => {
       reporterPassed?.log('log');
       reporterPassed?.heading('heading');
     });
+
+    test('exits 0 without checking boundaries when target has no src directory', async () => {
+      const io = createCheckMockIo({
+        validate: async () => ({ errors: 0, warnings: 0 })
+      });
+      await runCli(['check', 'docs'], io);
+      assert.strictEqual(io.exitCode, 0);
+    });
+
+    test('delegates to boundaries when target has src directory', async () => {
+      let boundariesCalled = false;
+      const io = {
+        ...createCheckMockIo({
+          validate: async () => ({ errors: 0, warnings: 0 })
+        }),
+        boundaries: async () => {
+          boundariesCalled = true;
+          return 0;
+        }
+      };
+      await runCli(['check'], io);
+      assert.strictEqual(boundariesCalled, true);
+    });
   });
 
   describe('Programmatic API validate()', () => {

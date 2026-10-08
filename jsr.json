@@ -1,6 +1,6 @@
 {
   "name": "@azcodr/azcodr",
-  "version": "2.3.0",
+  "version": "2.4.0",
   "description": "Enterprise Architecture & Agentic Engineering Starter Template",
   "exports": "./src/index.ts",
   "publish": {
