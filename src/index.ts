@@ -1,3 +1,14 @@
+/**
+ * @module @azcodr/azcodr
+ * Enterprise Architecture & Agentic Engineering Starter Template.
+ *
+ * Provides problem-first, topology-aligned project scaffolding with strict systemic atomicity,
+ * filesystem scope guards, git worktree initialization, and multi-agent harness parity.
+ */
+
+/**
+ * Union type of all valid machine-readable error codes.
+ */
 export type ScaffoldErrorCode =
   | 'E_TARGET_IS_TEMPLATE'
   | 'E_TARGET_NOT_EMPTY'
@@ -6,6 +17,9 @@ export type ScaffoldErrorCode =
   | 'E_GIT_BLOCKED'
   | 'E_PATH_ESCAPE';
 
+/**
+ * Core scaffolding functions, guards, utilities, error classes, and constants.
+ */
 export {
   scaffold,
   validateTarget,
@@ -25,6 +39,9 @@ export {
   ERROR_CODES
 } from './scaffold.js';
 
+/**
+ * Type definitions and option interfaces for scaffolding operations.
+ */
 export type {
   ScaffoldOptions,
   ScaffoldResult,
@@ -36,4 +53,8 @@ export type {
 } from './scaffold.js';
 
 import scaffoldModule from './scaffold.js';
+
+/**
+ * Default export providing the unified azcodr scaffolding module.
+ */
 export default scaffoldModule;

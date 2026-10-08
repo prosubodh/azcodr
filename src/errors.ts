@@ -15,17 +15,32 @@ export const ERROR_CODES = {
   E_PATH_ESCAPE: 'Path escapes allowed root'
 } as const;
 
+/**
+ * Union of valid machine-readable error codes for scaffolding failures.
+ */
 export type ScaffoldErrorCode = keyof typeof ERROR_CODES;
 
+/**
+ * Structural interface contract for errors thrown by the scaffolder.
+ */
 export interface ScaffoldErrorShape extends Error {
   name: 'ScaffoldError';
   code: ScaffoldErrorCode;
 }
 
+/**
+ * Custom error class thrown by scaffolding operations, carrying a machine-readable code.
+ */
 export class ScaffoldError extends Error implements ScaffoldErrorShape {
   override readonly name: 'ScaffoldError' = 'ScaffoldError';
   readonly code: ScaffoldErrorCode;
 
+  /**
+   * Constructs a new ScaffoldError instance.
+   *
+   * @param code - Machine-readable error code.
+   * @param message - Human-readable explanation of the error.
+   */
   constructor(code: ScaffoldErrorCode, message: string) {
     super(message);
     this.code = code;

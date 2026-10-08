@@ -14,14 +14,29 @@ export declare const ERROR_CODES: {
     readonly E_GIT_BLOCKED: "Blocked git subcommand";
     readonly E_PATH_ESCAPE: "Path escapes allowed root";
 };
+/**
+ * Union of valid machine-readable error codes for scaffolding failures.
+ */
 export type ScaffoldErrorCode = keyof typeof ERROR_CODES;
+/**
+ * Structural interface contract for errors thrown by the scaffolder.
+ */
 export interface ScaffoldErrorShape extends Error {
     name: 'ScaffoldError';
     code: ScaffoldErrorCode;
 }
+/**
+ * Custom error class thrown by scaffolding operations, carrying a machine-readable code.
+ */
 export declare class ScaffoldError extends Error implements ScaffoldErrorShape {
     readonly name: 'ScaffoldError';
     readonly code: ScaffoldErrorCode;
+    /**
+     * Constructs a new ScaffoldError instance.
+     *
+     * @param code - Machine-readable error code.
+     * @param message - Human-readable explanation of the error.
+     */
     constructor(code: ScaffoldErrorCode, message: string);
 }
 declare const _default: {

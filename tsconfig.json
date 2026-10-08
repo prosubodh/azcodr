@@ -3,16 +3,13 @@
     "target": "ES2022",
     "module": "NodeNext",
     "moduleResolution": "NodeNext",
-    "rootDir": "src",
-    "outDir": "lib",
-    "declaration": true,
-    "declarationMap": true,
-    "sourceMap": true,
     "strict": true,
     "noImplicitAny": true,
     "strictNullChecks": true,
     "noUncheckedIndexedAccess": true,
-    "skipLibCheck": true
+    "skipLibCheck": true,
+    "allowJs": true,
+    "noEmit": true
   },
-  "include": ["src/**/*"]
+  "include": ["src/**/*", "tests/**/*"]
 }

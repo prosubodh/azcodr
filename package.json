@@ -1,6 +1,6 @@
 {
   "name": "azcodr",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "description": "Enterprise Architecture & Agentic Engineering Starter Template",
   "type": "module",
   "bin": {
@@ -55,10 +55,9 @@
     "node": ">=22.8.0"
   },
   "scripts": {
-    "build": "tsc",
-    "test": "node --test",
-    "test:coverage": "node scripts/test_coverage.js",
-    "test:jest": "jest --coverage",
+    "build": "tsc -p tsconfig.build.json",
+    "test": "node --experimental-vm-modules node_modules/jest/bin/jest.js",
+    "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-cli.js",

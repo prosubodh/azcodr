@@ -35,8 +35,24 @@ export default {
       }
     ]
   },
-  testMatch: ['<rootDir>/tests/**/*.jest.spec.ts'],
-  collectCoverageFrom: ['src/**/*.ts'],
+  testMatch: [
+    '<rootDir>/tests/**/*.test.js',
+    '<rootDir>/tests/**/*.test.ts',
+    '<rootDir>/tests/**/*.spec.ts'
+  ],
+  collectCoverageFrom: [
+    'src/**/*.ts',
+    'scripts/validate/**/*.js',
+    'scripts/validate.js'
+  ],
   coverageDirectory: 'coverage',
+  coverageThreshold: {
+    global: {
+      lines: 100,
+      functions: 97,
+      branches: 98
+    }
+  },
   passWithNoTests: true
 };
+
