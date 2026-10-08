@@ -465,6 +465,24 @@ EOF
     ;;
 esac
 
+# For Node profiles the starter package.json ships a lint placeholder that
+# always succeeds. Point it at the emitted config so `npm run lint` fails
+# until the pinned eslint is installed (fail-closed) instead of echoing.
+# Only the placeholder is ever replaced; agent-wired entries are sacred.
+case "${LANGUAGE}" in
+  typescript|javascript|deno|bun)
+    STARTER_PKG="${WORKSPACE_ROOT}/package.json"
+    if [[ -f "${STARTER_PKG}" ]] && grep -q 'No linter configured yet' "${STARTER_PKG}"; then
+      if command -v node >/dev/null 2>&1; then
+        node -e 'const fs=require("fs");const p=process.argv[1];const j=JSON.parse(fs.readFileSync(p,"utf8"));j.scripts=j.scripts||{};j.scripts.lint="eslint .";fs.writeFileSync(p,JSON.stringify(j,null,2)+"\n");' "${STARTER_PKG}"
+        echo "   wired package.json lint -> eslint ."
+      else
+        echo "   node not found: leaving starter lint placeholder (agent wires it in Phase 4)"
+      fi
+    fi
+    ;;
+esac
+
 # ------------------------------------------------------------------------------
 # memory.md is an APPEND-ONLY LEDGER. It is never rewritten automatically.
 #

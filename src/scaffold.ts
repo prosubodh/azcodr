@@ -184,7 +184,7 @@ function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
     version: '0.1.0',
     type: 'module',
     private: true,
-    description: 'Scaffolded with azcodr enterprise architecture template',
+    description: 'Scaffolded with the azcodr architecture governance toolkit',
     scripts: {
       test: 'node --test',
       'test:coverage': 'jest --coverage',

@@ -158,4 +158,41 @@ describeSuite('bootstrap toolchain: deterministic gate configs per language', ()
       removeRoot(root);
     }
   });
+
+  test('node profiles rewire the starter lint placeholder to eslint', () => {
+    const root = freshRoot();
+    try {
+      const pkg = path.join(root, 'package.json');
+      fs.writeFileSync(pkg, JSON.stringify({ scripts: { lint: 'echo "No linter configured yet."' } }), 'utf-8');
+      mustSucceed(root, 'typescript');
+      const wired = JSON.parse(fs.readFileSync(pkg, 'utf-8'));
+      assert.strictEqual(wired.scripts.lint, 'eslint .');
+    } finally {
+      removeRoot(root);
+    }
+  });
+
+  test('agent-wired lint entries are never replaced', () => {
+    const root = freshRoot();
+    try {
+      const pkg = path.join(root, 'package.json');
+      fs.writeFileSync(pkg, JSON.stringify({ scripts: { lint: 'ruff check .' } }), 'utf-8');
+      mustSucceed(root, 'typescript');
+      const kept = JSON.parse(fs.readFileSync(pkg, 'utf-8'));
+      assert.strictEqual(kept.scripts.lint, 'ruff check .');
+    } finally {
+      removeRoot(root);
+    }
+  });
+
+  test('non-node profiles leave package.json alone', () => {
+    const root = freshRoot();
+    try {
+      const r = runBootstrap(root, 'backend', 'python');
+      assert.strictEqual(r.code, 0, r.out);
+      assert.strictEqual(fs.existsSync(path.join(root, 'package.json')), false);
+    } finally {
+      removeRoot(root);
+    }
+  });
 });

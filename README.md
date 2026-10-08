@@ -178,7 +178,7 @@ The architecture enforces 28 cohesive, single-responsibility domain rules. Read 
 This repository serves as an **architecture governance toolkit, with an optional starter**. When beginning a new software project:
 
 ### Step 1: Initialize Workspace with npx
-Pull and scaffold the complete enterprise architectural template into your project directory using `npx`:
+Pull and scaffold the complete architecture governance toolkit into your project directory using `npx`:
 ```bash
 npx azcodr my-new-project
 cd my-new-project

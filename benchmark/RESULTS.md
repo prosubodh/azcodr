@@ -70,10 +70,11 @@ writes a line. Run it with the same command; transcripts land in
 | Hooks wire `agent_guard` | wired (disabled by default) | wired (disabled by default) |
 | Toolchain gates (`eslint.config.js` for typescript) | n/a (no profile yet) | present |
 
-Agent layer (reported, never gating): toolchain *installed*, lint entry wired
-to a real tool, hooks *enabled* — these require the Phase 4/5 agent steps
-(install pinned tool, prove the gate, enable hooks with a live block proof).
-A raw scaffold honestly reports them absent.
+Agent layer (reported, never gating): toolchain *installed*, hooks *enabled* —
+these require the Phase 4/5 agent steps (install pinned tool, prove the gate,
+enable hooks with a live block proof). Node profiles also arrive with the
+`lint` entry rewired to `eslint .`; other profiles still need it wired by hand.
+A raw scaffold honestly reports the remainder absent.
 
 ## 6. How to Reproduce
 

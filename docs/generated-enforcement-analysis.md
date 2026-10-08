@@ -122,6 +122,11 @@ names the test that locks it:
 4. **Benchmark assumes working hooks → Arm D measures the scaffold.**
    `runArmD()` + `auditScaffoldEnforcement()` score a real scaffold before and
    after bootstrap; `benchmark/RESULTS.md` §5 carries the scorecard.
+5. **Echo lint placeholder → rewired for Node profiles.** `bootstrap` points
+   the starter `lint` script at the emitted `eslint.config.js` (placeholder
+   only, never agent-wired entries; skipped when node is unavailable), so
+   `npm run lint` fails until the pinned tool lands instead of echoing
+   success.
 
 ## Reproduce
 

@@ -186,5 +186,8 @@ describe('Track 4: Drift-Reduction Benchmark - Arm D Enforcement Audit', () => {
     assert.strictEqual(armD.bootstrapped.ok, true);
     const tool = armD.bootstrapped.deterministic.find((c: any) => c.name.startsWith('toolchain gates'))!;
     assert.match(tool.detail, /eslint\.config\.js/);
+    const lint = armD.bootstrapped.agent.find((c: any) => c.name === 'lint entry wired to a real tool')!;
+    assert.strictEqual(lint.ok, true);
+    assert.strictEqual(lint.detail, 'eslint .');
   });
 });

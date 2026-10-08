@@ -100,7 +100,7 @@ Upon user confirmation:
    - *Extension:* `manifest.json`, `src/background/index.ts`, `src/content/index.ts`, `src/popup/index.html`.
    - *Game / Engine:* `src/core/`, `src/ecs/`, asset manifest, frame loop entrypoint.
    - *CLI:* `src/cmd/`, `src/core/`, CLI entrypoint with exit code handling.
-3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`) for the recorded language, install the pinned linter from the emitted gate configuration (`eslint.config.js`, `ruff.toml`, `clippy.toml`, `.golangci.yml`, `checkstyle.xml`, `.editorconfig` CA block, `.clang-tidy` — written deterministically by `bootstrap_workspace.sh`, never invented), wire the project's lint entry to it, and keep the boundary smoke test (`scripts/smoke_test.sh`).
+3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`) for the recorded language, install the pinned linter from the emitted gate configuration (`eslint.config.js`, `ruff.toml`, `clippy.toml`, `.golangci.yml`, `checkstyle.xml`, `.editorconfig` CA block, `.clang-tidy` — written deterministically by `bootstrap_workspace.sh`, never invented). Node profiles arrive with `package.json` lint already rewired to `eslint .`; other profiles need the lint entry wired by hand. Prove the gate in Phase 5, and keep the boundary smoke test (`scripts/smoke_test.sh`).
 4. **Replace Starter README with Project-Specific README**:
    Generate a clean, project-specific `README.md` using [references/project_readme_template.md](./references/project_readme_template.md), completely replacing meta-template content with the project's actual name, mission, stack highlights, quickstart commands, and directory tree.
 
