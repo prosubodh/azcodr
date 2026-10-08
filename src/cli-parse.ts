@@ -5,7 +5,10 @@
  * raise the complexity of the parser itself.
  */
 
+export type CliCommand = 'scaffold' | 'check';
+
 export interface CliParsedOptions {
+  command: CliCommand;
   targetDir: string | null;
   force: boolean;
   noGit: boolean;
@@ -18,8 +21,17 @@ export interface CliParsedOptions {
 export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent';
 
 export function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'> {
-  return { targetDir: null, force: false, noGit: false, dryRun: false, silent: false };
+  return {
+    command: 'scaffold',
+    targetDir: null,
+    force: false,
+    noGit: false,
+    dryRun: false,
+    silent: false
+  };
 }
+
+export const CHECK_COMMANDS = new Set(['check', 'validate', 'audit']);
 
 export const BOOLEAN_FLAGS = new Map<string, BooleanFlagKey>([
   ['-f', 'force'],
@@ -36,12 +48,18 @@ export interface ArgOutcome {
   message?: string;
 }
 
+function checkSpecialFlag(arg: string): 'help' | 'version' | null {
+  if (arg === '-h' || arg === '--help') return 'help';
+  if (arg === '-v' || arg === '--version') return 'version';
+  return null;
+}
+
 export function applyArg(
   state: Omit<CliParsedOptions, 'terminal' | 'message'>,
   arg: string
 ): ArgOutcome {
-  if (arg === '-h' || arg === '--help') return { terminal: 'help' };
-  if (arg === '-v' || arg === '--version') return { terminal: 'version' };
+  const special = checkSpecialFlag(arg);
+  if (special !== null) return { terminal: special };
   const flag = BOOLEAN_FLAGS.get(arg);
   if (flag !== undefined) {
     state[flag] = true;
@@ -52,6 +70,10 @@ export function applyArg(
       terminal: 'unknown-flag',
       message: `Unknown argument '${arg}'. Run 'npx azcodr --help' for available options.`
     };
+  }
+  if (state.targetDir === null && state.command === 'scaffold' && CHECK_COMMANDS.has(arg)) {
+    state.command = 'check';
+    return { terminal: null };
   }
   if (!state.targetDir) {
     state.targetDir = arg;
@@ -74,4 +96,4 @@ export function parseArgs(rawArgs: readonly string[]): CliParsedOptions {
   return { ...state, terminal: null, message: undefined };
 }
 
-export default { emptyOptions, BOOLEAN_FLAGS, applyArg, parseArgs };
+export default { emptyOptions, BOOLEAN_FLAGS, CHECK_COMMANDS, applyArg, parseArgs };

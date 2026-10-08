@@ -14,6 +14,11 @@ export type ScaffoldErrorCode = 'E_TARGET_IS_TEMPLATE' | 'E_TARGET_NOT_EMPTY' | 
  */
 export { scaffold, validateTarget, copyTemplate, ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, initGit, isInsideGitWorkTree, runGit, assertInside, isProtectedTarget, getTemplateDir, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES } from './scaffold.js';
 /**
+ * Standalone architecture validation engine.
+ */
+export { validate, createSilentReporter } from './validate.js';
+export type { ValidationResult, ValidationReporter } from './validate.js';
+/**
  * Type definitions and option interfaces for scaffolding operations.
  */
 export type { ScaffoldOptions, ScaffoldResult, ValidateTargetOptions, CopyTemplateOptions, EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorShape } from './scaffold.js';

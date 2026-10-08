@@ -4,7 +4,9 @@
  * Table-driven: every boolean flag is one Map entry, so adding a flag cannot
  * raise the complexity of the parser itself.
  */
+export type CliCommand = 'scaffold' | 'check';
 export interface CliParsedOptions {
+    command: CliCommand;
     targetDir: string | null;
     force: boolean;
     noGit: boolean;
@@ -15,6 +17,7 @@ export interface CliParsedOptions {
 }
 export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent';
 export declare function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'>;
+export declare const CHECK_COMMANDS: Set<string>;
 export declare const BOOLEAN_FLAGS: Map<string, BooleanFlagKey>;
 export interface ArgOutcome {
     terminal: 'help' | 'version' | 'unknown-flag' | 'extra-arg' | null;
@@ -25,6 +28,7 @@ export declare function parseArgs(rawArgs: readonly string[]): CliParsedOptions;
 declare const _default: {
     emptyOptions: typeof emptyOptions;
     BOOLEAN_FLAGS: Map<string, BooleanFlagKey>;
+    CHECK_COMMANDS: Set<string>;
     applyArg: typeof applyArg;
     parseArgs: typeof parseArgs;
 };

@@ -40,6 +40,12 @@ export {
 } from './scaffold.js';
 
 /**
+ * Standalone architecture validation engine.
+ */
+export { validate, createSilentReporter } from './validate.js';
+export type { ValidationResult, ValidationReporter } from './validate.js';
+
+/**
  * Type definitions and option interfaces for scaffolding operations.
  */
 export type {

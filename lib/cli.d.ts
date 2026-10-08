@@ -13,6 +13,13 @@ export interface CliIo {
     cwd?: string;
     templateDir?: string;
     scaffold?: (options?: ScaffoldOptions) => ScaffoldResult;
+    validate?: (workspaceRoot: string, reporter?: any) => {
+        errors: number;
+        warnings: number;
+    } | Promise<{
+        errors: number;
+        warnings: number;
+    }>;
 }
 export interface NormalizedCliIo {
     out: (msg: string) => void;
@@ -25,6 +32,13 @@ export interface NormalizedCliIo {
     cwd: string;
     templateDir: string;
     scaffoldFn: (options?: ScaffoldOptions) => ScaffoldResult;
+    validateFn: (workspaceRoot: string, reporter?: any) => {
+        errors: number;
+        warnings: number;
+    } | Promise<{
+        errors: number;
+        warnings: number;
+    }>;
 }
 export declare function runCli(rawArgs?: string[], io?: CliIo): Promise<void | number>;
 export declare function main(): Promise<void>;

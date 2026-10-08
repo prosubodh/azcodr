@@ -4,6 +4,7 @@ import process from 'node:process';
 import { fileURLToPath } from 'node:url';
 import { scaffold, getTemplateDir } from './scaffold.js';
 import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
+import { validate, createSilentReporter } from './validate.js';
 import { parseArgs } from './cli-parse.js';
 import type { CliParsedOptions } from './cli-parse.js';
 import { askQuestion, resolveTargetDir, ensureWritableTarget } from './cli-target.js';
@@ -26,9 +27,11 @@ Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
 
 Usage:
   npx azcodr [directory] [options]
+  npx azcodr check [directory] [options]
 
 Commands:
-  [directory]     Scaffold azcodr template into directory (default: current directory)
+  [directory]         Scaffold azcodr template into directory (default: current directory)
+  check [directory]   Validate architecture and governance rules (alias: validate, audit)
 
 Options:
   -d, --dry-run   Simulate scaffolding without modifying filesystem
@@ -40,8 +43,9 @@ Options:
 
 Examples:
   npx azcodr my-project
+  npx azcodr check
+  npx azcodr check ./existing-repo
   npx azcodr . --dry-run
-  npx azcodr . --force
 `);
 }
 
@@ -58,6 +62,7 @@ export interface CliIo {
   cwd?: string;
   templateDir?: string;
   scaffold?: (options?: ScaffoldOptions) => ScaffoldResult;
+  validate?: (workspaceRoot: string, reporter?: any) => { errors: number; warnings: number } | Promise<{ errors: number; warnings: number }>;
 }
 
 export interface NormalizedCliIo {
@@ -69,20 +74,28 @@ export interface NormalizedCliIo {
   cwd: string;
   templateDir: string;
   scaffoldFn: (options?: ScaffoldOptions) => ScaffoldResult;
+  validateFn: (workspaceRoot: string, reporter?: any) => { errors: number; warnings: number } | Promise<{ errors: number; warnings: number }>;
+}
+
+function defaultStreams(io: CliIo) {
+  return {
+    out: io.out ?? console.log,
+    err: io.err ?? console.error,
+    exit: io.exit ?? process.exit,
+    stdin: io.stdin ?? process.stdin,
+    stdout: io.stdout ?? process.stdout
+  };
 }
 
 function normalizeIo(io: CliIo = {}): NormalizedCliIo {
-  const {
-    out = console.log,
-    err = console.error,
-    exit = process.exit,
-    stdin = process.stdin,
-    stdout = process.stdout,
-    cwd = process.cwd(),
-    templateDir = getTemplateDir(),
-    scaffold: scaffoldFn = scaffold
-  } = io;
-  return { out, err, exit, stdin, stdout, cwd, templateDir, scaffoldFn };
+  const streams = defaultStreams(io);
+  return {
+    ...streams,
+    cwd: io.cwd ?? process.cwd(),
+    templateDir: io.templateDir ?? getTemplateDir(),
+    scaffoldFn: io.scaffold ?? scaffold,
+    validateFn: io.validate ?? validate
+  };
 }
 
 function outBanner(fullIo: NormalizedCliIo): void {
@@ -101,6 +114,16 @@ function handleTerminal(parsed: CliParsedOptions, io: NormalizedCliIo): void | n
   }
   err(`❌ Error: ${parsed.message}`);
   return exit(1);
+}
+
+async function handleCheckCommand(
+  parsed: CliParsedOptions,
+  fullIo: NormalizedCliIo
+): Promise<void | number> {
+  const checkDir = parsed.targetDir ? path.resolve(fullIo.cwd, parsed.targetDir) : fullIo.cwd;
+  const reporter = parsed.silent ? createSilentReporter() : undefined;
+  const result = await fullIo.validateFn(checkDir, reporter);
+  return fullIo.exit(result.errors === 0 ? 0 : 1);
 }
 
 function reportDryRun(result: ScaffoldResult, out: (msg: string) => void): void {
@@ -199,9 +222,12 @@ export async function runCli(
   io: CliIo = {}
 ): Promise<void | number> {
   const fullIo = normalizeIo(io);
-
   const parsed = parseArgs(rawArgs);
   if (parsed.terminal !== null) return handleTerminal(parsed, fullIo);
+
+  if (parsed.command === 'check') {
+    return handleCheckCommand(parsed, fullIo);
+  }
 
   if (!parsed.silent) {
     outBanner(fullIo);
