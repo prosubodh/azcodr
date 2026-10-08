@@ -130,6 +130,10 @@ export function validateTarget(targetDir: string, options: ValidateTargetOptions
 }
 
 function resolveTemplateItem(resolvedTemplate: string, item: string): string {
+  if (item === 'memory.md') {
+    const memTpl = path.join(resolvedTemplate, 'data', 'memory.template');
+    if (fs.existsSync(memTpl)) return memTpl;
+  }
   let srcPath = path.join(resolvedTemplate, item);
   if (item === '.gitignore' && !fs.existsSync(srcPath)) {
     const npmIgnorePath = path.join(resolvedTemplate, '.npmignore');

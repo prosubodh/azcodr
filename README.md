@@ -1,6 +1,7 @@
 # azcodr: Enterprise Architecture & Agentic Engineering Starter Template
 
-> **Production-ready, battle-tested software architecture governed by problem-first topology alignment, strict systemic atomicity, evolutionary architecture tipping points, 100% open-source standards, true incremental TDD nano-cycles, and zero speculative bloat.**
+> **Production-oriented architecture governance and topology-scoped scaffolding for AI-assisted development (early release).**  
+> *AI agents move fast. Architecture drifts. Azcodr turns architectural intent into executable constraints your agent cannot skip.*
 
 ---
 
@@ -8,7 +9,7 @@
 
 1. **Problem-First & Topology Alignment**: Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero preemptive tool bias). Architectural styles match the problem topology: Hexagonal for enterprise backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, and Game Loop for canvas games.
 2. **Systemic Atomicity**: Every rule, skill, database transaction, and code unit adheres to the Single Responsibility Principle (SRP)—indivisible, self-contained, orthogonal, and composable with zero conjunction naming.
-3. **Evolutionary Architecture & Refactor-Before-Add**: To eliminate AI-accelerated architectural drift, code graduates across 5 deterministic tipping points. Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
+3. **Evolutionary Architecture & Refactor-Before-Add**: To catch AI-accelerated architectural drift, code graduates across [5 deterministic tipping points](./docs/rules/clean_code.md#3-evolutionary-architecture--architectural-tipping-points-ford-parsons--fowler). Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
 4. **True Incremental TDD & Nano-Cycles**: Prohibit batch-test dumps ("Test-First Waterfall"). Follow Uncle Bob's Three Laws: write one micro-assertion at a time, verify RED failure output, write minimal code to turn GREEN, and refactor under green with Ping-Pong pair programming.
 5. **100% Open-Source & Open Standards**: Standardized exclusively on open-source solutions and vendor-neutral specifications (OpenTelemetry, OPA, OpenFGA, Protocol Buffers, OpenAPI 3.1, JSON Schema Draft 2020-12, CloudEvents, Semgrep, Trivy, Gitleaks, Cosign).
 6. **Zero-Assumption Framework**: Ground truth is established solely through workspace configurations, code evidence, or direct user confirmation.
@@ -165,4 +166,4 @@ The scaffolder declares two expected capabilities:
 
 Failures carry stable machine-readable codes (`E_TARGET_NOT_EMPTY`, `E_GIT_BLOCKED`, `E_PATH_ESCAPE`, ...). Branch on `err.code`, never on message text — see the exported `ERROR_CODES` map and `ScaffoldError` type.
 
-Initial-commit fallback identity is `Subodh Khanal <prosubodh@gmail.com>` via `GIT_AUTHOR_*` / `GIT_COMMITTER_*` env (no `git -c` shell flags).
+Initial-commit fallback identity is `azcodr[bot] <bot@azcodr.internal>` via `GIT_AUTHOR_*` / `GIT_COMMITTER_*` env (no `git -c` shell flags).

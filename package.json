@@ -29,7 +29,9 @@
     ".agents",
     ".gitignore",
     ".editorconfig",
-    "LICENSE"
+    "LICENSE",
+    "SECURITY.md",
+    "CONTRIBUTING.md"
   ],
   "keywords": [
     "starter-template",

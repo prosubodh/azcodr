@@ -59,10 +59,10 @@ function commitWithFallbackIdentity(targetDir: string): void {
       ...options,
       env: {
         ...process.env,
-        GIT_AUTHOR_NAME: 'Subodh Khanal',
-        GIT_AUTHOR_EMAIL: 'prosubodh@gmail.com',
-        GIT_COMMITTER_NAME: 'Subodh Khanal',
-        GIT_COMMITTER_EMAIL: 'prosubodh@gmail.com'
+        GIT_AUTHOR_NAME: 'azcodr[bot]',
+        GIT_AUTHOR_EMAIL: 'bot@azcodr.internal',
+        GIT_COMMITTER_NAME: 'azcodr[bot]',
+        GIT_COMMITTER_EMAIL: 'bot@azcodr.internal'
       }
     });
   }

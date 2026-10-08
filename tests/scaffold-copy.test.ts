@@ -32,6 +32,10 @@ describe('copyTemplate copies essential template files', () => {
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'LICENSE')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github', 'copilot-instructions.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'package.json')), true);
+
+    const mem = fs.readFileSync(path.join(tmpDir, 'memory.md'), 'utf-8');
+    assert.match(mem, /No decisions recorded yet/);
+    assert.doesNotMatch(mem, /ADR-015/);
   });
 
   test('copyTemplate skips template items that do not exist in template directory', () => {

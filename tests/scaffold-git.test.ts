@@ -124,7 +124,7 @@ describe('initGit branch and commit fallbacks', () => {
         if (cmd.startsWith('init -b main')) throw new Error('option -b not supported');
         if (cmd.startsWith('branch -m main')) throw new Error('branch rename failed');
         if (cmd.startsWith('commit')) {
-          if (opts && opts.env && opts.env.GIT_AUTHOR_NAME === 'Subodh Khanal') {
+          if (opts && opts.env && opts.env.GIT_AUTHOR_NAME === 'azcodr[bot]') {
             return '';
           }
           throw new Error('author identity unknown');
