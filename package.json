@@ -63,6 +63,7 @@
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
     "validate": "node scripts/validate-cli.js",
+    "test:mutation": "node scripts/mutation-test.js",
     "prepublishOnly": "npm run build && npm run lint && npm run test:coverage && npm run validate"
   },
   "devDependencies": {
