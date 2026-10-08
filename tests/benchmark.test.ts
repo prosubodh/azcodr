@@ -5,6 +5,7 @@ import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { evaluateTarget } from '../benchmark/evaluate.js';
+import { runFullBenchmark } from '../benchmark/run-benchmark.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -135,5 +136,16 @@ describe('Track 4: Drift-Reduction Benchmark - Automated Evaluator', () => {
     });
     assert.strictEqual(dirtyRun.status, 1);
     assert.ok(dirtyRun.stdout.includes('DRIFT DETECTED'));
+  });
+
+  test('runFullBenchmark proves Arm C achieves drift reduction over Arm A and B', async () => {
+    const results = await runFullBenchmark();
+    assert.strictEqual(results.armA.passed, false);
+    assert.strictEqual(results.armA.oversizedFileCount, 1);
+    assert.strictEqual(results.armB.passed, false);
+    assert.strictEqual(results.armB.oversizedFileCount, 0);
+    assert.strictEqual(results.armC.passed, true);
+    assert.strictEqual(results.armC.dependencyCyclesCount, 0);
+    assert.strictEqual(results.armC.boundaryViolationsCount, 0);
   });
 });
