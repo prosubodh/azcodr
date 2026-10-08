@@ -113,6 +113,20 @@ describe('self-healing must never overwrite AGENTS.md', () => {
     const after = fs.readFileSync(path.join(root, 'AGENTS.md'));
     assert.ok(before.equals(after), 'AGENTS.md was modified by the parity repair');
   });
+
+  test('checkLowercaseParity covers case-insensitive satisfaction on all platforms', () => {
+    const origExists = fs.existsSync;
+    try {
+      (fs as any).existsSync = (p: string) => {
+        if (typeof p === 'string' && p.endsWith('agents.md')) return true;
+        return origExists(p);
+      };
+      const { lines } = collect(root);
+      assert.ok(lines.some((l) => l.includes('agents.md is satisfied natively by AGENTS.md')));
+    } finally {
+      (fs as any).existsSync = origExists;
+    }
+  });
 });
 
 describe('template waiver: explicit opt-out', () => {
