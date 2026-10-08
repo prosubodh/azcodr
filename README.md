@@ -63,12 +63,17 @@ When an AI coding agent attempts to dump new logic into a file already exceeding
 ```
 
 ### 3. Zero-Dependency Boundary & Cycle Enforcement
-When an agent attempts to create a circular dependency or import infrastructure directly into domain logic:
+Inspect dependency cycles and layer boundaries on demand without third-party linters:
+```bash
+npx azcodr boundaries [directory]
+```
 ```text
-🚨 ARCHITECTURAL VIOLATIONS DETECTED:
+🔍 Inspecting Architectural Boundaries in: ./src
+--------------------------------------------------------------
+🚨 ARCHITECTURAL VIOLATIONS DETECTED (2):
    - Circular Dependency: src/billing.ts -> src/tenant.ts -> src/billing.ts
-   - Layer Boundary Breach: src/domain/payment.ts illegally imports src/infrastructure/db.ts
-   Action Required: Invert dependency via Hexagonal Port (PaymentRepoPort).
+   - Layer Boundary Breach: src/domain/payment.ts illegally imports src/infrastructure/db.ts (domain -> infrastructure)
+   Action Required: Invert dependencies via Ports or extract shared modules.
 ```
 
 ### 4. Empirical Benchmark Proof (3 Arms, 10 Sequential Tickets)

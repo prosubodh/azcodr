@@ -5,6 +5,7 @@ import { fileURLToPath } from 'node:url';
 import { scaffold, getTemplateDir } from './scaffold.js';
 import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
 import { validate, createSilentReporter } from './validate.js';
+import { handleBoundariesCommand } from './cli-boundaries.js';
 import { parseArgs } from './cli-parse.js';
 import type { CliParsedOptions } from './cli-parse.js';
 import { askQuestion, resolveTargetDir, ensureWritableTarget } from './cli-target.js';
@@ -28,10 +29,12 @@ Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
 Usage:
   npx azcodr [directory] [options]
   npx azcodr check [directory] [options]
+  npx azcodr boundaries [directory] [options]
 
 Commands:
-  [directory]         Scaffold azcodr template into directory (default: current directory)
-  check [directory]   Validate architecture and governance rules (alias: validate, audit)
+  [directory]            Scaffold azcodr template into directory (default: current directory)
+  check [directory]      Validate architecture and governance rules (alias: validate, audit)
+  boundaries [directory] Inspect dependency cycles and layer boundaries (alias: boundary, cycles)
 
 Options:
   -d, --dry-run   Simulate scaffolding without modifying filesystem
@@ -44,6 +47,7 @@ Options:
 Examples:
   npx azcodr my-project
   npx azcodr check
+  npx azcodr boundaries ./src
   npx azcodr check ./existing-repo
   npx azcodr . --dry-run
 `);
@@ -63,6 +67,7 @@ export interface CliIo {
   templateDir?: string;
   scaffold?: (options?: ScaffoldOptions) => ScaffoldResult;
   validate?: (workspaceRoot: string, reporter?: any) => { errors: number; warnings: number } | Promise<{ errors: number; warnings: number }>;
+  boundaries?: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
 }
 
 export interface NormalizedCliIo {
@@ -75,6 +80,7 @@ export interface NormalizedCliIo {
   templateDir: string;
   scaffoldFn: (options?: ScaffoldOptions) => ScaffoldResult;
   validateFn: (workspaceRoot: string, reporter?: any) => { errors: number; warnings: number } | Promise<{ errors: number; warnings: number }>;
+  boundariesFn: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
 }
 
 function defaultStreams(io: CliIo) {
@@ -94,7 +100,8 @@ function normalizeIo(io: CliIo): NormalizedCliIo {
     cwd: io.cwd ?? process.cwd(),
     templateDir: io.templateDir ?? getTemplateDir(),
     scaffoldFn: io.scaffold ?? scaffold,
-    validateFn: io.validate ?? validate
+    validateFn: io.validate ?? validate,
+    boundariesFn: io.boundaries ?? handleBoundariesCommand
   };
 }
 
@@ -227,6 +234,9 @@ export async function runCli(
 
   if (parsed.command === 'check') {
     return handleCheckCommand(parsed, fullIo);
+  }
+  if (parsed.command === 'boundaries') {
+    return fullIo.boundariesFn(parsed, fullIo);
   }
 
   if (!parsed.silent) {

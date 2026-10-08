@@ -5,7 +5,7 @@
  * raise the complexity of the parser itself.
  */
 
-export type CliCommand = 'scaffold' | 'check';
+export type CliCommand = 'scaffold' | 'check' | 'boundaries';
 
 export interface CliParsedOptions {
   command: CliCommand;
@@ -32,6 +32,7 @@ export function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'> {
 }
 
 export const CHECK_COMMANDS = new Set(['check', 'validate', 'audit']);
+export const BOUNDARY_COMMANDS = new Set(['boundaries', 'boundary', 'cycles']);
 
 export const BOOLEAN_FLAGS = new Map<string, BooleanFlagKey>([
   ['-f', 'force'],
@@ -54,6 +55,22 @@ function checkSpecialFlag(arg: string): 'help' | 'version' | null {
   return null;
 }
 
+function checkCommandKeyword(
+  arg: string,
+  state: Omit<CliParsedOptions, 'terminal' | 'message'>
+): boolean {
+  if (state.targetDir !== null || state.command !== 'scaffold') return false;
+  if (CHECK_COMMANDS.has(arg)) {
+    state.command = 'check';
+    return true;
+  }
+  if (BOUNDARY_COMMANDS.has(arg)) {
+    state.command = 'boundaries';
+    return true;
+  }
+  return false;
+}
+
 export function applyArg(
   state: Omit<CliParsedOptions, 'terminal' | 'message'>,
   arg: string
@@ -71,10 +88,7 @@ export function applyArg(
       message: `Unknown argument '${arg}'. Run 'npx azcodr --help' for available options.`
     };
   }
-  if (state.targetDir === null && state.command === 'scaffold' && CHECK_COMMANDS.has(arg)) {
-    state.command = 'check';
-    return { terminal: null };
-  }
+  if (checkCommandKeyword(arg, state)) return { terminal: null };
   if (!state.targetDir) {
     state.targetDir = arg;
     return { terminal: null };

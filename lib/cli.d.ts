@@ -1,4 +1,5 @@
 import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
+import type { CliParsedOptions } from './cli-parse.js';
 import { askQuestion } from './cli-target.js';
 export declare function printHelp(out?: (msg: string) => void): void;
 export declare function printVersion(out?: (msg: string) => void): void;
@@ -20,6 +21,7 @@ export interface CliIo {
         errors: number;
         warnings: number;
     }>;
+    boundaries?: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
 }
 export interface NormalizedCliIo {
     out: (msg: string) => void;
@@ -39,6 +41,7 @@ export interface NormalizedCliIo {
         errors: number;
         warnings: number;
     }>;
+    boundariesFn: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
 }
 export declare function runCli(rawArgs?: string[], io?: CliIo): Promise<void | number>;
 export declare function main(): Promise<void>;
