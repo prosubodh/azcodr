@@ -146,4 +146,14 @@ describe('Protected target guard: CLI fails fast', () => {
       Object.defineProperty(process, 'platform', { value: origPlatform, configurable: true });
     }
   });
+
+  test('normalizeForComparison lowercases on win32 platform', () => {
+    const origPlatform = process.platform;
+    try {
+      Object.defineProperty(process, 'platform', { value: 'win32', configurable: true });
+      assert.strictEqual(normalizeForComparison('C:\\Test\\Path'), path.resolve('C:\\Test\\Path').toLowerCase());
+    } finally {
+      Object.defineProperty(process, 'platform', { value: origPlatform, configurable: true });
+    }
+  });
 });
