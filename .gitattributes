@@ -32,3 +32,4 @@ docs/** linguist-documentation
 *.mjs text eol=lf
 *.cjs text eol=lf
 *.ts text eol=lf
+*.map text eol=lf

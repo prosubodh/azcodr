@@ -54,6 +54,13 @@ jobs:
           node --version
           npm --version
 
+      - name: Verify TypeScript Compilation & lib/ Parity
+        shell: bash
+        run: |
+          npm run build
+          git diff --exit-code lib/
+          npm run typecheck
+
       - name: Run Syntax & Lint Checks
         run: npm run lint
 
