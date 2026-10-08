@@ -259,4 +259,63 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     assert.strictEqual(exitCode, 1);
     assert.match(stderr, /Architectural Guard/);
   });
+
+  test('vendored engine ships inside .agents and matches lib output', () => {
+    for (const name of ['agent-guard.js', 'agent-guard-command.js', 'agent-guard-file.js', 'agent-guard-tdd.js']) {
+      const vendored = fs.readFileSync(path.join(REPO_ROOT, '.agents', 'lib', name), 'utf-8');
+      const built = fs.readFileSync(path.join(REPO_ROOT, 'lib', name), 'utf-8');
+      assert.strictEqual(vendored, built, `.agents/lib/${name} must equal lib/${name}; re-copy after npm run build`);
+    }
+  });
+
+  test('guard blocks from the vendored layout without repo lib', () => {
+    const fakeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-guard-vendored-'));
+    try {
+      fs.mkdirSync(path.join(fakeRoot, '.agents', 'scripts'), { recursive: true });
+      fs.mkdirSync(path.join(fakeRoot, '.agents', 'lib'), { recursive: true });
+      fs.copyFileSync(GUARD_SCRIPT, path.join(fakeRoot, '.agents', 'scripts', 'agent_guard.js'));
+      for (const name of fs.readdirSync(path.join(REPO_ROOT, '.agents', 'lib'))) {
+        fs.copyFileSync(path.join(REPO_ROOT, '.agents', 'lib', name), path.join(fakeRoot, '.agents', 'lib', name));
+      }
+      let exitCode: number | null = null;
+      try {
+        execFileSync(process.execPath, [path.join(fakeRoot, '.agents', 'scripts', 'agent_guard.js'), 'rm -rf /'], {
+          encoding: 'utf-8',
+          cwd: fakeRoot,
+          stdio: ['ignore', 'pipe', 'pipe']
+        });
+        exitCode = 0;
+      } catch (err: any) {
+        exitCode = err.status;
+      }
+      assert.strictEqual(exitCode, 1);
+    } finally {
+      fs.rmSync(fakeRoot, { recursive: true, force: true });
+    }
+  });
+
+  test('guard fails closed with exit 2 when no engine exists', () => {
+    const fakeRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-guard-noengine-'));
+    try {
+      fs.copyFileSync(GUARD_SCRIPT, path.join(fakeRoot, 'agent_guard.js'));
+      let exitCode: number | null = null;
+      let stderr = '';
+      try {
+        execFileSync(process.execPath, [path.join(fakeRoot, 'agent_guard.js'), 'rm -rf /'], {
+          encoding: 'utf-8',
+          cwd: fakeRoot,
+          stdio: ['ignore', 'pipe', 'pipe'],
+          env: { ...process.env, AZCODR_GUARD_ENGINE: path.join(fakeRoot, 'missing-engine.js') }
+        });
+        exitCode = 0;
+      } catch (err: any) {
+        exitCode = err.status;
+        stderr = err.stderr;
+      }
+      assert.strictEqual(exitCode, 2);
+      assert.match(stderr, /not found/i);
+    } finally {
+      fs.rmSync(fakeRoot, { recursive: true, force: true });
+    }
+  });
 });

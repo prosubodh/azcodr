@@ -325,6 +325,147 @@ EOF
 esac
 
 # ------------------------------------------------------------------------------
+# DETERMINISTIC TOOLCHAIN FILES. Directories alone enforce nothing: until this
+# section existed, every language produced zero gate configurations and the
+# starter `lint` script was an echo placeholder, so all enforcement was
+# agent-authored. Each profile below emits its pinned gate configuration with
+# values mirroring docs/rules/clean_code.md (300/30/10/3); the agent installs
+# the named tool and proves the gate in Phase 5. Files are created only when
+# absent, so re-runs never clobber agent-authored configs. Build manifests
+# (Cargo.toml, go.mod, csproj, ...) stay with the agent: they carry project
+# naming and version decisions no script may invent.
+# ------------------------------------------------------------------------------
+write_unless_exists() {
+  local target="$1"
+  if [[ -f "${target}" ]]; then
+    echo "   keeping existing ${target}"
+    return
+  fi
+  mkdir -p "$(dirname "${target}")"
+  cat > "${target}"
+}
+
+append_unless_present() {
+  local target="$1"
+  local marker="$2"
+  if [[ -f "${target}" ]] && grep -qF "${marker}" "${target}"; then
+    echo "   keeping existing ${target} gates"
+    return
+  fi
+  cat >> "${target}"
+}
+
+echo "6. Emitting deterministic toolchain configs for '${LANGUAGE}'..."
+case "${LANGUAGE}" in
+  typescript|javascript|deno|bun)
+    write_unless_exists "${WORKSPACE_ROOT}/eslint.config.js" << 'EOF'
+// Deterministic fitness functions (azcodr clean_code.md section 5).
+// Install the pinned tool, then prove the gate: npm run lint
+export default [
+  {
+    files: ['src/**/*.{js,ts}', 'tests/**/*.{js,ts}'],
+    rules: {
+      'max-lines': ['error', 300],
+      'max-lines-per-function': ['error', 30],
+      complexity: ['error', 10],
+      'max-params': ['error', 3]
+    }
+  }
+];
+EOF
+    ;;
+  python)
+    write_unless_exists "${WORKSPACE_ROOT}/ruff.toml" << 'EOF'
+# Deterministic fitness functions (azcodr clean_code.md section 5).
+# Install the pinned tool, then prove the gate: ruff check .
+[lint]
+select = ["E", "F", "C901", "PLR0912", "PLR0913", "PLR0915"]
+[lint.mccabe]
+max-complexity = 10
+[lint.pylint]
+max-args = 3
+max-statements = 30
+# NOTE: ruff has no file-length rule; the 300-line file cap is enforced by
+# the project's lint entry (see lets-build Phase 5 proof).
+EOF
+    ;;
+  rust)
+    write_unless_exists "${WORKSPACE_ROOT}/clippy.toml" << 'EOF'
+# Deterministic fitness functions (azcodr clean_code.md section 5).
+# Enforce with: cargo clippy -- -D clippy::too_many_lines -D clippy::cognitive_complexity -D clippy::too_many_arguments
+too-many-lines-threshold = 30
+cognitive-complexity-threshold = 10
+too-many-arguments-threshold = 3
+# NOTE: clippy has no file-length lint; the 300-line file cap is enforced by
+# the project's lint entry (see lets-build Phase 5 proof).
+EOF
+    ;;
+  go)
+    write_unless_exists "${WORKSPACE_ROOT}/.golangci.yml" << 'EOF'
+# Deterministic fitness functions (azcodr clean_code.md section 5).
+# Install the pinned tool, then prove the gate: golangci-lint run ./...
+linters:
+  enable: [funlen, gocyclo]
+linters-settings:
+  funlen:
+    lines: 30
+    statements: 25
+  gocyclo:
+    min-complexity: 10
+# NOTE: no golangci-native file-length check; the 300-line file cap is
+# enforced by the project's lint entry (see lets-build Phase 5 proof).
+EOF
+    ;;
+  java)
+    write_unless_exists "${WORKSPACE_ROOT}/checkstyle.xml" << 'EOF'
+<?xml version="1.0"?>
+<!-- Deterministic fitness functions (azcodr clean_code.md section 5). -->
+<!DOCTYPE module PUBLIC "-//Checkstyle//DTD Checkstyle Configuration 1.3//EN" "https://checkstyle.org/dtds/configuration_1_3.dtd">
+<module name="Checker">
+  <module name="FileLength">
+    <property name="max" value="300"/>
+  </module>
+  <module name="TreeWalker">
+    <module name="MethodLength">
+      <property name="max" value="30"/>
+    </module>
+    <module name="CyclomaticComplexity">
+      <property name="max" value="10"/>
+    </module>
+    <module name="ParameterNumber">
+      <property name="max" value="3"/>
+    </module>
+  </module>
+</module>
+EOF
+    ;;
+  csharp)
+    append_unless_present "${WORKSPACE_ROOT}/.editorconfig" "azcodr fitness functions" << 'EOF'
+
+# --- azcodr fitness functions (CA gates; exact numbers in lint entry) ---
+[*.cs]
+dotnet_diagnostic.CA1501.severity = error
+dotnet_diagnostic.CA1502.severity = error
+EOF
+    ;;
+  cpp|c)
+    write_unless_exists "${WORKSPACE_ROOT}/.clang-tidy" << 'EOF'
+# Deterministic fitness functions (azcodr clean_code.md section 5).
+Checks: 'readability-function-size,readability-function-cognitive-complexity'
+CheckOptions:
+  - { key: readability-function-size.LineThreshold, value: 30 }
+  - { key: readability-function-size.ParameterThreshold, value: 3 }
+  - { key: readability-function-cognitive-complexity.Threshold, value: 10 }
+# NOTE: clang-tidy has no file-length check; the 300-line file cap is
+# enforced by the project's lint entry (see lets-build Phase 5 proof).
+EOF
+    ;;
+  generic)
+    echo "   language undecided: no toolchain configs emitted (re-run with a language profile)"
+    ;;
+esac
+
+# ------------------------------------------------------------------------------
 # memory.md is an APPEND-ONLY LEDGER. It is never rewritten automatically.
 #
 # HISTORY (this was a data-loss bug): this script previously overwrote

@@ -55,7 +55,27 @@ Scored via automated harness (`node benchmark/run-benchmark.js`):
 
 ---
 
-## 5. How to Reproduce
+## 5. Arm D: Raw-Scaffold Enforcement Audit (No Agent Additions)
+
+Arms A–C use synthetic fixtures. Arm D scaffolds a real project with the
+shipped template (`scaffold()` + `bootstrap_workspace.sh backend typescript`)
+and audits enforcement *presence* — the out-of-box state before any agent
+writes a line. Run it with the same command; transcripts land in
+`benchmark/results/`.
+
+| Deterministic layer | Raw scaffold | After bootstrap |
+|---|---|---|
+| Guard script (`.agents/scripts/agent_guard.js`) | present | present |
+| Guard engine resolvable (vendored `.agents/lib/`) | present | present |
+| Hooks wire `agent_guard` | wired (disabled by default) | wired (disabled by default) |
+| Toolchain gates (`eslint.config.js` for typescript) | n/a (no profile yet) | present |
+
+Agent layer (reported, never gating): toolchain *installed*, lint entry wired
+to a real tool, hooks *enabled* — these require the Phase 4/5 agent steps
+(install pinned tool, prove the gate, enable hooks with a live block proof).
+A raw scaffold honestly reports them absent.
+
+## 6. How to Reproduce
 
 ```bash
 # Execute the automated benchmark:
@@ -69,13 +89,13 @@ Raw JSON transcripts are written to `benchmark/results/benchmark-<timestamp>.jso
 
 ---
 
-## 6. Where Azcodr Loses (Read Before Citing)
+## 7. Where Azcodr Loses (Read Before Citing)
 
 - **Governance friction:** lint gates, hook blocks, and scaffold ceremony add per-ticket overhead vs control. This simulation does not measure it.
 - **Token and time cost:** tokens per ticket, wall-clock, and human review minutes are NOT collected here. On real agent runs expect Arm C to cost more tokens than Arm A; the open question is whether the review-time saving outweighs it.
 - **Completion risk:** strict guards can block a valid edit (false positive) until the agent refactors. `passed` above means "drift-free", not "all 10 tickets functionally correct".
 
-## 7. Threats to Validity
+## 8. Threats to Validity
 
 - Synthetic fixtures, not live agent output; single deterministic run, no variance estimate (plan calls for 5 runs × 2 agents).
 - One stack (TypeScript) and one rule set; polyglot gates in `docs/rules/clean_code.md` are not exercised here.

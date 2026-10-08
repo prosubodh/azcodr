@@ -80,6 +80,83 @@ function countAssertionsInContent(content) {
   return matches ? matches.length : 0;
 }
 
+function checkGuardScript(absTarget) {
+  const rel = path.join('.agents', 'scripts', 'agent_guard.js');
+  const ok = fs.existsSync(path.join(absTarget, rel));
+  return { name: rel, ok, detail: ok ? 'present' : 'MISSING' };
+}
+
+function checkGuardEngine(absTarget) {
+  const ok =
+    fs.existsSync(path.join(absTarget, '.agents', 'lib', 'agent-guard.js')) ||
+    fs.existsSync(path.join(absTarget, 'lib', 'agent-guard.js'));
+  return {
+    name: 'guard engine resolvable',
+    ok,
+    detail: ok ? 'vendored (.agents/lib) or repo (lib/) engine found' : 'MISSING: guard fails closed (exit 2)'
+  };
+}
+
+function checkHooksWired(absTarget) {
+  let wired = false;
+  try {
+    wired = fs.readFileSync(path.join(absTarget, '.agents', 'hooks.json'), 'utf-8').includes('agent_guard');
+  } catch {
+    wired = false;
+  }
+  return { name: 'hooks wire agent_guard', ok: wired, detail: wired ? 'wired' : 'MISSING: no hook entry references agent_guard' };
+}
+
+async function checkToolchain(absTarget) {
+  try {
+    const mod = await import(pathToFileURL(path.resolve(selfDir, '../scripts/validate/toolchain.js')).href);
+    const language = mod.readProfileLanguage(absTarget);
+    if (language === null) {
+      return { name: 'toolchain gates', ok: true, detail: 'no workspace profile: scaffold stage only' };
+    }
+    const expected = mod.expectedToolchainFiles(language);
+    const missing = expected.filter((n) => !fs.existsSync(path.join(absTarget, n)));
+    return {
+      name: `toolchain gates (${language})`,
+      ok: missing.length === 0,
+      detail: missing.length === 0 ? `present: ${expected.join(', ') || 'none declared'}` : `MISSING: ${missing.join(', ')}`
+    };
+  } catch {
+    return { name: 'toolchain gates', ok: false, detail: 'MISSING: toolchain module unreadable' };
+  }
+}
+
+function checkLintWired(absTarget) {
+  try {
+    const pkg = JSON.parse(fs.readFileSync(path.join(absTarget, 'package.json'), 'utf-8'));
+    const lint = String(pkg.scripts?.lint || 'no lint script');
+    return { name: 'lint entry wired to a real tool', ok: !/No linter configured yet/.test(lint), detail: lint };
+  } catch {
+    return { name: 'lint entry wired to a real tool', ok: false, detail: 'package.json unreadable' };
+  }
+}
+
+/**
+ * Audits out-of-box enforcement presence in a scaffolded project.
+ * Deterministic layer (must all hold): guard script, resolvable engine,
+ * wired hooks, toolchain gate configs for the recorded language.
+ * Agent layer (reported, never gating): lint wired to a real tool.
+ *
+ * @param targetDir - Scaffolded project directory.
+ * @returns Audit report with per-check outcomes.
+ */
+export async function auditScaffoldEnforcement(targetDir = process.cwd()) {
+  const absTarget = path.resolve(targetDir);
+  const deterministic = [
+    checkGuardScript(absTarget),
+    checkGuardEngine(absTarget),
+    checkHooksWired(absTarget),
+    await checkToolchain(absTarget)
+  ];
+  const agent = [checkLintWired(absTarget)];
+  return { targetDir: absTarget, deterministic, agent, ok: deterministic.every((c) => c.ok) };
+}
+
 export function measureTestQuality(targetDir) {
   const absTarget = path.resolve(targetDir);
   const testFiles = findTestFiles(absTarget);

@@ -92,6 +92,37 @@ checks) is present.
    additions* — would measure the actual out-of-box enforcement: expect 0/3
    traps caught.
 
+---
+
+## Addendum (2026-10-08): findings fixed — verify, don't trust
+
+The three findings above are closed by the enforcement change set; each fix
+names the test that locks it:
+
+1. **No deterministic linter → per-language gate configs emitted.**
+   `bootstrap_workspace.sh` now writes the pinned config for the recorded
+   language (`eslint.config.js`, `ruff.toml`, `clippy.toml`, `.golangci.yml`,
+   `checkstyle.xml`, `.editorconfig` CA block, `.clang-tidy`; `generic` emits
+   none). Locked by `tests/bootstrap-toolchain.test.ts` (9 tests); presence is
+   re-checked on every `validate` run by the new phase 7
+   (`scripts/validate/toolchain.js`, 100% covered).
+2. **LANGUAGE decorative → generative for toolchain.**
+   `backend+typescript` and `backend+python` still share directory trees
+   (topology-scoping, by design) but now differ in emitted gate configs; the
+   profile feed (`readProfileLanguage`) drives the validator. The agent still
+   owns build manifests (naming decisions) plus tool install and the Phase 5
+   live-block proof (`lets-build/SKILL.md`).
+3. **Fail-open guard → vendored engine + fail-closed install.**
+   The guard engine ships inside `.agents/` (`.agents/lib/`, byte-locked to
+   `lib/` output by test), `agent_guard.js` resolves vendored-first, and a
+   missing engine exits 2 naming every path tried. Unparseable *payloads*
+   still fail open inside `inspectPreTool` per ADR-005 (ambiguous input, not a
+   broken install). `hooks.json` (+`.example`) wires an `architectural-guard`
+   PreToolUse entry. Locked by the three new `tests/agent-guard.test.ts` cases.
+4. **Benchmark assumes working hooks → Arm D measures the scaffold.**
+   `runArmD()` + `auditScaffoldEnforcement()` score a real scaffold before and
+   after bootstrap; `benchmark/RESULTS.md` §5 carries the scorecard.
+
 ## Reproduce
 
 ```bash

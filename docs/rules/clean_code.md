@@ -63,7 +63,7 @@ If an AI attempt to add code violates any fitness function, the build fails imme
 
 ### Polyglot Fitness Function Standards
 
-When bootstrapping non-TypeScript projects via `/lets-build`, the agent must instantiate deterministic, automated fitness function gates matching these exact rules:
+When bootstrapping projects via `/lets-build`, `bootstrap_workspace.sh` emits the pinned gate configuration for the recorded language (never invented, never absent); the agent then installs the named tool, wires the project's lint entry to it, and proves the gate in Phase 5. Gates must match these exact rules:
 
 | Language | Linter / Static Tool | Max File Lines (300) | Max Function Lines (30) | Max Complexity (10) | Max Arguments (3) |
 |---|---|---|---|---|---|
@@ -73,3 +73,4 @@ When bootstrapping non-TypeScript projects via `/lets-build`, the agent must ins
 | **Go** | `golangci-lint` | `maintidx: 300` | `funlen: lines = 30` | `gocyclo: min-complexity = 10` | `funlen: statements = 25` |
 | **Java** | `Checkstyle` + `ArchUnit` | `FileLength: max 300` | `MethodLength: max 30` | `CyclomaticComplexity: max 10` | `ParameterNumber: max 3` |
 | **C# / .NET** | `.editorconfig` + Roslyn | `file_length = 300:error` | `method_length = 30:error` | `CA1502: Avoid excessive complexity <= 10` | `CA1501: max 3 params` |
+| **C / C++** | `clang-tidy` | project lint entry (no native check) | `readability-function-size LineThreshold = 30` | `readability-function-cognitive-complexity Threshold = 10` | `readability-function-size ParameterThreshold = 3` |

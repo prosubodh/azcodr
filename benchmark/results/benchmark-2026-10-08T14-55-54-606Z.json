@@ -1,0 +1,158 @@
+{
+  "generatedAt": "2026-10-08T14:55:54.601Z",
+  "method": "synthetic fixtures (no live agent); single run, no variance estimate",
+  "armA": {
+    "targetDir": "C:\\Users\\PROSUB~1\\AppData\\Local\\Temp\\azcodr-bench-run-AP37HS\\arm-a-control",
+    "moduleCount": 5,
+    "oversizedFileCount": 1,
+    "oversizedFiles": [
+      {
+        "file": "src\\auth.ts",
+        "lines": 365
+      }
+    ],
+    "maxFileLines": 365,
+    "dependencyCyclesCount": 1,
+    "dependencyCycles": [
+      [
+        "src\\billing.ts",
+        "src\\tenant.ts",
+        "src\\billing.ts"
+      ]
+    ],
+    "boundaryViolationsCount": 1,
+    "boundaryViolations": [
+      {
+        "file": "src\\domain\\payment.ts",
+        "imported": "src\\infrastructure\\db.ts",
+        "from": "domain",
+        "to": "infrastructure"
+      }
+    ],
+    "testFileCount": 0,
+    "assertionCount": 0,
+    "assertionsPerTestFile": 0,
+    "costMetrics": {
+      "note": "NOT measured by simulation; record tokens, wall-clock, and human review minutes manually on real agent runs."
+    },
+    "passed": false
+  },
+  "armB": {
+    "targetDir": "C:\\Users\\PROSUB~1\\AppData\\Local\\Temp\\azcodr-bench-run-AP37HS\\arm-b-hooks-only",
+    "moduleCount": 7,
+    "oversizedFileCount": 0,
+    "oversizedFiles": [],
+    "maxFileLines": 2,
+    "dependencyCyclesCount": 1,
+    "dependencyCycles": [
+      [
+        "src\\billing.ts",
+        "src\\tenant.ts",
+        "src\\billing.ts"
+      ]
+    ],
+    "boundaryViolationsCount": 1,
+    "boundaryViolations": [
+      {
+        "file": "src\\domain\\payment.ts",
+        "imported": "src\\infrastructure\\db.ts",
+        "from": "domain",
+        "to": "infrastructure"
+      }
+    ],
+    "testFileCount": 0,
+    "assertionCount": 0,
+    "assertionsPerTestFile": 0,
+    "costMetrics": {
+      "note": "NOT measured by simulation; record tokens, wall-clock, and human review minutes manually on real agent runs."
+    },
+    "passed": false
+  },
+  "armC": {
+    "targetDir": "C:\\Users\\PROSUB~1\\AppData\\Local\\Temp\\azcodr-bench-run-AP37HS\\arm-c-full-azcodr",
+    "moduleCount": 9,
+    "oversizedFileCount": 0,
+    "oversizedFiles": [],
+    "maxFileLines": 2,
+    "dependencyCyclesCount": 0,
+    "dependencyCycles": [],
+    "boundaryViolationsCount": 0,
+    "boundaryViolations": [],
+    "testFileCount": 0,
+    "assertionCount": 0,
+    "assertionsPerTestFile": 0,
+    "costMetrics": {
+      "note": "NOT measured by simulation; record tokens, wall-clock, and human review minutes manually on real agent runs."
+    },
+    "passed": true
+  },
+  "armD": {
+    "status": "assessed",
+    "raw": {
+      "targetDir": "C:\\Users\\PROSUB~1\\AppData\\Local\\Temp\\azcodr-bench-armd-W6AEl7\\raw-scaffold",
+      "deterministic": [
+        {
+          "name": ".agents\\scripts\\agent_guard.js",
+          "ok": true,
+          "detail": "present"
+        },
+        {
+          "name": "guard engine resolvable",
+          "ok": true,
+          "detail": "vendored (.agents/lib) or repo (lib/) engine found"
+        },
+        {
+          "name": "hooks wire agent_guard",
+          "ok": true,
+          "detail": "wired"
+        },
+        {
+          "name": "toolchain gates",
+          "ok": true,
+          "detail": "no workspace profile: scaffold stage only"
+        }
+      ],
+      "agent": [
+        {
+          "name": "lint entry wired to a real tool",
+          "ok": false,
+          "detail": "echo \"No linter configured yet. Run /lets-build to configure toolchain.\""
+        }
+      ],
+      "ok": true
+    },
+    "bootstrapped": {
+      "targetDir": "C:\\Users\\PROSUB~1\\AppData\\Local\\Temp\\azcodr-bench-armd-W6AEl7\\raw-scaffold",
+      "deterministic": [
+        {
+          "name": ".agents\\scripts\\agent_guard.js",
+          "ok": true,
+          "detail": "present"
+        },
+        {
+          "name": "guard engine resolvable",
+          "ok": true,
+          "detail": "vendored (.agents/lib) or repo (lib/) engine found"
+        },
+        {
+          "name": "hooks wire agent_guard",
+          "ok": true,
+          "detail": "wired"
+        },
+        {
+          "name": "toolchain gates (typescript)",
+          "ok": true,
+          "detail": "present: eslint.config.js"
+        }
+      ],
+      "agent": [
+        {
+          "name": "lint entry wired to a real tool",
+          "ok": false,
+          "detail": "echo \"No linter configured yet. Run /lets-build to configure toolchain.\""
+        }
+      ],
+      "ok": true
+    }
+  }
+}

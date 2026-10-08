@@ -11,6 +11,7 @@ import { phaseRootConfig } from './validate/root.js';
 import { phaseRules } from './validate/rules.js';
 import { phaseSkills } from './validate/skills.js';
 import { phaseLinks } from './validate/links.js';
+import { phaseToolchain, readProfileLanguage, expectedToolchainFiles, TOOLCHAIN_FILES } from './validate/toolchain.js';
 
 /**
  * NOTE: this module is a library. It never self-executes, so importing it from
@@ -105,6 +106,7 @@ function runValidation(workspaceRoot, reporter = createReporter()) {
   phaseLinks(ctx);
   phaseMemory(ctx);
   phaseLedger(ctx);
+  phaseToolchain(ctx);
   reportSummary(counts, reporter);
   return {
     errors: counts.errors,
@@ -138,7 +140,11 @@ export {
   createLowercaseParityLink,
   stripHtmlComments,
   stripFencedCode,
-  walkMarkdown
+  walkMarkdown,
+  phaseToolchain,
+  readProfileLanguage,
+  expectedToolchainFiles,
+  TOOLCHAIN_FILES
 };
 
 export default {
@@ -154,5 +160,9 @@ export default {
   createLowercaseParityLink,
   stripHtmlComments,
   stripFencedCode,
-  walkMarkdown
+  walkMarkdown,
+  phaseToolchain,
+  readProfileLanguage,
+  expectedToolchainFiles,
+  TOOLCHAIN_FILES
 };

@@ -14,10 +14,39 @@ import process from 'node:process';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
 const selfDir = path.dirname(fileURLToPath(import.meta.url));
-const guardModulePath = path.resolve(selfDir, '../../lib/agent-guard.js');
+
+// Resolution order (first existing file wins):
+//   1. AZCODR_GUARD_ENGINE override (tests, embedders).
+//   2. ../lib/agent-guard.js — vendored engine shipped inside `.agents/`
+//      (present in scaffolded projects; `.agents` is copied recursively).
+//   3. ../../lib/agent-guard.js — azcodr repo dev layout (fallback only).
+const guardCandidates = [
+  process.env.AZCODR_GUARD_ENGINE,
+  path.resolve(selfDir, '../lib/agent-guard.js'),
+  path.resolve(selfDir, '../../lib/agent-guard.js')
+].filter(Boolean);
 
 async function getGuardModule() {
-  return import(pathToFileURL(guardModulePath).href);
+  const tried = [];
+  for (const candidate of guardCandidates) {
+    if (!fs.existsSync(candidate)) {
+      tried.push(candidate);
+      continue;
+    }
+    try {
+      return await import(pathToFileURL(candidate).href);
+    } catch (err) {
+      tried.push(`${candidate} (unreadable: ${err.message})`);
+    }
+  }
+  // Fail CLOSED: a guard with no engine must be loud, never a silent allow.
+  // (Unparseable tool payloads still fail open inside inspectPreTool per
+  // ADR-005; a missing engine is a broken install, not an ambiguous input.)
+  console.error(
+    '🚨 Architectural Guard misconfigured: engine module not found, refusing to fail open. Tried:\n' +
+    tried.map((t) => `  - ${t}`).join('\n')
+  );
+  process.exit(2);
 }
 
 async function readStdin(timeoutMs = 1500) {
@@ -60,4 +89,7 @@ async function main() {
   process.exit(0);
 }
 
-main().catch(() => process.exit(0));
+main().catch((err) => {
+  console.error(`🚨 Architectural Guard crashed: ${err?.message || err}`);
+  process.exit(2);
+});

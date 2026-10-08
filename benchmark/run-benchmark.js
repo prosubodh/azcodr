@@ -11,10 +11,26 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
-import { evaluateTarget } from './evaluate.js';
+import { evaluateTarget, auditScaffoldEnforcement } from './evaluate.js';
 
 const selfDir = path.dirname(fileURLToPath(import.meta.url));
+
+function findBash() {
+  for (const candidate of [
+    'C:\\Program Files\\Git\\bin\\bash.exe',
+    'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
+  ]) {
+    try {
+      if (fs.existsSync(candidate)) return candidate;
+    } catch {
+      // probe next candidate
+    }
+  }
+  const probe = spawnSync('bash', ['--version'], { encoding: 'utf-8' });
+  return probe.status === 0 ? 'bash' : null;
+}
 
 function createArmADir(tmpDir) {
   const armA = path.join(tmpDir, 'arm-a-control');
@@ -130,16 +146,63 @@ export async function runFullBenchmark() {
     const scoreA = await evaluateTarget(dirA);
     const scoreB = await evaluateTarget(dirB);
     const scoreC = await evaluateTarget(dirC);
+    const armD = await runArmD();
 
     return {
       generatedAt: new Date().toISOString(),
       method: 'synthetic fixtures (no live agent); single run, no variance estimate',
       armA: scoreA,
       armB: scoreB,
-      armC: scoreC
+      armC: scoreC,
+      armD
     };
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+/**
+ * Arm D: raw scaffolded project, no agent additions. Scores what ships
+ * deterministically (stage 1) and what bootstrap adds (stage 2, backend +
+ * typescript; skipped when bash is unavailable).
+ */
+export async function runArmD() {
+  const workRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-bench-armd-'));
+  try {
+    let scaffoldFn = null;
+    try {
+      const mod = await import('../lib/scaffold.js');
+      scaffoldFn = mod.scaffold;
+    } catch {
+      return { status: 'unavailable', reason: 'compiled scaffold engine (lib/) unreadable' };
+    }
+    const target = path.join(workRoot, 'raw-scaffold');
+    scaffoldFn({ targetDir: target, noGit: true });
+    const raw = await auditScaffoldEnforcement(target);
+
+    let bootstrapped = { status: 'skipped', reason: 'bash unavailable' };
+    const script = path.join(path.resolve(selfDir, '..'), '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh');
+    const bashBin = findBash();
+    if (bashBin) {
+      const r = spawnSync(bashBin, [script, target, 'backend', 'typescript'], { encoding: 'utf-8', timeout: 30000 });
+      bootstrapped = r.status === 0
+        ? await auditScaffoldEnforcement(target)
+        : { status: 'failed', reason: `bootstrap exited ${r.status}` };
+    }
+    return { status: 'assessed', raw, bootstrapped };
+  } finally {
+    fs.rmSync(workRoot, { recursive: true, force: true });
+  }
+}
+
+function printAudit(label, audit) {
+  if (!audit || !Array.isArray(audit.deterministic)) {
+    console.log(`  ${label}: ${audit?.status || 'unknown'}${audit?.reason ? ` (${audit.reason})` : ''}`);
+    return;
+  }
+  console.log(`  ${label}: ${audit.ok ? 'ENFORCED' : 'GAPS'}`);
+  for (const c of [...audit.deterministic, ...audit.agent]) {
+    console.log(`    [${c.ok ? 'ok' : 'GAP'}] ${c.name}: ${c.detail}`);
   }
 }
 
@@ -156,27 +219,33 @@ function writeTranscript(results) {
   }
 }
 
+function printArmScore(label, arm) {
+  console.log(`${label}:`);
+  console.log(`  Oversized Files (>300 lines):   ${arm.oversizedFileCount}`);
+  console.log(`  Dependency Cycles:             ${arm.dependencyCyclesCount}`);
+  console.log(`  Boundary Violations:           ${arm.boundaryViolationsCount}`);
+  console.log(`  Drift Free:                    ${arm.passed ? 'YES' : 'NO'}\n`);
+}
+
+function printArmD(armD) {
+  console.log('ARM D (Raw Scaffold - No Agent Additions):');
+  if (armD.status === 'assessed') {
+    printAudit('stage 1 (scaffold only)', armD.raw);
+    printAudit('stage 2 (+ bootstrap backend+typescript)', armD.bootstrapped);
+  } else {
+    console.log(`  ${armD.status}${armD.reason ? ` (${armD.reason})` : ''}`);
+  }
+  console.log('');
+}
+
 export async function main() {
   console.log('🚀 Running Drift-Reduction Benchmark Across 3 Arms...\n');
   const results = await runFullBenchmark();
 
-  console.log('ARM A (Control - Plain Starter):');
-  console.log(`  Oversized Files (>300 lines):   ${results.armA.oversizedFileCount}`);
-  console.log(`  Dependency Cycles:             ${results.armA.dependencyCyclesCount}`);
-  console.log(`  Boundary Violations:           ${results.armA.boundaryViolationsCount}`);
-  console.log(`  Drift Free:                    ${results.armA.passed ? 'YES' : 'NO'}\n`);
-
-  console.log('ARM B (Hooks Only - agent_guard.js):');
-  console.log(`  Oversized Files (>300 lines):   ${results.armB.oversizedFileCount}`);
-  console.log(`  Dependency Cycles:             ${results.armB.dependencyCyclesCount}`);
-  console.log(`  Boundary Violations:           ${results.armB.boundaryViolationsCount}`);
-  console.log(`  Drift Free:                    ${results.armB.passed ? 'YES' : 'NO'}\n`);
-
-  console.log('ARM C (Treatment - Full Azcodr Architecture):');
-  console.log(`  Oversized Files (>300 lines):   ${results.armC.oversizedFileCount}`);
-  console.log(`  Dependency Cycles:             ${results.armC.dependencyCyclesCount}`);
-  console.log(`  Boundary Violations:           ${results.armC.boundaryViolationsCount}`);
-  console.log(`  Drift Free:                    ${results.armC.passed ? 'YES' : 'NO'}\n`);
+  printArmScore('ARM A (Control - Plain Starter)', results.armA);
+  printArmScore('ARM B (Hooks Only - agent_guard.js)', results.armB);
+  printArmScore('ARM C (Treatment - Full Azcodr Architecture)', results.armC);
+  printArmD(results.armD);
 
   console.log('LIMITATIONS (read before citing):');
   console.log('  - Synthetic fixtures, not live agent runs; single run, no variance.');

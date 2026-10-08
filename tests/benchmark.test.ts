@@ -5,7 +5,8 @@ import os from 'node:os';
 import { spawnSync } from 'node:child_process';
 import { fileURLToPath } from 'node:url';
 import { evaluateTarget } from '../benchmark/evaluate.js';
-import { runFullBenchmark } from '../benchmark/run-benchmark.js';
+import { auditScaffoldEnforcement } from '../benchmark/evaluate.js';
+import { runFullBenchmark, runArmD } from '../benchmark/run-benchmark.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const REPO_ROOT = path.resolve(__dirname, '..');
@@ -147,5 +148,43 @@ describe('Track 4: Drift-Reduction Benchmark - Automated Evaluator', () => {
     assert.strictEqual(results.armC.passed, true);
     assert.strictEqual(results.armC.dependencyCyclesCount, 0);
     assert.strictEqual(results.armC.boundaryViolationsCount, 0);
+  });
+});
+
+describe('Track 4: Drift-Reduction Benchmark - Arm D Enforcement Audit', () => {
+  test('flags a bare directory as unenforced on every deterministic check', async () => {
+    const dir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-armd-bare-'));
+    try {
+      const audit = await auditScaffoldEnforcement(dir);
+      assert.strictEqual(audit.ok, false);
+      for (const c of audit.deterministic as any[]) {
+        if (c.name === 'toolchain gates') continue;
+        assert.strictEqual(c.ok, false, `${c.name} must fail on a bare directory`);
+      }
+    } finally {
+      fs.rmSync(dir, { recursive: true, force: true });
+    }
+  });
+
+  test('runArmD assesses the raw scaffold with engine and hooks present', async () => {
+    const armD: any = await runArmD();
+    assert.strictEqual(armD.status, 'assessed');
+    const raw = armD.raw;
+    assert.strictEqual(raw.ok, true);
+    const script = raw.deterministic.find((c: any) => c.name.includes('agent_guard.js'))!;
+    assert.strictEqual(script.ok, true);
+    assert.strictEqual(raw.deterministic.find((c: any) => c.name === 'guard engine resolvable')!.ok, true);
+    assert.strictEqual(raw.deterministic.find((c: any) => c.name === 'hooks wire agent_guard')!.ok, true);
+    const lint = raw.agent.find((c: any) => c.name === 'lint entry wired to a real tool')!;
+    assert.strictEqual(lint.ok, false);
+  });
+
+  test('runArmD bootstrapped stage carries the recorded toolchain gates', async () => {
+    const armD: any = await runArmD();
+    assert.strictEqual(armD.status, 'assessed');
+    if (armD.bootstrapped.status === 'skipped') return;
+    assert.strictEqual(armD.bootstrapped.ok, true);
+    const tool = armD.bootstrapped.deterministic.find((c: any) => c.name.startsWith('toolchain gates'))!;
+    assert.match(tool.detail, /eslint\.config\.js/);
   });
 });
