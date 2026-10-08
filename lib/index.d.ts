@@ -19,6 +19,11 @@ export { scaffold, validateTarget, copyTemplate, ensureSymlink, ensureSymlinkOrP
 export { validate, createSilentReporter } from './validate.js';
 export type { ValidationResult, ValidationReporter } from './validate.js';
 /**
+ * Agent-runtime architectural enforcement and safety guards.
+ */
+export { inspectPreTool, inspectCommand, inspectFileWrite, inspectTddRequirement, readTddState, writeTddState } from './agent-guard.js';
+export type { GuardDecision, GuardOptions, ToolEnvelope, CommandViolation, FileCheckResult, SessionTddState } from './agent-guard.js';
+/**
  * Type definitions and option interfaces for scaffolding operations.
  */
 export type { ScaffoldOptions, ScaffoldResult, ValidateTargetOptions, CopyTemplateOptions, EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorShape } from './scaffold.js';
