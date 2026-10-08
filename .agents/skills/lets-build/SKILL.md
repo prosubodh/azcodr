@@ -100,7 +100,7 @@ Upon user confirmation:
    - *Extension:* `manifest.json`, `src/background/index.ts`, `src/content/index.ts`, `src/popup/index.html`.
    - *Game / Engine:* `src/core/`, `src/ecs/`, asset manifest, frame loop entrypoint.
    - *CLI:* `src/cmd/`, `src/core/`, CLI entrypoint with exit code handling.
-3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`), linter configurations, and boundary smoke test (`scripts/smoke_test.sh`).
+3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`), deterministic linter configurations strictly enforcing the [Polyglot Fitness Function Standards](../../../docs/rules/clean_code.md#polyglot-fitness-function-standards), and boundary smoke test (`scripts/smoke_test.sh`).
 4. **Replace Starter README with Project-Specific README**:
    Generate a clean, project-specific `README.md` using [references/project_readme_template.md](./references/project_readme_template.md), completely replacing meta-template content with the project's actual name, mission, stack highlights, quickstart commands, and directory tree.
 

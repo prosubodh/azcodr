@@ -84,6 +84,14 @@ jobs:
       - name: Verify Coverage Gates
         run: npm run test:coverage
 
+      - name: Upload Coverage Report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: coverage-report
+          path: coverage/
+          retention-days: 14
+
   shell-syntax:
     name: Shell Script Syntax (shipped hooks)
     runs-on: ubuntu-24.04

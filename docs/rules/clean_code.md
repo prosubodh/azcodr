@@ -60,3 +60,16 @@ Prevent AI-generated code rot using automated fitness functions integrated into 
 - **Dependency Direction Gates**: Enforce unidirectional import rules (e.g. `import/no-restricted-paths`, `dependency-cruiser`, `ArchUnit`) ensuring domain core never imports infrastructure or transport adapters.
 - **Complexity Budgets**: Enforce cyclomatic complexity limits (maximum 10 per function).
 If an AI attempt to add code violates any fitness function, the build fails immediately, blocking completion until the architecture is refactored.
+
+### Polyglot Fitness Function Standards
+
+When bootstrapping non-TypeScript projects via `/lets-build`, the agent must instantiate deterministic, automated fitness function gates matching these exact rules:
+
+| Language | Linter / Static Tool | Max File Lines (300) | Max Function Lines (30) | Max Complexity (10) | Max Arguments (3) |
+|---|---|---|---|---|---|
+| **TypeScript / Node** | `eslint` | `max-lines: [error, 300]` | `max-lines-per-function: [error, 30]` | `complexity: [error, 10]` | `max-params: [error, 3]` |
+| **Python** | `ruff` + `flake8` | `flake8-lines: max-line-count = 300` | `flake8-functions: max-function-length = 30` | `mccabe: max-complexity = 10` | `flake8-functions: max-parameters = 3` |
+| **Rust** | `cargo clippy` | `#![deny(clippy::too_many_lines)]` | `clippy::too_many_lines = 30` | `clippy::cognitive_complexity = 10` | `clippy::too_many_arguments = 3` |
+| **Go** | `golangci-lint` | `maintidx: 300` | `funlen: lines = 30` | `gocyclo: min-complexity = 10` | `funlen: statements = 25` |
+| **Java** | `Checkstyle` + `ArchUnit` | `FileLength: max 300` | `MethodLength: max 30` | `CyclomaticComplexity: max 10` | `ParameterNumber: max 3` |
+| **C# / .NET** | `.editorconfig` + Roslyn | `file_length = 300:error` | `method_length = 30:error` | `CA1502: Avoid excessive complexity <= 10` | `CA1501: max 3 params` |
