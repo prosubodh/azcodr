@@ -57,7 +57,7 @@ Before writing production code for any new feature or user story, the agent must
 Prevent AI-generated code rot using automated fitness functions integrated into linting and continuous verification:
 - **File Length Gates**: Maximum 250–300 lines per file (ESLint `max-lines`).
 - **Function Length Gates**: Maximum 20–30 lines per function (ESLint `max-lines-per-function`).
-- **Dependency Direction Gates**: Enforce unidirectional import rules (e.g. `import/no-restricted-paths`, `dependency-cruiser`, `ArchUnit`) ensuring domain core never imports infrastructure or transport adapters.
+- **Dependency Direction & Boundary Gates**: Enforce unidirectional import rules and cycle prevention natively with Azcodr's zero-dependency boundary linter (`npx azcodr boundaries [dir]`) or polyglot equivalents (ArchUnit, dependency-cruiser) ensuring domain core never imports infrastructure or transport adapters, and circular dependencies are forbidden.
 - **Complexity Budgets**: Enforce cyclomatic complexity limits (maximum 10 per function).
 If an AI attempt to add code violates any fitness function, the build fails immediately, blocking completion until the architecture is refactored.
 
