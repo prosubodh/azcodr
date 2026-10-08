@@ -7,7 +7,13 @@ import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit } from './repo.js';
 import type { InitGitOptions } from './repo.js';
+/**
+ * Canonical list of template files and directories copied into a new workspace.
+ */
 export declare const TEMPLATE_ITEMS: readonly string[];
+/**
+ * Configuration options for the primary scaffold orchestration function.
+ */
 export interface ScaffoldOptions {
     targetDir?: string;
     force?: boolean;
@@ -16,6 +22,9 @@ export interface ScaffoldOptions {
     dryRun?: boolean;
     silent?: boolean;
 }
+/**
+ * Result object returned upon completion of a scaffold operation.
+ */
 export interface ScaffoldResult {
     success: boolean;
     targetDir: string;
@@ -23,30 +32,50 @@ export interface ScaffoldResult {
     dryRun: boolean;
     actions: string[];
 }
+/**
+ * Options controlling pre-scaffold target directory validation.
+ */
 export interface ValidateTargetOptions {
     templateDir?: string;
     force?: boolean;
     dryRun?: boolean;
     allowProtected?: boolean;
 }
+/**
+ * Options controlling template file copying and file generation.
+ */
 export interface CopyTemplateOptions {
     dryRun?: boolean;
 }
 /**
- * Returns the root path to the azcodr template files.
+ * Resolves the root filesystem directory of the azcodr template files.
+ *
+ * @returns Absolute filesystem path to the template root directory.
  */
 export declare function getTemplateDir(): string;
 /**
  * Validates the target directory to ensure it is suitable for scaffolding.
+ *
+ * @param targetDir - Target directory path to validate.
+ * @param options - Validation options including force, dry-run, and protected overrides.
+ * @throws {ScaffoldError} When target is invalid, protected, or non-empty without force.
  */
 export declare function validateTarget(targetDir: string, options?: ValidateTargetOptions): void;
 /**
  * Recursively copies template files into the target directory and sets up symlinks and permissions.
  * Socket note: filesystem access is scoped to templateDir -> targetDir only (assertInside).
+ *
+ * @param targetDir - Destination directory path.
+ * @param templateDir - Source template directory path.
+ * @param options - Copy options including dry-run flag.
+ * @returns Array of recorded scaffolding action descriptions.
  */
 export declare function copyTemplate(targetDir: string, templateDir?: string, options?: CopyTemplateOptions): string[];
 /**
  * High-level orchestration function to scaffold the azcodr workspace into targetDir.
+ *
+ * @param options - Scaffolding options.
+ * @returns Result object containing success flag, target directory, and action log.
  */
 export declare function scaffold(options?: ScaffoldOptions): ScaffoldResult;
 export { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, isInsideGitWorkTree, initGit, runGit, assertInside, ScaffoldError, ERROR_CODES, isProtectedTarget };

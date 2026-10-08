@@ -12,6 +12,9 @@ import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit } from './repo.js';
 import type { InitGitOptions } from './repo.js';
 
+/**
+ * Canonical list of template files and directories copied into a new workspace.
+ */
 export const TEMPLATE_ITEMS: readonly string[] = [
   'AGENTS.md',
   'memory.md',
@@ -25,6 +28,9 @@ export const TEMPLATE_ITEMS: readonly string[] = [
   'LICENSE'
 ];
 
+/**
+ * Configuration options for the primary scaffold orchestration function.
+ */
 export interface ScaffoldOptions {
   targetDir?: string;
   force?: boolean;
@@ -34,6 +40,9 @@ export interface ScaffoldOptions {
   silent?: boolean;
 }
 
+/**
+ * Result object returned upon completion of a scaffold operation.
+ */
 export interface ScaffoldResult {
   success: boolean;
   targetDir: string;
@@ -42,6 +51,9 @@ export interface ScaffoldResult {
   actions: string[];
 }
 
+/**
+ * Options controlling pre-scaffold target directory validation.
+ */
 export interface ValidateTargetOptions {
   templateDir?: string;
   force?: boolean;
@@ -49,12 +61,17 @@ export interface ValidateTargetOptions {
   allowProtected?: boolean;
 }
 
+/**
+ * Options controlling template file copying and file generation.
+ */
 export interface CopyTemplateOptions {
   dryRun?: boolean;
 }
 
 /**
- * Returns the root path to the azcodr template files.
+ * Resolves the root filesystem directory of the azcodr template files.
+ *
+ * @returns Absolute filesystem path to the template root directory.
  */
 export function getTemplateDir(): string {
   return path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..');
@@ -94,6 +111,10 @@ function rejectNonEmptyTarget(resolvedTarget: string, force: boolean): void {
 
 /**
  * Validates the target directory to ensure it is suitable for scaffolding.
+ *
+ * @param targetDir - Target directory path to validate.
+ * @param options - Validation options including force, dry-run, and protected overrides.
+ * @throws {ScaffoldError} When target is invalid, protected, or non-empty without force.
  */
 export function validateTarget(targetDir: string, options: ValidateTargetOptions = {}): void {
   const { templateDir = getTemplateDir(), force = false, dryRun = false, allowProtected = false } = options;
@@ -169,7 +190,7 @@ function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
     description: 'Scaffolded with azcodr enterprise architecture template',
     scripts: {
       test: 'node --test',
-      'test:coverage': 'node scripts/test_coverage.js',
+      'test:coverage': 'jest --coverage',
       lint: 'echo "No linter configured yet. Run /lets-build to configure toolchain."',
       validate: 'node scripts/validate-cli.js'
     }
@@ -197,6 +218,11 @@ function chmodTemplateScripts(inspectDir: string, dryRun: boolean): string[] {
 /**
  * Recursively copies template files into the target directory and sets up symlinks and permissions.
  * Socket note: filesystem access is scoped to templateDir -> targetDir only (assertInside).
+ *
+ * @param targetDir - Destination directory path.
+ * @param templateDir - Source template directory path.
+ * @param options - Copy options including dry-run flag.
+ * @returns Array of recorded scaffolding action descriptions.
  */
 export function copyTemplate(
   targetDir: string,
@@ -220,6 +246,9 @@ export function copyTemplate(
 
 /**
  * High-level orchestration function to scaffold the azcodr workspace into targetDir.
+ *
+ * @param options - Scaffolding options.
+ * @returns Result object containing success flag, target directory, and action log.
  */
 export function scaffold(options: ScaffoldOptions = {}): ScaffoldResult {
   const {
@@ -238,36 +267,16 @@ export function scaffold(options: ScaffoldOptions = {}): ScaffoldResult {
 }
 
 export {
-  ensureSymlink,
-  ensureSymlinkOrPointer,
-  isSameCaseInsensitiveFile,
-  makeScriptsExecutable,
-  isInsideGitWorkTree,
-  initGit,
-  runGit,
-  assertInside,
-  ScaffoldError,
-  ERROR_CODES,
-  isProtectedTarget
+  ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile,
+  makeScriptsExecutable, isInsideGitWorkTree, initGit, runGit,
+  assertInside, ScaffoldError, ERROR_CODES, isProtectedTarget
 };
 
 export type { EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorCode, ScaffoldErrorShape };
 
 export default {
-  scaffold,
-  validateTarget,
-  copyTemplate,
-  ensureSymlink,
-  ensureSymlinkOrPointer,
-  isSameCaseInsensitiveFile,
-  makeScriptsExecutable,
-  isInsideGitWorkTree,
-  initGit,
-  getTemplateDir,
-  runGit,
-  assertInside,
-  TEMPLATE_ITEMS,
-  ScaffoldError,
-  ERROR_CODES,
-  isProtectedTarget
+  scaffold, validateTarget, copyTemplate, ensureSymlink,
+  ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable,
+  isInsideGitWorkTree, initGit, getTemplateDir, runGit,
+  assertInside, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES, isProtectedTarget
 };

@@ -51,6 +51,18 @@ export default [
     // 600-line source file, so the same file cap applies. Function-level caps
     // apply unchanged: a test callback over 30 lines is two tests.
     files: ['tests/**/*.test.js'],
+    languageOptions: {
+      globals: {
+        describe: 'readonly',
+        test: 'readonly',
+        it: 'readonly',
+        expect: 'readonly',
+        beforeEach: 'readonly',
+        afterEach: 'readonly',
+        beforeAll: 'readonly',
+        afterAll: 'readonly'
+      }
+    },
     rules: {}
   }
 ];
