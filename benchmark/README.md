@@ -1,0 +1,71 @@
+# Azcodr Empirical Drift-Reduction Benchmark
+
+> **Benchmark Mission:** Provide a reproducible, empirical benchmark demonstrating AI-assisted architecture governance and drift prevention across sequential agent tickets.
+
+---
+
+## 1. Executive Overview & Experimental Design
+
+AI coding agents optimize locally for token minimization and immediate ticket passing. Over sequential tickets, this produces **AI-Accelerated Architectural Drift**:
+- Single files silently bloat past 300+ lines.
+- Modules form circular import cycles (`A -> B -> A`).
+- Clean architectural layers erode as domain logic directly imports infrastructure clients and HTTP controllers.
+- Test suites devolve into assertion-free tests written solely to satisfy line gates.
+
+This benchmark rigorously evaluates how governance tooling stops drift across three controlled experimental arms.
+
+---
+
+## 2. The Three Experimental Arms
+
+| Arm | Name | Configuration & Tooling |
+|---|---|---|
+| **Arm A (Control)** | **Plain Starter** | Standard TypeScript web-backend starter (tsconfig, basic npm test/build, no architectural limits). |
+| **Arm B (Hooks Only)** | **Plain Starter + Azcodr Hooks** | Plain starter equipped only with Azcodr's Pre/Post tool runtime hooks (`agent_guard.js`) enforcing Refactor-Before-Add and command safety. |
+| **Arm C (Treatment)** | **Full Azcodr Architecture** | Scaffolding per topology with complete Clean Code fitness functions (`eslint.config.js`), boundary enforcement (`boundaries.ts`), and agent runtime guards. |
+
+---
+
+## 3. The 10 Sequential Tickets & The 3 Traps
+
+Ten feature tickets are executed sequentially from the same base repository state. Three intentional "architectural traps" tempt the agent into taking shortcuts:
+
+| Ticket # | Feature Area | Intentional Trap / Temptation | What Drift Looks Like |
+|---|---|---|---|
+| **T01** | User Registration | None (Baseline) | Clean module creation. |
+| **T02** | JWT Authentication | None (Baseline) | Token generation and auth middleware. |
+| **T03** | OAuth Multi-Provider | **Trap 1: File Bloat** | Appending GitHub/Google/Discord OAuth handlers directly into `auth.ts`, bloating it past 350 lines. |
+| **T04** | Organization Workspace | None (Baseline) | Workspace tenancy scoping. |
+| **T05** | Billing Status Verification | **Trap 2: Circular Dependency** | Checking workspace billing tier requires tenant lookup while tenant lookup requires billing status, tempting `billing.ts <-> tenant.ts` cycle. |
+| **T06** | Transactional Outbox | None (Baseline) | Event persistence and dispatch. |
+| **T07** | Payment Webhook Handler | **Trap 3: Boundary Breach** | Domain payment entity directly invokes HTTP transport controller or raw database driver, violating layer boundary. |
+| **T08** | Cursor Pagination | None (Baseline) | Efficient audit log queries. |
+| **T09** | Role-Based Access Control | None (Baseline) | Policy checks and guards. |
+| **T10** | Graceful Shutdown | None (Baseline) | Connection draining and signal handlers. |
+
+---
+
+## 4. Evaluation Metrics & Automated Scoring
+
+The automated evaluation harness (`node benchmark/evaluate.js <dir>`) measures 7 objective dimensions:
+
+| Metric | Tool / Engine | Target / Unit |
+|---|---|---|
+| **Import-Boundary Violations** | Azcodr `inspectBoundaries()` | 0 violations |
+| **Dependency Cycles** | Azcodr `detectDependencyCycles()` | 0 cycles |
+| **Files Over 300 Lines** | Azcodr `inspectFileWrite()` | 0 files |
+| **Peak Function Complexity (p95)** | ESLint Complexity | $\le 10$ |
+| **Test Quality Ratio** | Jest Assertions per Test | $\ge 2.0$ assertions/test |
+| **Token Cost** | Agent Session Logs | Total tokens per ticket |
+| **Acceptance Passing Rate** | Integration Test Runner | 10/10 tickets passing |
+
+---
+
+## 5. Running the Evaluation Harness
+
+```bash
+# Evaluate any repository or benchmark run directory:
+node benchmark/evaluate.js ./path-to-target-repo
+```
+
+To run the full benchmark against an agent harness, execute each ticket in order from `benchmark/tickets/tickets.json` and run the evaluator after every ticket completion.

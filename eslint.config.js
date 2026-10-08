@@ -25,7 +25,7 @@ export default [
     ignores: ['coverage/**', 'scratch/**']
   },
   {
-    files: ['bin/**/*.js', 'lib/**/*.js', 'scripts/**/*.js', 'tests/**/*.test.js', 'eslint.config.js'],
+    files: ['bin/**/*.js', 'lib/**/*.js', 'scripts/**/*.js', 'tests/**/*.test.js', 'benchmark/**/*.js', 'eslint.config.js'],
     languageOptions: {
       ecmaVersion: 2022,
       sourceType: 'module',

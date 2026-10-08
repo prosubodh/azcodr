@@ -1,0 +1,116 @@
+[
+  {
+    "id": "T01",
+    "title": "User Registration with Password Hashing",
+    "area": "auth",
+    "isTrap": false,
+    "description": "Implement user registration endpoint accepting email and password with secure bcrypt/argon2 hashing.",
+    "acceptance": [
+      "Given valid email and password, when register is invoked, then user is persisted with hashed password",
+      "Given existing email, when register is invoked, then a 409 conflict error is returned"
+    ]
+  },
+  {
+    "id": "T02",
+    "title": "JWT Authentication and Session Issuance",
+    "area": "auth",
+    "isTrap": false,
+    "description": "Implement login verification returning signed access token with 15-minute expiration.",
+    "acceptance": [
+      "Given valid credentials, when login is invoked, then JWT access token is returned",
+      "Given invalid credentials, when login is invoked, then a 401 unauthorized error is returned"
+    ]
+  },
+  {
+    "id": "T03",
+    "title": "Multi-Provider OAuth Integration (GitHub, Google, Discord)",
+    "area": "auth",
+    "isTrap": true,
+    "trapType": "file_bloat",
+    "description": "Add OAuth callback flows for GitHub, Google, and Discord. TRAP: Tempts appending all provider logic into auth.ts, pushing it past 350 lines.",
+    "acceptance": [
+      "Given GitHub OAuth code, when callback is invoked, then user account is linked and session created",
+      "Given Google OAuth code, when callback is invoked, then user account is linked and session created",
+      "Given Discord OAuth code, when callback is invoked, then user account is linked and session created"
+    ]
+  },
+  {
+    "id": "T04",
+    "title": "Organization Workspace Entity & Tenancy Scoping",
+    "area": "tenant",
+    "isTrap": false,
+    "description": "Create Workspace entity with organization membership and tenant ID scoping on queries.",
+    "acceptance": [
+      "Given an active user, when workspace is created, then user becomes workspace owner",
+      "Given workspace queries, all data is partitioned strictly by workspaceId"
+    ]
+  },
+  {
+    "id": "T05",
+    "title": "Workspace Billing Tier Verification",
+    "area": "billing",
+    "isTrap": true,
+    "trapType": "dependency_cycle",
+    "description": "Enforce subscription feature gates per workspace. TRAP: Tempts checking workspace subscription from tenant.ts while tenant is imported from billing.ts, creating a circular dependency cycle.",
+    "acceptance": [
+      "Given free-tier workspace, when premium feature is accessed, then payment required error is returned",
+      "Given pro-tier workspace, when premium feature is accessed, then action proceeds successfully"
+    ]
+  },
+  {
+    "id": "T06",
+    "title": "Transactional Outbox Event Persistence",
+    "area": "events",
+    "isTrap": false,
+    "description": "Persist domain events atomically within the database transaction before background delivery.",
+    "acceptance": [
+      "Given state mutation, outbox record is inserted in same ACID transaction",
+      "When outbox worker runs, then pending events are published and marked sent"
+    ]
+  },
+  {
+    "id": "T07",
+    "title": "Payment Webhook Reconciliation",
+    "area": "payments",
+    "isTrap": true,
+    "trapType": "boundary_breach",
+    "description": "Process Stripe webhook events to update subscription statuses. TRAP: Tempts calling transport HTTP handler or raw SQL connection directly from core domain payment entity.",
+    "acceptance": [
+      "Given signed Stripe invoice.paid event, when webhook received, then subscription status is updated to active",
+      "Given invalid signature, when webhook received, then bad request error is returned"
+    ]
+  },
+  {
+    "id": "T08",
+    "title": "Cursor-Based Audit Log Pagination",
+    "area": "audit",
+    "isTrap": false,
+    "description": "Implement cursor-based pagination for workspace audit log records ordered by timestamp descending.",
+    "acceptance": [
+      "Given audit log request with limit, returns records and nextCursor",
+      "Given audit log request with cursor, returns records strictly after cursor"
+    ]
+  },
+  {
+    "id": "T09",
+    "title": "Role-Based Access Control (RBAC) Policy Guard",
+    "area": "authz",
+    "isTrap": false,
+    "description": "Implement RBAC middleware verifying member roles (Owner, Admin, Member, Viewer).",
+    "acceptance": [
+      "Given member with Admin role, allowed to invite new members",
+      "Given member with Viewer role, denied invite access with 403 forbidden"
+    ]
+  },
+  {
+    "id": "T10",
+    "title": "Graceful Shutdown & Health Probes",
+    "area": "ops",
+    "isTrap": false,
+    "description": "Implement /health and /ready endpoints and handle SIGTERM signal by draining connections.",
+    "acceptance": [
+      "When /health is called, returns 200 OK with uptime and status",
+      "When SIGTERM received, stops accepting new requests and drains active handles within 10s"
+    ]
+  }
+]
