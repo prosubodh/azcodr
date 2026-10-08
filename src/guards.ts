@@ -2,8 +2,18 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { ScaffoldError, ERROR_CODES } from './errors.js';
-import { getTemplateDir } from './scaffold.js';
+
+/**
+ * Resolves the root filesystem directory of the azcodr template files.
+ *
+ * @returns Absolute filesystem path to the template root directory.
+ */
+export function getTemplateDir(): string {
+  const currentDir = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
+  return path.resolve(currentDir, '..');
+}
 
 /**
  * Options for configuring protected target verification.

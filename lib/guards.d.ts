@@ -1,4 +1,10 @@
 /**
+ * Resolves the root filesystem directory of the azcodr template files.
+ *
+ * @returns Absolute filesystem path to the template root directory.
+ */
+export declare function getTemplateDir(): string;
+/**
  * Options for configuring protected target verification.
  */
 export interface ProtectedTargetOptions {

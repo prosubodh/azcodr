@@ -66,6 +66,20 @@ export type {
 } from './agent-guard.js';
 
 /**
+ * Architectural boundary enforcement and dependency cycle prevention.
+ */
+export {
+  inspectBoundaries,
+  detectDependencyCycles,
+  detectBoundaryViolations,
+  findSourceFiles,
+  extractLocalImports,
+  buildDependencyGraph,
+  DEFAULT_BOUNDARY_RULES
+} from './boundaries.js';
+export type { BoundaryRule, BoundaryViolation, BoundaryReport } from './boundaries.js';
+
+/**
  * Type definitions and option interfaces for scaffolding operations.
  */
 export type {

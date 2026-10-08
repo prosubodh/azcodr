@@ -1,12 +1,13 @@
 import { ScaffoldError, ERROR_CODES } from './errors.js';
 import type { ScaffoldErrorCode, ScaffoldErrorShape } from './errors.js';
 import { runGit } from './git.js';
-import { assertInside, isProtectedTarget } from './guards.js';
+import { assertInside, isProtectedTarget, getTemplateDir } from './guards.js';
 import { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile } from './links.js';
 import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit } from './repo.js';
 import type { InitGitOptions } from './repo.js';
+export { getTemplateDir };
 /**
  * Canonical list of template files and directories copied into a new workspace.
  */
@@ -47,12 +48,6 @@ export interface ValidateTargetOptions {
 export interface CopyTemplateOptions {
     dryRun?: boolean;
 }
-/**
- * Resolves the root filesystem directory of the azcodr template files.
- *
- * @returns Absolute filesystem path to the template root directory.
- */
-export declare function getTemplateDir(): string;
 /**
  * Validates the target directory to ensure it is suitable for scaffolding.
  *

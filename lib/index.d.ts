@@ -24,6 +24,11 @@ export type { ValidationResult, ValidationReporter } from './validate.js';
 export { inspectPreTool, inspectCommand, inspectFileWrite, inspectTddRequirement, readTddState, writeTddState } from './agent-guard.js';
 export type { GuardDecision, GuardOptions, ToolEnvelope, CommandViolation, FileCheckResult, SessionTddState } from './agent-guard.js';
 /**
+ * Architectural boundary enforcement and dependency cycle prevention.
+ */
+export { inspectBoundaries, detectDependencyCycles, detectBoundaryViolations, findSourceFiles, extractLocalImports, buildDependencyGraph, DEFAULT_BOUNDARY_RULES } from './boundaries.js';
+export type { BoundaryRule, BoundaryViolation, BoundaryReport } from './boundaries.js';
+/**
  * Type definitions and option interfaces for scaffolding operations.
  */
 export type { ScaffoldOptions, ScaffoldResult, ValidateTargetOptions, CopyTemplateOptions, EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorShape } from './scaffold.js';
