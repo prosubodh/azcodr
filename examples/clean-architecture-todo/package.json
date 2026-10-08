@@ -1,0 +1,9 @@
+{
+  "name": "clean-architecture-todo",
+  "version": "1.0.0",
+  "description": "Clean / Hexagonal Architecture reference example governed by Azcodr",
+  "type": "module",
+  "scripts": {
+    "test": "node --test tests/**/*.test.js"
+  }
+}

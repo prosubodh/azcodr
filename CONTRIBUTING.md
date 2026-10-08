@@ -77,3 +77,9 @@ Every contribution must preserve these core invariants:
 2. Follow Conventional Commits: `feat(...)`, `fix(...)`, `docs(...)`, `test(...)`.
 3. Ensure all tests and validation pass locally (`npm run prepublishOnly`).
 4. Submit your pull request with a concise summary and verification evidence.
+
+---
+
+## 📜 Code of Conduct
+
+All contributors and maintainers are expected to abide by our [Code of Conduct](./CODE_OF_CONDUCT.md). Please report any violations to `prosubodh+conduct@gmail.com`.

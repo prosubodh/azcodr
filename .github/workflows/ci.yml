@@ -84,6 +84,12 @@ jobs:
       - name: Verify Coverage Gates
         run: npm run test:coverage
 
+      - name: Verify Mutation Score Gate (100% Mutant Kill)
+        run: npm run test:mutation
+
+      - name: Verify Empirical Drift Benchmark
+        run: node benchmark/run-benchmark.js
+
       - name: Upload Coverage Report
         uses: actions/upload-artifact@v4
         if: always()

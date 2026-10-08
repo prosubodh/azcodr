@@ -1,5 +1,13 @@
 # azcodr: Enterprise Architecture & Agentic Engineering Starter Template
 
+[![npm version](https://img.shields.io/npm/v/azcodr.svg?color=cb3837)](https://www.npmjs.com/package/azcodr)
+[![JSR Package](https://jsr.io/badges/@azcodr/azcodr)](https://jsr.io/@azcodr/azcodr)
+[![CI Status](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml/badge.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
+[![Coverage](https://img.shields.io/badge/coverage-100.00%25-brightgreen.svg)](https://github.com/prosubodh/azcodr)
+[![Mutation Score](https://img.shields.io/badge/mutants%20killed-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr)
+[![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)](https://www.npmjs.com/package/azcodr)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
 > **Production-oriented architecture governance and topology-scoped scaffolding for AI-assisted development (early release).**  
 > *AI agents move fast. Architecture drifts. Azcodr turns architectural intent into executable constraints your agent cannot skip.*
 
@@ -64,7 +72,7 @@ When an agent attempts to create a circular dependency or import infrastructure 
 ```
 
 ### 4. Empirical Benchmark Proof (3 Arms, 10 Sequential Tickets)
-In an automated empirical trial across 10 sequential tickets with 3 architectural traps ([`benchmark/RESULTS.md`](./benchmark/RESULTS.md)):
+In an automated empirical trial across 10 sequential tickets with 3 architectural traps ([`benchmark/RESULTS.md`](https://github.com/prosubodh/azcodr/blob/main/benchmark/RESULTS.md)):
 
 | Metric | Arm A (Control) | Arm B (Hooks Only) | Arm C (Full Azcodr) |
 |---|:---:|:---:|:---:|
