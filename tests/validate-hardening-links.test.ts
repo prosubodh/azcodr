@@ -250,8 +250,10 @@ describe('hardening: walkMarkdown helper', () => {
     fs.writeFileSync(path.join(root, 'docs', 'rules', 'UPPER.MD'), '# u\n');
     fs.writeFileSync(path.join(root, 'docs', 'rules', 'a', 'b', 'deep.md'), '# d\n');
     fs.writeFileSync(path.join(root, 'docs', 'rules', 'notes.txt'), 'not markdown');
-    fs.mkdirSync(path.join(root, 'node_modules', 'pkg'), { recursive: true });
-    fs.writeFileSync(path.join(root, 'node_modules', 'pkg', 'SKIP.md'), '# skip');
+    fs.mkdirSync(path.join(root, 'docs', 'rules', 'node_modules', 'pkg'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'docs', 'rules', 'node_modules', 'pkg', 'SKIP.md'), '# skip');
+    fs.mkdirSync(path.join(root, 'docs', 'rules', '.git'), { recursive: true });
+    fs.writeFileSync(path.join(root, 'docs', 'rules', '.git', 'GIT.md'), '# skip');
 
     const found = walkMarkdown(path.join(root, 'docs', 'rules'), 'rule').map((p: string) => path.basename(p));
     // Includes the fixture's own r.md; excludes notes.txt and node_modules.

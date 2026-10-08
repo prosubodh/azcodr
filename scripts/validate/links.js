@@ -18,7 +18,6 @@ function normalizeLinkTarget(rawTarget) {
   // paths are external too.
   if (/^[a-z][a-z0-9+.-]*:/i.test(display)) return null;
   if (display.startsWith('//')) return null;
-  if (/^[a-z]:[\\/]/i.test(display)) return null;
   // Percent-decode so ./exists%2emd resolves like a renderer would.
   try {
     return { target: decodeURIComponent(display), display };

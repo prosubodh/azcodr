@@ -87,7 +87,7 @@ function defaultStreams(io: CliIo) {
   };
 }
 
-function normalizeIo(io: CliIo = {}): NormalizedCliIo {
+function normalizeIo(io: CliIo): NormalizedCliIo {
   const streams = defaultStreams(io);
   return {
     ...streams,

@@ -136,4 +136,14 @@ describe('Protected target guard: CLI fails fast', () => {
   test('isProtectedTarget handles default options', () => {
     assert.strictEqual(isProtectedTarget(os.homedir()), true);
   });
+
+  test('normalizeForComparison preserves case on posix platform', () => {
+    const origPlatform = process.platform;
+    try {
+      Object.defineProperty(process, 'platform', { value: 'linux', configurable: true });
+      assert.strictEqual(normalizeForComparison('/Test/Path'), path.resolve('/Test/Path'));
+    } finally {
+      Object.defineProperty(process, 'platform', { value: origPlatform, configurable: true });
+    }
+  });
 });

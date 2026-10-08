@@ -3,6 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 import { scaffold, validateTarget, getTemplateDir } from '../src/scaffold.js';
+import { askQuestion } from '../src/cli-target.js';
 
 let tmpDir: string;
 const templateDir = getTemplateDir();
@@ -88,5 +89,12 @@ describe('scaffold orchestration', () => {
     } finally {
       process.cwd = origCwd;
     }
+  });
+
+  test('askQuestion resolves input with default parameters', async () => {
+    const p = askQuestion('Query: ');
+    process.stdin.emit('data', 'test-answer\n');
+    const answer = await p;
+    assert.strictEqual(answer, 'test-answer');
   });
 });

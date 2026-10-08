@@ -91,7 +91,7 @@ function checkParity(filePath, target, ctx) {
     agentsContent: ctx.agentsContent,
     agentsContentMissing: !ctx.agentsContent,
     agentsFile: ctx.agentsFile,
-    entries: observed.entries || [],
+    entries: observed.entries,
     isSymlink: Boolean(observed.isSymlink),
     linkTarget: observed.linkTarget || null,
     isFile: Boolean(observed.isFile),
