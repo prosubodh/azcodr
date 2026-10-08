@@ -64,15 +64,17 @@ describe('coverage thresholds', () => {
     const thresholds = jestConfig.coverageThreshold?.global;
     assert.ok(thresholds, 'coverageThreshold.global must be defined');
     assert.strictEqual(thresholds.lines, 100, 'line coverage stays at 100%');
-    assert.strictEqual(thresholds.functions, 97, 'functions threshold must be 97%');
-    assert.strictEqual(thresholds.branches, 98, 'branches threshold must be 98%');
+    assert.strictEqual(thresholds.functions, 100, 'functions threshold must be 100%');
+    assert.strictEqual(thresholds.branches, 100, 'branches threshold must be 100%');
+    assert.strictEqual(thresholds.statements, 100, 'statements threshold must be 100%');
   });
 
   test('coverage thresholds are enforced in jest.config.js', () => {
     const source = readJestConfig();
     assert.ok(/lines:\s*100/.test(source));
-    assert.ok(/functions:\s*97/.test(source));
-    assert.ok(/branches:\s*98/.test(source));
+    assert.ok(/functions:\s*100/.test(source));
+    assert.ok(/branches:\s*100/.test(source));
+    assert.ok(/statements:\s*100/.test(source));
   });
 });
 

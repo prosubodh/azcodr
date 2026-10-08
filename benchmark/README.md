@@ -47,17 +47,17 @@ Ten feature tickets are executed sequentially from the same base repository stat
 
 ## 4. Evaluation Metrics & Automated Scoring
 
-The automated evaluation harness (`node benchmark/evaluate.js <dir>`) measures 7 objective dimensions:
+The automated evaluation harness (`node benchmark/evaluate.js <dir>`) measures 4 objective dimensions directly; the remaining 3 must be recorded manually on real agent runs:
 
-| Metric | Tool / Engine | Target / Unit |
-|---|---|---|
-| **Import-Boundary Violations** | Azcodr `inspectBoundaries()` | 0 violations |
-| **Dependency Cycles** | Azcodr `detectDependencyCycles()` | 0 cycles |
-| **Files Over 300 Lines** | Azcodr `inspectFileWrite()` | 0 files |
-| **Peak Function Complexity (p95)** | ESLint Complexity | $\le 10$ |
-| **Test Quality Ratio** | Jest Assertions per Test | $\ge 2.0$ assertions/test |
-| **Token Cost** | Agent Session Logs | Total tokens per ticket |
-| **Acceptance Passing Rate** | Integration Test Runner | 10/10 tickets passing |
+| Metric | Tool / Engine | Target / Unit | Measured by harness? |
+|---|---|---|---|
+| **Import-Boundary Violations** | Azcodr `inspectBoundaries()` | 0 violations | ✅ yes |
+| **Dependency Cycles** | Azcodr `detectDependencyCycles()` | 0 cycles | ✅ yes |
+| **Files Over 300 Lines** | Azcodr `inspectFileWrite()` | 0 files | ✅ yes |
+| **Test Quality Proxy** | Assertion count per test file | ≥ 1 assertion/test, 0 assertion-free files | ✅ yes |
+| **Token Cost** | Agent Session Logs | Total tokens per ticket | ❌ manual |
+| **Wall-Clock + Review Minutes** | Timed blind review | Minutes per ticket | ❌ manual |
+| **Acceptance Passing Rate** | `benchmark/tickets/tickets.json` acceptance list | 10/10 tickets passing | ❌ manual (harness checks structure, not behavior) |
 
 ---
 

@@ -119,7 +119,7 @@ Synthesize the answers into an unambiguous **Feature Alignment Specification (FA
     When [Action]
     Then [Observable Outcome]
   ```
-- **Test Strategy:** [Contract / Integration / Unit tests required for 100% coverage]
+- **Test Strategy:** [Contract / Integration / Unit tests required; 100% on all metrics, assertion-free tests rejected]
 ```
 
 ---

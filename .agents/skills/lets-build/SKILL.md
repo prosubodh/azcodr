@@ -160,7 +160,7 @@ Upon user confirmation:
 
 ## 4. Quality & Verification
 - **Testing Strategy:** Outside-In TDD with Nano-Cycles (Uncle Bob's 3 Laws)
-- **Code Health Gates:** 100.00% test coverage gate, zero lint errors
+- **Code Health Gates:** 100% coverage on all metrics + mutation kill gate on guards, zero lint errors
 - **DevSecOps:** <Semgrep / Trivy / Gitleaks / None>
 ```
 

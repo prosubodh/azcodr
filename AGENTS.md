@@ -1,6 +1,6 @@
 # AGENTS.md
 
-> **azcodr: Enterprise Architecture & Agentic Engineering Starter Template**  
+> **azcodr: Architecture governance toolkit, with an optional starter**  
 > **Workspace Mission:** Problem-first, topology-aligned production architectures governed by strict systemic atomicity, 100% open-source standards, true incremental TDD nano-cycles, and zero speculative bloat.  
 > **Runtime & Tools:** Node.js (`>=22.8.0`), npm (`>=10.0.0`) | `npm test` (test runner), `npm run test:coverage` (coverage gate), `npm run lint`, `npm run validate`.
 > **Node floor rationale:** `>=22.8.0` satisfies Jest native ESM requirements (`--experimental-vm-modules`) and modern LTS security baselines. Node 18 (EOL 2025-04-30) and 20 (EOL 2026-04-30) no longer receive security patches.  
@@ -48,7 +48,7 @@ Progress all tasks systematically through the unified **Agent Cognitive & Agile 
 2. INTERROGATE / DOMAIN     ──► Relentless questioning; Ubiquitous Language, Aggregate invariants & state machines.
 3. PLAN / OUTER TDD         ──► Minimal blast radius; failing Outer Acceptance Test (UI/API RED).
 4. EXECUTE / INNER TDD      ──► Incremental nano-cycles (Uncle Bob's 3 Laws: 1 micro-assertion RED ➔ MINIMAL pass GREEN ➔ REFACTOR).
-5. VERIFY / DoD & PROOF     ──► Outer test turns GREEN; boundary smoke tests & 100.00% test coverage.
+5. VERIFY / DoD & PROOF     ──► Outer test turns GREEN; boundary smoke tests & 100% coverage on all metrics + mutation gate.
 ```
 ---
 
@@ -58,7 +58,7 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 
 | Domain | Rule Reference File | When to Consult |
 |---|---|---|
-| **TDD & Isolation** | [docs/rules/test_driven_development.md](./docs/rules/test_driven_development.md) | Outside-In TDD, Uncle Bob's 3 Laws, 100% coverage, test isolation & DB rollback. |
+| **TDD & Isolation** | [docs/rules/test_driven_development.md](./docs/rules/test_driven_development.md) | Outside-In TDD, Uncle Bob's 3 Laws, 100% coverage on all metrics + mutation gate, test isolation & DB rollback. |
 | **Clean Code** | [docs/rules/clean_code.md](./docs/rules/clean_code.md) | Naming, small functions, CQS, SLAP, DRY, DbC, zero side-effects. |
 | **Design Patterns** | [docs/rules/design_patterns.md](./docs/rules/design_patterns.md) | Adapter, Factory, Strategy, Result `<T, E>`, and GoF pattern catalog. |
 | **Type Safety** | [docs/rules/type_safety.md](./docs/rules/type_safety.md) | Compiler strictness, branded nominal types, type discriminators across polyglot languages. |

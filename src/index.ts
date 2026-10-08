@@ -1,6 +1,6 @@
 /**
  * @module @azcodr/azcodr
- * Enterprise Architecture & Agentic Engineering Starter Template.
+ * Architecture governance toolkit, with an optional starter.
  *
  * Provides problem-first, topology-aligned project scaffolding with strict systemic atomicity,
  * filesystem scope guards, git worktree initialization, and multi-agent harness parity.

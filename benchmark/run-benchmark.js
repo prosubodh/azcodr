@@ -11,7 +11,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
+import { fileURLToPath } from 'node:url';
 import { evaluateTarget } from './evaluate.js';
+
+const selfDir = path.dirname(fileURLToPath(import.meta.url));
 
 function createArmADir(tmpDir) {
   const armA = path.join(tmpDir, 'arm-a-control');
@@ -129,12 +132,27 @@ export async function runFullBenchmark() {
     const scoreC = await evaluateTarget(dirC);
 
     return {
+      generatedAt: new Date().toISOString(),
+      method: 'synthetic fixtures (no live agent); single run, no variance estimate',
       armA: scoreA,
       armB: scoreB,
       armC: scoreC
     };
   } finally {
     fs.rmSync(tmpDir, { recursive: true, force: true });
+  }
+}
+
+function writeTranscript(results) {
+  const outDir = path.join(selfDir, 'results');
+  try {
+    fs.mkdirSync(outDir, { recursive: true });
+    const stamp = new Date().toISOString().replace(/[:.]/g, '-');
+    const outFile = path.join(outDir, `benchmark-${stamp}.json`);
+    fs.writeFileSync(outFile, JSON.stringify(results, null, 2), 'utf-8');
+    console.log(`\n📝 Raw transcript written to: ${path.relative(process.cwd(), outFile)}`);
+  } catch (err) {
+    console.log(`\n⚠️ Could not write transcript: ${err.message}`);
   }
 }
 
@@ -159,6 +177,16 @@ export async function main() {
   console.log(`  Dependency Cycles:             ${results.armC.dependencyCyclesCount}`);
   console.log(`  Boundary Violations:           ${results.armC.boundaryViolationsCount}`);
   console.log(`  Drift Free:                    ${results.armC.passed ? 'YES' : 'NO'}\n`);
+
+  console.log('LIMITATIONS (read before citing):');
+  console.log('  - Synthetic fixtures, not live agent runs; single run, no variance.');
+  console.log('  - Token cost, wall-clock, completion rate, and human review minutes NOT measured.');
+  console.log('  - Where Azcodr loses on paper: added lint/hook friction and scaffold ceremony;');
+  console.log('    on real runs expect higher per-ticket tokens vs control. Measure it, do not assume it.');
+  console.log('  - To rerun against a real agent: execute benchmark/tickets/tickets.json in order,');
+  console.log('    then score each arm with: node benchmark/evaluate.js <dir>');
+
+  writeTranscript(results);
 }
 
 if (process.argv[1] && process.argv[1].endsWith('run-benchmark.js')) {

@@ -64,3 +64,19 @@ node benchmark/run-benchmark.js
 # Evaluate any specific codebase:
 node benchmark/evaluate.js ./path-to-target-repo
 ```
+
+Raw JSON transcripts are written to `benchmark/results/benchmark-<timestamp>.json` on every run. Commit a transcript alongside any cited numbers.
+
+---
+
+## 6. Where Azcodr Loses (Read Before Citing)
+
+- **Governance friction:** lint gates, hook blocks, and scaffold ceremony add per-ticket overhead vs control. This simulation does not measure it.
+- **Token and time cost:** tokens per ticket, wall-clock, and human review minutes are NOT collected here. On real agent runs expect Arm C to cost more tokens than Arm A; the open question is whether the review-time saving outweighs it.
+- **Completion risk:** strict guards can block a valid edit (false positive) until the agent refactors. `passed` above means "drift-free", not "all 10 tickets functionally correct".
+
+## 7. Threats to Validity
+
+- Synthetic fixtures, not live agent output; single deterministic run, no variance estimate (plan calls for 5 runs × 2 agents).
+- One stack (TypeScript) and one rule set; polyglot gates in `docs/rules/clean_code.md` are not exercised here.
+- No independent rerun yet. To harden: have one outside developer run one arm with a different model, publish the transcript, and report cost metrics from `benchmark/README.md` §4.

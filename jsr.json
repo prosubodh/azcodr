@@ -1,7 +1,7 @@
 {
   "name": "@azcodr/azcodr",
   "version": "2.4.0",
-  "description": "Enterprise Architecture & Agentic Engineering Starter Template",
+  "description": "Architecture governance toolkit with topology-scoped scaffolding for AI-assisted development (early release)",
   "exports": "./src/index.ts",
   "publish": {
     "include": [

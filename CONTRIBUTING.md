@@ -49,10 +49,12 @@ Before submitting any code changes, all 5 quality gates must pass with zero erro
    npm test
    npm run test:coverage
    ```
-   *Coverage gates enforced:*
+   *Coverage gates enforced (CI fails below 100% on any metric):*
    - **100% lines coverage**
-   - **97% functions coverage**
-   - **98% branches coverage**
+   - **100% functions coverage**
+   - **100% branches coverage**
+   - **100% statements coverage**
+   - Plus **100% mutant-kill on guards** (`npm run test:mutation`) and rejection of assertion-free tests.
 5. **Agentic Architecture Validation:**
    ```bash
    npm run validate

@@ -1,6 +1,6 @@
 # Test-Driven Development (London School TDD) & Test Isolation Standards
 
-> **Core Mandate:** Drive all features through the non-negotiable 5-Phase Agile Domain Lifecycle (Outside-In Double-Loop TDD, Uncle Bob's 3 Laws), enforcing transactional database rollback per test, zero-sleep determinism, and non-negotiable 100.00% statement, branch, and function coverage gates.
+> **Core Mandate:** Drive all features through the non-negotiable 5-Phase Agile Domain Lifecycle (Outside-In Double-Loop TDD, Uncle Bob's 3 Laws), enforcing transactional database rollback per test, zero-sleep determinism, and CI-enforced 100% coverage on all metrics plus mutation floor (assertion-free tests rejected).
 
 ---
 
@@ -14,7 +14,7 @@ flowchart TD
     P2["Phase 2: Tactical Domain Analysis<br/>• Ubiquitous Language & Bounded Contexts<br/>• Aggregate Roots & Business Invariants"]
     P3["Phase 3: Outer Acceptance Test (RED)<br/>• Failing UI component or API route test<br/>• Verifies failure for expected reason"]
     P4["Phase 4: Inner TDD & Collaborator Discovery (RED-GREEN-REFACTOR)<br/>• Discovers Use Cases & Ports<br/>• Nano-cycles with Uncle Bob's 3 Laws"]
-    P5["Phase 5: Outer Verification & Proof (GREEN)<br/>• Outer test passes with zero regressions<br/>• 100.00% coverage & boundary smoke verification"]
+    P5["Phase 5: Outer Verification & Proof (GREEN)<br/>• Outer test passes with zero regressions<br/>• 100% coverage on all metrics + mutation gate & boundary smoke verification"]
 
     P1 --> P2 --> P3 --> P4 --> P5
 ```
@@ -125,10 +125,13 @@ sequenceDiagram
 
 ---
 
-## 7. Mandatory 100.00% Test Coverage Thresholds
+## 7. Mandatory 100% Coverage on All Metrics + Mutation Floor (No Assertion-Free Tests)
 
-- **Strict Coverage Thresholds**: Maintain line, function, branch, and statement test coverage at **100.00%** across all backend domain logic, adapters, contracts, and frontend suites. Strictly enforce 100% threshold failure gates in CI pipelines (`scripts/test_coverage.js`).
-- **Exhaustive Status Codes & Error Branches**: Explicitly test all HTTP/gRPC response codes:
+- **Strict 100% thresholds:** CI fails unless line, function, branch, AND statement coverage are all 100% (`jest.config.js`: lines 100 / functions 100 / branches 100 / statements 100). Generated projects must hold the same 100% bar in their own stack via the per-language gates in `docs/rules/clean_code.md`. Lowering any metric requires an ADR.
+- **Mutation floor on guards:** line coverage alone proves little. Behavioral guards (`agent-guard-*`, `boundaries.ts`, protected-target checks) must hold a 100% mutant-kill gate (`npm run test:mutation`, `benchmark/mutation-test.js`). A green suite that lets a `blocked: true → false` or `return cycles → return []` mutant survive is a failure, even at 100% lines.
+- **Assertion-density check:** agents asked to hit a line number write assertion-free tests to cover lines. Reject that explicitly: every new behavioral test must contain at least one behavior-asserting expectation (no `expect(true).toBe(true)`, no tests without assertions). Prefer `benchmark/evaluate.js --strict-tests` style checks (assertions per test ≥ 1, critical paths ≥ 2) over raising the line percentage.
+- **What this repo enforces vs what users get:** this repo's exact thresholds live in `jest.config.js` (100% lines, branches, functions, statements) and are locked by `tests/coverage-config.test.ts`. Generated polyglot projects get the equivalent per-language fitness gates in `docs/rules/clean_code.md` (ESLint / ruff / clippy / golangci-lint / Checkstyle / Roslyn) at the same 100% bar — the tooling differs by stack, the bar must not.
+- **Exhaustive status codes & error branches:** explicitly test all HTTP/gRPC response codes:
   - Success: `200 OK`, `201 Created`, `204 No Content`
   - Client Errors: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict`, `422 Unprocessable Entity`, `429 Too Many Requests`
   - Server Failures: `500 Internal Server Error`, `503 Service Unavailable`

@@ -6,7 +6,13 @@
  *  1. Files over 300 lines (hygiene / Refactor-Before-Add)
  *  2. Dependency cycles (circular imports)
  *  3. Layer boundary violations (domain importing infra / controllers)
- *  4. Overall scorecard
+ *  4. Test quality proxy: assertions per test file (guards against
+ *     assertion-free tests written only to satisfy line gates)
+ *  5. Overall scorecard
+ *
+ * Cost metrics (tokens, wall-clock, human review minutes) are NOT measured
+ * by this simulation — see RESULTS.md "Threats to validity". They must be
+ * recorded manually when tickets are executed against a real agent harness.
  */
 import fs from 'node:fs';
 import path from 'node:path';
@@ -53,6 +59,42 @@ function mapBoundaryViolations(violations, absTarget) {
   }));
 }
 
+function findTestFiles(dir, out = []) {
+  let entries = [];
+  try {
+    entries = fs.readdirSync(dir, { withFileTypes: true });
+  } catch {
+    return out;
+  }
+  for (const entry of entries) {
+    if (entry.name.startsWith('.') || entry.name === 'node_modules') continue;
+    const full = path.join(dir, entry.name);
+    if (entry.isDirectory()) findTestFiles(full, out);
+    else if (/\.test\.(ts|js)$/.test(entry.name) || /\.spec\.(ts|js)$/.test(entry.name)) out.push(full);
+  }
+  return out;
+}
+
+function countAssertionsInContent(content) {
+  const matches = content.match(/(?:expect\s*\(|assert\.[a-zA-Z]+|assert\s*\()/g);
+  return matches ? matches.length : 0;
+}
+
+export function measureTestQuality(targetDir) {
+  const absTarget = path.resolve(targetDir);
+  const testFiles = findTestFiles(absTarget);
+  let assertionCount = 0;
+  for (const file of testFiles) {
+    try {
+      assertionCount += countAssertionsInContent(fs.readFileSync(file, 'utf-8'));
+    } catch {
+      // unreadable test file counts as zero assertions
+    }
+  }
+  const assertionsPerTestFile = testFiles.length > 0 ? assertionCount / testFiles.length : 0;
+  return { testFileCount: testFiles.length, assertionCount, assertionsPerTestFile };
+}
+
 export async function evaluateTarget(targetDir = process.cwd()) {
   const absTarget = path.resolve(targetDir);
   const { findSourceFiles, buildDependencyGraph, detectDependencyCycles, detectBoundaryViolations } =
@@ -63,6 +105,7 @@ export async function evaluateTarget(targetDir = process.cwd()) {
   const cycles = detectDependencyCycles(graph);
   const boundaryViolations = detectBoundaryViolations(graph);
   const { oversized, maxLines } = scanOversizedFiles(files, absTarget);
+  const testQuality = measureTestQuality(absTarget);
 
   return {
     targetDir: absTarget,
@@ -74,6 +117,12 @@ export async function evaluateTarget(targetDir = process.cwd()) {
     dependencyCycles: cycles.map((c) => c.map((p) => path.relative(absTarget, p))),
     boundaryViolationsCount: boundaryViolations.length,
     boundaryViolations: mapBoundaryViolations(boundaryViolations, absTarget),
+    testFileCount: testQuality.testFileCount,
+    assertionCount: testQuality.assertionCount,
+    assertionsPerTestFile: Math.round(testQuality.assertionsPerTestFile * 100) / 100,
+    costMetrics: {
+      note: 'NOT measured by simulation; record tokens, wall-clock, and human review minutes manually on real agent runs.'
+    },
     passed: oversized.length === 0 && cycles.length === 0 && boundaryViolations.length === 0
   };
 }
@@ -87,6 +136,8 @@ function printScorecard(score) {
   console.log(`Files > 300 lines:    ${score.oversizedFileCount}`);
   console.log(`Dependency Cycles:    ${score.dependencyCyclesCount}`);
   console.log(`Boundary Violations:  ${score.boundaryViolationsCount}`);
+  console.log(`Test Files:           ${score.testFileCount} (${score.assertionCount} assertions, ${score.assertionsPerTestFile}/file)`);
+  console.log(`Cost Metrics:         ${score.costMetrics.note}`);
   console.log('--------------------------------------------------------------');
   if (score.passed) {
     console.log('🎉 DRIFT SCORE: 0 Violations (Clean Architecture Maintained)\n');

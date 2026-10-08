@@ -1,10 +1,14 @@
-# azcodr: Enterprise Architecture & Agentic Engineering Starter Template
+# azcodr: Architecture governance toolkit, with an optional starter
 
 [![npm version](https://img.shields.io/npm/v/azcodr.svg?color=cb3837)](https://www.npmjs.com/package/azcodr)
 [![JSR Package](https://jsr.io/badges/@azcodr/azcodr)](https://jsr.io/@azcodr/azcodr)
 [![CI Status](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml/badge.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-100.00%25-brightgreen.svg)](https://github.com/prosubodh/azcodr)
-[![Mutation Score](https://img.shields.io/badge/mutants%20killed-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr)
+[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
+[![Mutation Score](https://img.shields.io/badge/mutants%20killed-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr/blob/main/benchmark/RESULTS.md)
+[![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)](https://www.npmjs.com/package/azcodr)
+[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
+
+> CI-enforced 100% gate (lines / branches / functions / statements) + 100% mutant kill on guards; the public report is the `coverage-report` artifact on every CI run.
 [![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)](https://www.npmjs.com/package/azcodr)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
@@ -127,7 +131,7 @@ The architecture enforces 28 cohesive, single-responsibility domain rules. Read 
 
 | Domain | Rule Reference File | Key Focus & Invariants |
 |---|---|---|
-| **TDD & Isolation** | [`test_driven_development.md`](./docs/rules/test_driven_development.md) | Outside-In TDD, Uncle Bob's 3 Laws, 100% coverage, test isolation & DB rollback. |
+| **TDD & Isolation** | [`test_driven_development.md`](./docs/rules/test_driven_development.md) | Outside-In TDD, Uncle Bob's 3 Laws, 100% coverage on all metrics + mutation gate, test isolation & DB rollback. |
 | **Clean Code** | [`clean_code.md`](./docs/rules/clean_code.md) | Naming, small functions, CQS, SLAP, DRY, DbC, zero side-effects. |
 | **Design Patterns** | [`design_patterns.md`](./docs/rules/design_patterns.md) | Adapter, Factory, Strategy, Result `<T, E>`, and GoF pattern catalog. |
 | **Type Safety** | [`type_safety.md`](./docs/rules/type_safety.md) | Compiler strictness, branded nominal types, type discriminators across polyglot languages. |
@@ -171,7 +175,7 @@ The architecture enforces 28 cohesive, single-responsibility domain rules. Read 
 
 ## 🚀 Starting a New Project with `/lets-build`
 
-This repository serves as an **enterprise architectural starter template**. When beginning a new software project:
+This repository serves as an **architecture governance toolkit, with an optional starter**. When beginning a new software project:
 
 ### Step 1: Initialize Workspace with npx
 Pull and scaffold the complete enterprise architectural template into your project directory using `npx`:
