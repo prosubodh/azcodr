@@ -59,7 +59,7 @@ Legend: **[DONE v2.6.0]** shipped in this batch · **[QUEUED]** next work ·
 | C-01 | Replace "production-ready, battle-tested" wording | 0 | **[DONE v2.6.0]** README + npm/JSR description aligned |
 | C-02 | Remove duplicate badges; honest benchmark framing | 0 | **[DONE v2.6.0]** README badges de-duplicated; synthetic-detector framing |
 | C-03 | Publish coverage report as CI artifact/badge | 0 | **[DONE]** pre-existing (`ci.yml` uploads coverage; ADR list) |
-| C-04 | GitHub description + website link + 5–8 topics | 0 | **[QUEUED / UNVERIFIABLE]** network-only; two-minute fix, do at release |
+| C-04 | GitHub description + website link + 5–8 topics | 0 | **[DONE — VERIFIED]** live `gh repo view` 2026-10-09: description + 8 topics present; homepage = JSR package page (valid). Doc's "missing" claim was stale. |
 | C-05 | Do not cite the 1,604 downloads as proof | 0 | **[DONE]** removed from marketing claims |
 | C-06 | Document the linters a non-TypeScript project actually gets | 0 | **[DONE]** `docs/generated-enforcement-analysis.md` + addenda; determinism pass (B-08) covers the residual |
 | C-07 | Neutral fallback git identity (or skip commit) | 0 | **[DONE]** pre-existing (checked in audit) |
@@ -90,7 +90,7 @@ the next phase starts. None of the gates below has passed yet except Phase 0's.
 | 2 | Govern existing repos (checker decoupled from scaffolder) | `azcodr boundaries` + a foreign-repo `check` pass on a repo with no azcodr files, with a scoped verdict | B-09, B-10 | **[QUEUED]** |
 | 3 | Product posture: identity split + surface shrink | One consistent positioning sentence in README/npm/JSR; rules catalog trimmed or deliberately kept | P-01, P-02 | **[OPEN]** |
 | 4 | External validation | A second outside developer independently runs one benchmark arm; issues/forks/usage beyond mirrors | network + time | **[BLOCKED]** |
-| 5 | Scale evidence (multi-agent, multi-topology) & hardening | 5 runs/arm/agent variance table; Stryker-or-removal decision closed | B-07 results | **[OPEN]** |
+| 5 | Scale evidence (multi-agent, multi-topology) & hardening | 5 runs/arm/agent variance table; hook-equivalent harness evidence (pilot filed 2026-10-09; full protocol pending) | B-07 results | **[OPEN]** |
 
 Phase 1 is deliberately first: the doc's own verdict is that "a reproducible
 demo of an agent's violations being caught beats more README philosophy", and
@@ -112,20 +112,27 @@ exercise.
 
 ## 4. Open decisions (owner: maintainer)
 
-1. **`stryker.config.json` orphan.** The CI mutation gate is the zero-dep native
-   harness (`benchmark/mutation-test.js`). The doc calls the gate "Stryker";
-   reality differs. Either delete the orphan config and say so, or adopt Stryker
-   as a dependency. v2.6.0 leaves it unmodified. **Recommended: delete.**
+1. **`stryker.config.json` orphan — RESOLVED.** Deleted in the 2.6.0 follow-up
+   (2026-10-09); the mutation gate stays the zero-dep native harness
+   (`benchmark/mutation-test.js`, 8/8 mutants), locked by
+   `tests/mutation-gate.test.ts`. The doc's "Stryker in CI" claim remains
+   corrected in the audit.
 2. **Default-on hooks trade-off.** All four hooks interrupt a harnessed session,
    including inside a bare scaffold. ADR-021 accepts the cost. Revisit only if
    a real-agent trial (Phase 1) shows the lint/stop hooks are net-negative.
-3. **JSR.** ADR-008 blocks JSR publishing on an ESM port; `publish.yml`'s
-   `publish-jsr` job is wired with `if: false`. Route (a) of ADR-008 is a real
-   refactor. Keep blocked unless a consumer needs JSR.
-4. **GitHub description/topics/website.** Unverifiable from this host; the
-   doc's two-minute fix is queued (C-04). Do it at the 2.6.0 release.
-5. **Real-agent trial.** Not equivalent to run here — hooks are validate-only
-   in this repo. Needs Claude Code/Cursor. Protocol pre-registered.
+3. **JSR — RESOLVED (stale entry).** ADR-008's blocker was superseded by
+   ADR-013/ADR-014: the native ESM port landed, `publish-jsr` is enabled in
+   `publish.yml`, and `@azcodr/azcodr@2.5.1` is live on JSR (verified
+   2026-10-09). Republish the 2.6.0 batch at the next release so the JSR readme
+   picks up the honest benchmark framing.
+4. **GitHub description/topics/website — RESOLVED (verified).** Live `gh repo
+   view` (2026-10-09): description + 8 topics already set; homepage is the
+   valid JSR package page. The doc's "no description or topics" finding is
+   stale — it was fixed after the doc was written.
+5. **Real-agent trial.** A pilot pass was executed on 2026-10-09 with subagent
+   sessions as the agent (see `benchmark/results/real-agent/`); it is NOT
+   hook-equivalent (this harness does not intercept subagent tool calls), so the
+   full protocol still needs Claude Code/Cursor. Protocol pre-registered.
 
 ---
 

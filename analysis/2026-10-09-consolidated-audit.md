@@ -26,7 +26,7 @@ Analysis and Plan` document against the live repository. Statuses:
 | 5 | External validation at zero | **PARTIAL / UNVERIFIABLE** | `git shortlog` shows 1 human contributor. Stars/forks need network. |
 | 6 | Duplicated badge lines in README | **FIXED in 2.6.0** | Duplicate Dependencies + License rows removed. |
 | 6a | Pillars 7–9 still lead the README | **FALSE** (doc wrong) | README leads with title/positioning (`:1`, `:15`); pillars 1–10 appear `:22-36`, pillars 7–9 mid-list. |
-| 6b | GitHub description/topics unverified | **UNVERIFIABLE** | Network required. |
+| 6b | GitHub description/topics unverified | **UNVERIFIABLE → VERIFIED** | `gh repo view` (2026-10-09): description *"Production-oriented architecture governance and topology-scoped scaffolding for AI-assisted development."* + 8 topics present; homepage = `https://jsr.io/@azcodr/azcodr`, a published package (`@azcodr/azcodr@2.5.1`) — the "no description/topics" claim from the doc is stale. |
 
 ## 2. The "v2.5.1 changed" claims
 
@@ -39,7 +39,7 @@ Analysis and Plan` document against the live repository. Statuses:
 | `docs/tipping-points.md` with numeric triggers | **TRUE** | `docs/tipping-points.md:11-12` numeric triggers; 5 tipping points named. |
 | `azcodr check` / `azcodr boundaries` run on any repo | **TRUE (caveat)** | `src/cli.ts:31-46`, `src/cli-boundaries.ts`. Caveat: `check` runs the full governance validator, which reports errors on repos lacking `memory.md`/rules — it is azcodr-shaped, not any-repo-shaped. |
 | Hooks: Refactor-Before-Add, RED-before-GREEN, command guards | **TRUE** | `src/agent-guard-file.ts:66`, `src/agent-guard-tdd.ts:77-83` (default off unless `enforceTestFirst`), `src/agent-guard-command.ts:16-89`. |
-| Stryker mutation testing in CI | **FALSE (as stated)** | `stryker.config.json` is orphaned (referenced only by its own `$schema`; grep confirms). CI mutation gate is the **native** harness `benchmark/mutation-test.js` (`ci.yml:94-95`). Doc calls it Stryker; reality is a zero-dep native harness. |
+| Stryker mutation testing in CI | **FALSE (as stated) → RESOLVED** | `stryker.config.json` was orphaned (referenced only by its own `$schema`). The CI mutation gate is the **native** harness `benchmark/mutation-test.js` (`ci.yml:95`). The orphan config was **deleted in the 2.6.0 follow-up**; the native-harness story is locked by `tests/mutation-gate.test.ts`. Doc calls it Stryker; reality is a zero-dep native harness. |
 | Fail-open guard found and fixed; per-language linters emitted | **TRUE** | `docs/generated-enforcement-analysis.md` findings + addenda; `.agents/scripts/agent_guard.js:42-49` exits 2; `bootstrap_workspace.sh:358-466` emits eslint/ruff/clippy/golangci/checkstyle/editorconfig/clang-tidy. |
 
 ## 3. New defects this audit found (not in the attachment)
@@ -49,8 +49,9 @@ Analysis and Plan` document against the live repository. Statuses:
    build`, `test:mutation`, `benchmark/run-benchmark.js` — none exist in a fresh
    scaffold → generated CI failed on every push. **Fixed in 2.6.0** by writing a
    Node-only starter CI and dropping the dev workflows from the target.
-2. **`stryker.config.json` is orphaned.** Either wire it (adds a dependency) or
-   delete it. **Open decision; left unmodified.**
+2. **`stryker.config.json` was orphaned.** **Resolved in the 2.6.0 follow-up**:
+   deleted (no dependency adopted); the mutation gate stays the zero-dep native
+   harness, locked by `tests/mutation-gate.test.ts` and verified at 8/8 mutants.
 3. **`npx azcodr check` on a foreign repo is not zero-friction.** It runs the
    full governance validator and fails on absent `memory.md`; the doc's "runs on
    any repo" should be read with that caveat (already documented above).
