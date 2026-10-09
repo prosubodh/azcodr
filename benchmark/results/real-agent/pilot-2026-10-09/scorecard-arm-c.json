@@ -1,0 +1,18 @@
+{
+  "targetDir": "C:\\Users\\PROSUBODH\\AppData\\Local\\Temp\\azcodr-pilot-WlZ2it\\arm-c-azcodr",
+  "moduleCount": 59,
+  "oversizedFileCount": 0,
+  "oversizedFiles": [],
+  "maxFileLines": 184,
+  "dependencyCyclesCount": 0,
+  "dependencyCycles": [],
+  "boundaryViolationsCount": 0,
+  "boundaryViolations": [],
+  "testFileCount": 10,
+  "assertionCount": 114,
+  "assertionsPerTestFile": 11.4,
+  "costMetrics": {
+    "note": "NOT measured by simulation; record tokens, wall-clock, and human review minutes manually on real agent runs."
+  },
+  "passed": true
+}

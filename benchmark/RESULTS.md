@@ -111,12 +111,22 @@ Raw JSON transcripts are written to `benchmark/results/benchmark-<timestamp>.jso
 
 ---
 
-## 9. Real-Agent Validation (Planned)
+## 9. Real-Agent Validation (Planned → Pilot 2026-10-09)
 
 The detection proof above is necessary but not sufficient for the product claim.
 The next evidence step is a live-agent trial, designed so a skeptic cannot
 dismiss it. Runbook and result template live in
-[`REAL-AGENT-RUNBOOK.md`](./REAL-AGENT-RUNBOOK.md). Minimum credible pass:
+[`REAL-AGENT-RUNBOOK.md`](./REAL-AGENT-RUNBOOK.md).
+
+**A pilot pass exists:** [`results/real-agent/pilot-2026-10-09/`](./results/real-agent/pilot-2026-10-09/pilot-result.md)
+— 1 run per arm, three arms, executed in this harness by subagent sessions.
+Directional result: Arm A (plain) drifted (1 cycle); Arm B (hooks, unhooked
+here) scored 0 but dodge the boundary check; Arm C (scaffold) scored 0 with the
+boundary detector genuinely exercised. The pilot measures prompt-level
+governance only — hooks were NOT intercepted. It is a methodology calibration,
+not the credible pass.
+
+Minimum credible pass (full protocol):
 
 - Two TypeScript web-backend repos built from the same spec: plain starter
   (control) and an azcodr scaffold where the shipped hooks are loaded (treatment).

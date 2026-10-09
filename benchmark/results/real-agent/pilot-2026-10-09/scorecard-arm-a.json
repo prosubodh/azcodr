@@ -1,0 +1,24 @@
+{
+  "targetDir": "C:\\Users\\PROSUBODH\\AppData\\Local\\Temp\\azcodr-pilot-WlZ2it\\arm-a-control",
+  "moduleCount": 15,
+  "oversizedFileCount": 0,
+  "oversizedFiles": [],
+  "maxFileLines": 241,
+  "dependencyCyclesCount": 1,
+  "dependencyCycles": [
+    [
+      "src\\audit.ts",
+      "src\\tenant.ts",
+      "src\\audit.ts"
+    ]
+  ],
+  "boundaryViolationsCount": 0,
+  "boundaryViolations": [],
+  "testFileCount": 10,
+  "assertionCount": 141,
+  "assertionsPerTestFile": 14.1,
+  "costMetrics": {
+    "note": "NOT measured by simulation; record tokens, wall-clock, and human review minutes manually on real agent runs."
+  },
+  "passed": false
+}

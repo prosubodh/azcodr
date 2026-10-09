@@ -5,9 +5,13 @@ trial that the packaged benchmark does **not** perform. `benchmark/RESULTS.md`
 is detector validation on synthetic fixtures; this document is the plan for
 the evidence that would actually support the product claim.
 
-> **Status:** NOT YET RUN. Do not cite a result from this document as measured;
-> every number below is a placeholder until a pass is executed and published
-> under `benchmark/results/real-agent/`.
+> **Status:** FULL PROTOCOL NOT YET RUN. A pilot pass was executed on
+> 2026-10-09 by subagent sessions in the OpenCode harness — see
+> `results/real-agent/pilot-2026-10-09/pilot-result.md`. That pilot measured
+> prompt-level governance only (no hook interception), so every number below
+> is still a placeholder until a full pass is executed on a hook-loading
+> harness (Claude Code / Cursor) and published under
+> `benchmark/results/real-agent/`.
 
 ---
 

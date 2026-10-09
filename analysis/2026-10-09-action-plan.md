@@ -47,7 +47,7 @@ Legend: **[DONE v2.6.0]** shipped in this batch · **[QUEUED]** next work ·
 | B-04 | Byte-lock the vendored engine to the built `lib/` | 0 | **[DONE v2.6.0]** `tests/boundary-guard.test.ts` asserts byte equality |
 | B-05 | Lock the starter-CI behaviour with tests (dry-run, removal of dev workflows, package.json wiring) | 0 | **[DONE v2.6.0]** `tests/scaffold-ci.test.ts` |
 | B-06 | Mutants for starter-CI and boundary-runner fail-closed behaviour | 0 | **[DONE v2.6.0]** added to `benchmark/mutation-test.js` targets |
-| B-07 | **Real-agent validation of hook enforcement** (doc's #1 next move) | 1 | **[BLOCKED]** needs an external harness (Claude Code / Cursor); protocol + result template pre-registered (`benchmark/REAL-AGENT-RUNBOOK.md`). Running inside this repo is *not* equivalent: hooks are validate-only here. |
+| B-07 | **Real-agent validation of hook enforcement** (doc's #1 next move) | 1 | **[PILOT FILED]** `benchmark/results/real-agent/pilot-2026-10-09/`: 3 arms × 1 run by subagent sessions. A: drifted (1 cycle). B: 0 (flat layout dodges boundary check). C: 0 with boundary detector genuinely exercised. Prompt-level governance only — hooks not intercepted. Full protocol still **[BLOCKED]** on a hook-loading harness (Claude Code / Cursor). |
 | B-08 | Per-language guard scripts in generated projects become deterministic, not agent-authored | 1 | **[OPEN]** doc point: step 5 linter/fixer emission is agent-authored. Bootstrap already emits deterministic eslint/ruff/clippy/golangci/checkstyle/editorconfig/clang-tidy; close the loop by testing a generated C/Rust/Go/… project end-to-end. |
 | B-09 | Decouple the **checker** from the scaffolder so `azcodr check`/`boundaries` govern *existing* repos | 2 | **[QUEUED]** doc ruling: highest-leverage product move. `azcodr boundaries` exists; needs a foreign-repo tolerance pass (see B-10). |
 | B-10 | `azcodr check` on a non-azcodr repo reports a scoped verdict instead of failing on missing azcodr-shaped files | 2 | **[QUEUED]** current caveat: `check` runs the full validator and errors on missing `memory.md`/rules ("runs on any repo" overstates). |
@@ -86,7 +86,7 @@ the next phase starts. None of the gates below has passed yet except Phase 0's.
 | Phase | Goal | Gate (must pass to proceed) | Depends on | Status |
 |---|---|---|---|---|
 | 0 | Claims, enforcement wiring, reproducibility | 2.6.0 batch merged; `npm test`, lint, validate, mutation all green; generated-CI no longer fails out of the box | — | **[DONE v2.6.0]** being verified in this session |
-| 1 | **Empirical proof at the agent runtime** — the product-deciding phase | ≥1 external harness runs the 10-ticket protocol on arms A/B/C; raw transcripts + results land in `benchmark/results/` using the registered template; acceptance tests + cost metrics recorded | B-07 protocol | **[BLOCKED]** external harness required |
+| 1 | **Empirical proof at the agent runtime** — the product-deciding phase | ≥1 external harness runs the 10-ticket protocol on arms A/B/C; raw transcripts + results land in `benchmark/results/` using the registered template; acceptance tests + cost metrics recorded | B-07 protocol | **[PILOT FILED 2026-10-09]** prompt-level pilot done (drift in A, clean C, hooks-not-intercepted caveat); full pass **[BLOCKED]** on external harness |
 | 2 | Govern existing repos (checker decoupled from scaffolder) | `azcodr boundaries` + a foreign-repo `check` pass on a repo with no azcodr files, with a scoped verdict | B-09, B-10 | **[QUEUED]** |
 | 3 | Product posture: identity split + surface shrink | One consistent positioning sentence in README/npm/JSR; rules catalog trimmed or deliberately kept | P-01, P-02 | **[OPEN]** |
 | 4 | External validation | A second outside developer independently runs one benchmark arm; issues/forks/usage beyond mirrors | network + time | **[BLOCKED]** |
@@ -130,9 +130,13 @@ exercise.
    valid JSR package page. The doc's "no description or topics" finding is
    stale — it was fixed after the doc was written.
 5. **Real-agent trial.** A pilot pass was executed on 2026-10-09 with subagent
-   sessions as the agent (see `benchmark/results/real-agent/`); it is NOT
-   hook-equivalent (this harness does not intercept subagent tool calls), so the
-   full protocol still needs Claude Code/Cursor. Protocol pre-registered.
+   sessions as the agent — see
+   `benchmark/results/real-agent/pilot-2026-10-09/pilot-result.md`. Directional
+   read (1 run/arm, prompt-level only): control arm drifted (1 cycle), scaffold
+   arm clean with the boundary detector genuinely exercised. **NOT
+   hook-equivalent** (this harness does not intercept subagent tool calls), so
+   the full protocol still needs Claude Code/Cursor. Protocol pre-registered;
+   if you have access to a hook-loading harness, this is the doc's #1 next move.
 
 ---
 

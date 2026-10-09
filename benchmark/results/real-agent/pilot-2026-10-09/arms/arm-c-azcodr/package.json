@@ -1,0 +1,19 @@
+{
+  "name": "arm-c-azcodr",
+  "version": "0.1.0",
+  "type": "module",
+  "private": true,
+  "description": "Scaffolded with the azcodr architecture governance toolkit",
+  "scripts": {
+    "test": "node --test",
+    "build": "tsc --noEmit",
+    "test:coverage": "jest --coverage",
+    "lint": "echo \"No linter configured yet. Run /lets-build to configure toolchain.\"",
+    "boundaries": "node .agents/scripts/boundary_guard.js",
+    "validate": "node scripts/validate-cli.js"
+  },
+  "devDependencies": {
+    "@types/node": "^26.6.4",
+    "typescript": "^7.0.2"
+  }
+}
