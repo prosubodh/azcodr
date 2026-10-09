@@ -583,3 +583,9 @@ fi
 
 echo "--------------------------------------------------------------"
 echo "✅ Topology '${TOPOLOGY}' scaffolded with strict YAGNI (0 speculative folders)!"
+echo ""
+echo "🛑 MANDATORY HANDOVER GATE (ADR-008):"
+echo "   Bootstrapping is COMPLETE. Zero application domain entities have been created."
+echo "   DO NOT fabricate domain models, entities, or features during lets-build."
+echo "   Next: invoke 'product-analyst' & 'relentless-questioner' to conduct formal"
+echo "   stakeholder domain analysis, INVEST story decomposition, and Gherkin criteria."

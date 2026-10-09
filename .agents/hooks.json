@@ -7,7 +7,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./.agents/scripts/safety_guard.sh",
+            "command": "node .agents/scripts/safety_guard.js",
             "timeout": 15
           }
         ]
@@ -22,7 +22,7 @@
         "hooks": [
           {
             "type": "command",
-            "command": "./.agents/scripts/agent_guard.js",
+            "command": "node .agents/scripts/agent_guard.js",
             "timeout": 15
           }
         ]
@@ -49,7 +49,7 @@
     "Stop": [
       {
         "type": "command",
-        "command": "./.agents/scripts/verify_completion.sh",
+        "command": "node .agents/scripts/verify_completion.js",
         "timeout": 120
       }
     ]

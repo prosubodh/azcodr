@@ -29,6 +29,14 @@ describe('shipped hooks are default-on', () => {
     });
   }
 
+function extractScriptRelativePath(command: string): string | null {
+  if (command.startsWith('./.agents/')) {
+    return command.slice(2);
+  }
+  const match = command.match(/^node\s+(\.?\/?\.agents\/[^\s]+)/);
+  return match?.[1] ? match[1].replace(/^\.\//, '') : null;
+}
+
   test('every hook command that references a script resolves to a real file', () => {
     for (const fileName of ['hooks.json', 'hooks.json.example']) {
       const hooks = loadHooks(fileName);
@@ -36,8 +44,8 @@ describe('shipped hooks are default-on', () => {
         for (const event of ['PreToolUse', 'PostToolUse', 'Stop'] as const) {
           for (const entry of hook[event] ?? []) {
             if (!entry.command) continue;
-            if (!entry.command.startsWith('./.agents/')) continue;
-            const rel = entry.command.slice(2);
+            const rel = extractScriptRelativePath(entry.command);
+            if (!rel) continue;
             assert.ok(
               fs.existsSync(path.join(ROOT, rel)),
               `${fileName}: ${group} references missing script ${rel}`

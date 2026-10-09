@@ -195,4 +195,16 @@ describeSuite('bootstrap toolchain: deterministic gate configs per language', ()
       removeRoot(root);
     }
   });
+
+  test('announces the mandatory handover gate upon completion', () => {
+    const root = freshRoot();
+    try {
+      const r = runBootstrap(root, 'backend', 'typescript');
+      assert.strictEqual(r.code, 0, r.out);
+      assert.match(r.out, /MANDATORY HANDOVER GATE \(ADR-008\)/);
+      assert.match(r.out, /product-analyst/);
+    } finally {
+      removeRoot(root);
+    }
+  });
 });

@@ -62,10 +62,11 @@ describe('Starter CI replaces azcodr dev workflows in generated projects', () =>
     );
   });
 
-  test('starter package.json wires boundaries and validate scripts', () => {
+  test('starter package.json wires boundaries, smoke and validate scripts', () => {
     copyTemplate(tmpDir, templateDir);
     const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf-8'));
     assert.strictEqual(pkg.scripts.boundaries, 'node .agents/scripts/boundary_guard.js');
+    assert.strictEqual(pkg.scripts.smoke, 'node .agents/scripts/smoke_test.js');
     assert.strictEqual(pkg.scripts.validate, 'node scripts/validate-cli.js');
   });
 

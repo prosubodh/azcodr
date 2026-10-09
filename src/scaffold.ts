@@ -191,6 +191,7 @@ function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
       'test:coverage': 'jest --coverage',
       lint: 'echo "No linter configured yet. Run /lets-build to configure toolchain."',
       boundaries: 'node .agents/scripts/boundary_guard.js',
+      smoke: 'node .agents/scripts/smoke_test.js',
       validate: 'node scripts/validate-cli.js'
     }
   };
