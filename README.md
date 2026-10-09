@@ -9,8 +9,6 @@
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 > CI-enforced 100% gate (lines / branches / functions / statements) + 100% mutant kill on guards; the public report is the `coverage-report` artifact on every CI run.
-[![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)](https://www.npmjs.com/package/azcodr)
-[![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
 > **Production-oriented architecture governance and topology-scoped scaffolding for AI-assisted development (early release).**  
 > *AI agents move fast. Architecture drifts. Azcodr turns architectural intent into executable constraints your agent cannot skip.*
@@ -38,7 +36,7 @@
 
 ## ⚡ 60-Second Demo: See Drift Prevention in Action
 
-Azcodr turns architectural philosophy into machine-checked constraints your agent cannot skip.
+Azcodr turns architectural philosophy into machine-checked constraints. In a fresh scaffold the runtime hooks ship **enabled by default**, and the boundary engine runs in CI, so drift is caught both while the agent edits and after it commits.
 
 ### 1. Standalone Architectural Check
 Run the validator on any repository without scaffolding:
@@ -67,7 +65,7 @@ When an AI coding agent attempts to dump new logic into a file already exceeding
 ```
 
 ### 3. Zero-Dependency Boundary & Cycle Enforcement
-Inspect dependency cycles and layer boundaries on demand without third-party linters:
+Inspect dependency cycles and layer boundaries on demand without third-party linters. The same engine is vendored into every scaffolded project (`.agents/scripts/boundary_guard.js`) and runs in the generated CI:
 ```bash
 npx azcodr boundaries [directory]
 ```
@@ -80,17 +78,17 @@ npx azcodr boundaries [directory]
    Action Required: Invert dependencies via Ports or extract shared modules.
 ```
 
-### 4. Empirical Benchmark Proof (3 Arms, 10 Sequential Tickets)
-In an automated empirical trial across 10 sequential tickets with 3 architectural traps ([`benchmark/RESULTS.md`](https://github.com/prosubodh/azcodr/blob/main/benchmark/RESULTS.md)):
+### 4. Detector Validation on Synthetic Fixtures (Not a Live-Agent Trial)
+The evaluator's ability to detect the 3 trap classes is exercised against **hand-written fixtures**, not live agent output ([`benchmark/RESULTS.md`](https://github.com/prosubodh/azcodr/blob/main/benchmark/RESULTS.md)):
 
 | Metric | Arm A (Control) | Arm B (Hooks Only) | Arm C (Full Azcodr) |
 |---|:---:|:---:|:---:|
 | **Files >300 Lines** | 1 (365 lines in `auth.ts`) | **0** (Modularized) | **0** (Modularized) |
 | **Circular Dependency Cycles** | 1 (`billing <-> tenant`) | 1 (`billing <-> tenant`) | **0** (Decoupled Port) |
 | **Layer Boundary Breaches** | 1 (`domain -> infra`) | 1 (`domain -> infra`) | **0** (Hexagonal Port) |
-| **Overall Drift Reduction** | ❌ FAILED | ❌ FAILED | ✅ **100% DRIFT-FREE** |
+| **Detected drift-free** | ❌ FAILED | ❌ FAILED | ✅ **0 detector violations** |
 
-Run the empirical benchmark yourself:
+These fixtures are committed by hand to prove the detector fires; they are **not evidence** that an AI agent drifts. Real-agent results (tokens, completion, review minutes) are planned and not yet measured. Run the detector yourself:
 ```bash
 node benchmark/run-benchmark.js
 ```

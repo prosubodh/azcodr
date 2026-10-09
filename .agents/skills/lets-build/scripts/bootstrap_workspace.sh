@@ -567,7 +567,14 @@ if [[ ! -f "${SMOKE_TEST}" ]]; then
 # ==============================================================================
 set -euo pipefail
 
+ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
+
 echo "Running boundary smoke verification..."
+if [[ -f "${ROOT}/.agents/scripts/boundary_guard.js" ]] && command -v node >/dev/null 2>&1; then
+  node "${ROOT}/.agents/scripts/boundary_guard.js" "${ROOT}/src"
+else
+  echo "⚠️  Boundary guard skipped (node or guard script unavailable)."
+fi
 # Extend with project-specific runtime health checks (e.g. ping health endpoint, CLI --help)
 echo "✅ Boundary smoke verification passed!"
 EOF

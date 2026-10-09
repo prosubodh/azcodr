@@ -128,6 +128,27 @@ names the test that locks it:
    `npm run lint` fails until the pinned tool lands instead of echoing
    success.
 
+## Addendum (2026-10-09): boundaries shipped, starter CI generated, hooks on
+
+6. **Boundary engine now ships in the scaffold.** `lib/boundaries.js` is
+   vendored into `.agents/lib/boundaries.js` (byte-locked by
+   `tests/boundary-guard.test.ts`, re-copied after every build per
+   `CONTRIBUTING.md`) and a vendored-first runner `.agents/scripts/boundary_guard.js`
+   exits 0/1 on a repo's cycle & layer verdict (exit 2 on a missing engine).
+   The starter `package.json` gains a `boundaries` script pointing at it.
+7. **Generated CI is now green out of the box.** azcodr's own dev workflows
+   (`ci.yml`, `publish.yml`) call scripts a fresh project does not have, so
+   shipping them verbatim made a scaffolded repo's CI fail on every push. The
+   scaffolder now replaces them with a starter `.github/workflows/ci.yml` that
+   only needs Node, the vendored boundary guard, and `scripts/validate-cli.js`.
+   Locked by `tests/scaffold-ci.test.ts`.
+8. **Hooks ship enabled.** `.agents/hooks.json` (+`.example`) now ships all four
+   hooks `enabled: true` (safety, architectural, post-tool-lint, stop-verifier),
+   amending ADR-020 which deliberately shipped them disabled. The trade-off is
+   recorded in the 2026-10-09 ADR: default-on means a harness that loads the
+   file blocks immediately, at the cost that lint/stop hooks can interrupt
+   worthless-but-harmless sessions in a bare scaffold.
+
 ## Reproduce
 
 ```bash

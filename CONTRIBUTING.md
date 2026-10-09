@@ -60,9 +60,9 @@ Before submitting any code changes, all 5 quality gates must pass with zero erro
    npm run validate
    ```
    Validates root harness parity, progressive disclosure rules, skill formats, markdown links, ADR ledger consistency, and toolchain gate presence.
-6. **Vendored Guard Sync:** after any change under `src/agent-guard*.ts` and `npm run build`, re-copy the four compiled engine files into `.agents/lib/` (byte-equality is enforced by `tests/agent-guard.test.ts`):
+6. **Vendored Engine Sync:** after any change under `src/agent-guard*.ts` or `src/boundaries.ts` and `npm run build`, re-copy the compiled engine files into `.agents/lib/` (byte-equality is enforced by `tests/agent-guard.test.ts` and `tests/boundary-guard.test.ts`):
    ```bash
-   node -e "const fs=require('fs');for(const f of['agent-guard.js','agent-guard-command.js','agent-guard-file.js','agent-guard-tdd.js'])fs.copyFileSync('lib/'+f,'.agents/lib/'+f)"
+   node -e "const fs=require('fs');for(const f of['agent-guard.js','agent-guard-command.js','agent-guard-file.js','agent-guard-tdd.js','boundaries.js'])fs.copyFileSync('lib/'+f,'.agents/lib/'+f)"
    ```
 
 ---

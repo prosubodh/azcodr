@@ -1,7 +1,7 @@
 {
   "name": "@azcodr/azcodr",
-  "version": "2.5.1",
-  "description": "Architecture governance toolkit with topology-scoped scaffolding for AI-assisted development (early release)",
+  "version": "2.6.0",
+  "description": "Architecture governance toolkit, with an optional starter (early release)",
   "exports": "./src/index.ts",
   "publish": {
     "include": [

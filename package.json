@@ -1,7 +1,7 @@
 {
   "name": "azcodr",
-  "version": "2.5.1",
-  "description": "Architecture governance toolkit with topology-scoped scaffolding for AI-assisted development (early release)",
+  "version": "2.6.0",
+  "description": "Architecture governance toolkit, with an optional starter (early release)",
   "type": "module",
   "bin": {
     "azcodr": "bin/azcodr.js"
@@ -44,7 +44,7 @@
     "agents",
     "npx"
   ],
-  "author": "Subodh Khanal <prosubodh+git@gmail.com>",
+  "author": "Subodh Khanal",
   "license": "MIT",
   "repository": {
     "type": "git",

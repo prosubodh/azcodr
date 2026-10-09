@@ -1,16 +1,20 @@
-# Empirical Drift-Reduction Benchmark: Results & Findings
+# Detector Validation on Synthetic Fixtures: Results & Findings
 
-> **Executive Verdict:** AI coding agents optimize locally for immediate ticket completion. Without architectural governance, sequential tickets cause rapid structural erosion. Azcodr's combined architecture (**Agent Runtime Hooks + Zero-Dependency Boundary Engine**) achieved **100% drift elimination (0 violations)** across all 10 sequential tickets, while an unconstrained control starter accumulated file bloat, circular import cycles, and layer boundary breaches.
+> **Scope (read first):** This document validates that the **evaluator detects** the three drift classes it claims to detect, using **hand-written fixtures**. No AI agent ran. It is not a live-agent drift-reduction trial; those results are planned (see §9). Do not cite it as evidence that agents drift or that Azcodr changes agent behaviour.
+
+> **Verdict:** On the committed fixtures the detector scores the full architecture (boundary engine + fitness functions + hooks) at **0 violations**, while the control fixture carries one oversized file, one import cycle, and one layer breach. The product-claim value so far is zero: the fixtures were written to be caught.
 
 ---
 
-## 1. Experimental Methodology
+## 1. What Was Actually Run
 
-Three identical initial codebases were subjected to the 10 sequential feature tickets specified in [`tickets.json`](./tickets/tickets.json). Three tickets contained intentional architectural traps designed to tempt AI agents into taking locally optimal shortcuts:
+Three fixture trees were hand-authored in `run-benchmark.js` to represent the end-state of three arms. No agent executed the tickets in [`tickets.json`](./tickets/tickets.json).
 
-- **Arm A (Control):** Standard TypeScript starter without architectural limits or hooks.
-- **Arm B (Hooks Only):** Standard starter equipped with Azcodr's `agent_guard.js` PreToolUse hook (Refactor-Before-Add).
-- **Arm C (Treatment):** Full Azcodr Architecture (runtime hooks + ESLint fitness functions + `boundaries.ts` layer rules).
+- **Arm A (Control fixture):** hand-written drift — a 365-line `auth.ts`, a `billing <-> tenant` cycle, and a `domain -> infrastructure` breach.
+- **Arm B (Hooks-only fixture):** hand-written modularization of the bloat trap; the cycle and breach are left in place.
+- **Arm C (Treatment fixture):** hand-written clean end-state (ports, shared types, split files).
+
+**Arm D** (below) is different: it scaffolds a **real** project with the shipped template and audits enforcement *presence* with no agent additions.
 
 ---
 
@@ -30,28 +34,30 @@ Scored via automated harness (`node benchmark/run-benchmark.js`):
 
 ## 3. Analysis of the 3 Architectural Traps
 
+Each trap below is a hand-written fixture. The "outcome" lines describe the fixture's end-state and the check that flags it — not an observed agent trajectory.
+
 ### Trap 1: File Bloat (Ticket T03 - OAuth Providers)
-- **Temptation:** Agent appends GitHub, Google, and Discord OAuth handlers directly into `auth.ts`.
-- **Arm A Outcome:** `auth.ts` bloated to 365 lines, violating clean code limits.
-- **Arm B Outcome:** `agent_guard.js` intercepted the tool call before write, rejecting additions over 300 lines. The agent extracted separate provider strategies (`oauth-github.ts`, `oauth-google.ts`).
-- **Arm C Outcome:** Prevented at runtime and verified by ESLint fitness function (`max-lines: 300`).
+- **Temptation:** appending GitHub, Google, and Discord OAuth handlers directly into `auth.ts`.
+- **Arm A Outcome:** fixture `auth.ts` is 365 lines, violating clean code limits.
+- **Arm B Outcome:** the fixture models the intended `agent_guard.js` interception (reject additions over 300 lines) by extracting provider strategies (`oauth-github.ts`, `oauth-google.ts`). The hook itself is not exercised on a live tool call here.
+- **Arm C Outcome:** fixture modeled as prevented at runtime and verified by the ESLint fitness function (`max-lines: 300`).
 
 ### Trap 2: Circular Dependency (Ticket T05 - Workspace Billing)
-- **Temptation:** Checking workspace subscription requires tenant lookup, while tenant lookup requires billing status.
-- **Arm A & B Outcome:** Agent simply wrote `import './tenant.js'` in `billing.ts` and `import './billing.js'` in `tenant.ts`, introducing a circular dependency cycle.
-- **Arm C Outcome:** Azcodr's `detectDependencyCycles()` flagged the cycle immediately in test/check. The agent resolved it by extracting a shared contract interface (`billing-types.ts`), keeping the dependency graph strictly acyclic (DAG).
+- **Temptation:** checking workspace subscription requires tenant lookup while tenant lookup requires billing status.
+- **Arm A & B Outcome:** fixtures contain `import './tenant.js'` in `billing.ts` and `import './billing.js'` in `tenant.ts`.
+- **Arm C Outcome:** fixture extracts a shared contract interface (`billing-types.ts`), keeping the dependency graph acyclic. `detectDependencyCycles()` flags the A/B fixtures.
 
 ### Trap 3: Layer Boundary Breach (Ticket T07 - Payment Webhook)
-- **Temptation:** Payment reconciliation calls raw database or HTTP transport directly from core domain logic.
-- **Arm A & B Outcome:** Core domain entity `payment.ts` directly imported `../infrastructure/db.ts`.
-- **Arm C Outcome:** Azcodr's `detectBoundaryViolations()` caught the inward violation (`domain -> infrastructure`). The agent inverted the dependency using a Hexagonal Port (`PaymentRepoPort`), preserving domain purity.
+- **Temptation:** payment reconciliation calls raw database or HTTP transport directly from core domain logic.
+- **Arm A & B Outcome:** fixture `payment.ts` imports `../infrastructure/db.ts`.
+- **Arm C Outcome:** fixture inverts the dependency using a Hexagonal Port (`PaymentRepoPort`). `detectBoundaryViolations()` flags the A/B fixtures.
 
 ---
 
 ## 4. Key Takeaways & Product Insights
 
-1. **Hooks alone are not enough:** Arm B proved that runtime hooks successfully stop file bloat (Refactor-Before-Add), but cannot prevent architectural cycles or layer erosion without a graph boundary engine.
-2. **The Defense-in-Depth Moat:** Only the combination of **Agent-Runtime Hooks** (stopping bad edits during the session) + **Boundary Enforcement** (verifying module directionality) ensures zero architectural drift over sequential tickets.
+1. **Size hygiene alone is not architecture:** the Arm B fixture models hooks stopping file bloat (Refactor-Before-Add) while still carrying a cycle and a layer breach. Cycle and boundary enforcement needs the graph engine.
+2. **The Defense-in-Depth Moat:** the inactive fixture only validates the detector. The offered moat is **Agent-Runtime Hooks** (stopping bad edits during the session) **+ Boundary Enforcement in CI** (verifying module directionality) — this is untested on a live agent until §9 is executed.
 
 ---
 
@@ -67,14 +73,15 @@ writes a line. Run it with the same command; transcripts land in
 |---|---|---|
 | Guard script (`.agents/scripts/agent_guard.js`) | present | present |
 | Guard engine resolvable (vendored `.agents/lib/`) | present | present |
-| Hooks wire `agent_guard` | wired (disabled by default) | wired (disabled by default) |
+| Hooks wire `agent_guard` + `boundary_guard` | wired (enabled by default) | wired (enabled by default) |
 | Toolchain gates (`eslint.config.js` for typescript) | n/a (no profile yet) | present |
 
-Agent layer (reported, never gating): toolchain *installed*, hooks *enabled* —
-these require the Phase 4/5 agent steps (install pinned tool, prove the gate,
-enable hooks with a live block proof). Node profiles also arrive with the
-`lint` entry rewired to `eslint .`; other profiles still need it wired by hand.
-A raw scaffold honestly reports the remainder absent.
+Agent layer (reported, never gating): toolchain *installed*, hooks *proven live*
+(an actual blocked edit in a session) — these require the Phase 4/5 agent steps.
+Hooks ship `enabled: true` so a harness that loads `.agents/hooks.json` blocks
+immediately; a live block proof is still required. Node profiles also arrive
+with the `lint` entry rewired to `eslint .`; other profiles still need it wired
+by hand. A raw scaffold honestly reports the remainder absent.
 
 ## 6. How to Reproduce
 
@@ -101,3 +108,27 @@ Raw JSON transcripts are written to `benchmark/results/benchmark-<timestamp>.jso
 - Synthetic fixtures, not live agent output; single deterministic run, no variance estimate (plan calls for 5 runs × 2 agents).
 - One stack (TypeScript) and one rule set; polyglot gates in `docs/rules/clean_code.md` are not exercised here.
 - No independent rerun yet. To harden: have one outside developer run one arm with a different model, publish the transcript, and report cost metrics from `benchmark/README.md` §4.
+
+---
+
+## 9. Real-Agent Validation (Planned)
+
+The detection proof above is necessary but not sufficient for the product claim.
+The next evidence step is a live-agent trial, designed so a skeptic cannot
+dismiss it. Runbook and result template live in
+[`REAL-AGENT-RUNBOOK.md`](./REAL-AGENT-RUNBOOK.md). Minimum credible pass:
+
+- Two TypeScript web-backend repos built from the same spec: plain starter
+  (control) and an azcodr scaffold where the shipped hooks are loaded (treatment).
+- Same agent, same model version, same prompts, fixed temperature; two agents
+  (e.g. Claude Code and Cursor) to show the result is not agent-specific.
+- Ten sequential tickets (the 3 traps among them) from `tickets.json`, executed
+  in order; publish raw transcripts, diffs and the `evaluate.js` scorecards.
+- Report tokens per ticket, wall-clock, acceptance, and human review minutes —
+  including where azcodr loses on cost and completion.
+- Add a third arm: plain starter + azcodr hooks only, to isolate what the hooks
+  contribute versus the full scaffold.
+
+Nothing in this file is a substitute for that pass. When a real-agent pass is
+published, move it to a new section above this one and keep this section as its
+pre-registration record.

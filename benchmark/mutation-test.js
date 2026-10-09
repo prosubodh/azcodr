@@ -56,6 +56,20 @@ export const MUTATION_TARGETS = [
     testFile: 'tests/protected-target.test.ts',
     target: 'if (isFilesystemRoot(resolvedTarget)) return true;',
     replacement: 'if (isFilesystemRoot(resolvedTarget)) return false;'
+  },
+  {
+    name: 'Starter CI Write Omission',
+    file: 'src/starter-ci.ts',
+    testFile: 'tests/scaffold-ci.test.ts',
+    target: "const actions = ['generate: .github/workflows/ci.yml (starter governance CI)'];",
+    replacement: 'const actions: string[] = [];'
+  },
+  {
+    name: 'Boundary Guard Fail-Closed Bypass',
+    file: '.agents/scripts/boundary_guard.js',
+    testFile: 'tests/boundary-guard.test.ts',
+    target: 'process.exit(2);',
+    replacement: 'process.exit(0);'
   }
 ];
 

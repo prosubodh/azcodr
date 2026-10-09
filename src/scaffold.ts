@@ -10,6 +10,7 @@ import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit } from './repo.js';
 import type { InitGitOptions } from './repo.js';
+import { writeStarterCi } from './starter-ci.js';
 
 export { getTemplateDir };
 
@@ -189,6 +190,7 @@ function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
       test: 'node --test',
       'test:coverage': 'jest --coverage',
       lint: 'echo "No linter configured yet. Run /lets-build to configure toolchain."',
+      boundaries: 'node .agents/scripts/boundary_guard.js',
       validate: 'node scripts/validate-cli.js'
     }
   };
@@ -236,6 +238,7 @@ export function copyTemplate(
   actions.push(...ensureHarnessParity(resolvedTarget, dryRun));
   actions.push(...ensureCopilotParity(resolvedTarget, dryRun));
   actions.push(...ensureStarterPackageJson(resolvedTarget, dryRun));
+  actions.push(...writeStarterCi(resolvedTarget, dryRun));
   const inspectDir = dryRun ? resolvedTemplate : resolvedTarget;
   actions.push(...chmodTemplateScripts(inspectDir, dryRun));
   return actions;
