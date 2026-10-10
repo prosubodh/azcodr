@@ -75,6 +75,12 @@ export const DESTRUCTIVE_RULES = [
         reason: 'package publish must run via release workflow, not ad-hoc tool call'
     }
 ];
+/**
+ * Collapses multi-line strings and extra whitespace into a single normalized shell command string.
+ *
+ * @param raw - Raw command string.
+ * @returns Cleaned single-line command string.
+ */
 export function normalizeCommand(raw) {
     return raw.replace(/[\r\n\t]+/g, ' ').replace(/\s+/g, ' ').trim();
 }

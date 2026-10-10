@@ -8,9 +8,13 @@ export declare function getTemplateDir(): string;
  * Options for configuring protected target verification.
  */
 export interface ProtectedTargetOptions {
+    /** Optional custom template directory path. */
     templateDir?: string;
+    /** Force overwrite flag. */
     force?: boolean;
+    /** Dry-run execution simulation flag. */
     dryRun?: boolean;
+    /** Allow targeting protected directories (internal testing only). */
     allowProtected?: boolean;
 }
 /**

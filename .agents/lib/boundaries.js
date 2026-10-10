@@ -1,5 +1,8 @@
 import fs from 'node:fs';
 import path from 'node:path';
+/**
+ * Canonical architectural boundary rules enforcing Hexagonal / Clean Architecture layer constraints.
+ */
 export const DEFAULT_BOUNDARY_RULES = [
     {
         fromLayer: 'domain',
@@ -19,6 +22,13 @@ function isEligibleSource(name) {
         return false;
     return !name.includes('.test.') && !name.includes('.spec.');
 }
+/**
+ * Recursively discovers all eligible source files (.ts and .js) within a directory,
+ * ignoring skipped directories (e.g. node_modules, lib) and test files.
+ *
+ * @param dir - Root directory to search.
+ * @returns Sorted array of absolute file paths.
+ */
 export function findSourceFiles(dir) {
     if (!fs.existsSync(dir))
         return [];
@@ -49,6 +59,12 @@ function resolveImportTarget(sourceFile, specifier) {
     }
     return null;
 }
+/**
+ * Scans a source file and extracts all local relative import and export paths.
+ *
+ * @param filePath - Absolute or relative path to the source file.
+ * @returns Sorted array of resolved local file paths imported or re-exported.
+ */
 export function extractLocalImports(filePath) {
     if (!fs.existsSync(filePath))
         return [];
@@ -66,6 +82,12 @@ export function extractLocalImports(filePath) {
     }
     return imports.sort();
 }
+/**
+ * Constructs a dependency graph mapping each source file to its imported local files.
+ *
+ * @param files - Array of source file paths.
+ * @returns Map where keys are source file paths and values are arrays of imported local file paths.
+ */
 export function buildDependencyGraph(files) {
     const graph = new Map();
     for (const file of files) {
@@ -73,6 +95,12 @@ export function buildDependencyGraph(files) {
     }
     return graph;
 }
+/**
+ * Analyzes a dependency graph using depth-first search to detect circular import cycles.
+ *
+ * @param graph - Map of file paths to their imported dependency file paths.
+ * @returns Array of cycle paths, where each cycle path is an array of file paths.
+ */
 export function detectDependencyCycles(graph) {
     const cycles = [];
     const visited = new Set();
@@ -105,6 +133,13 @@ export function detectDependencyCycles(graph) {
 function hasLayerSegment(pathStr, segment) {
     return new RegExp(`(^|[/\\\\])${segment}([/\\\\]|$)`, 'i').test(pathStr);
 }
+/**
+ * Evaluates a dependency graph against architectural boundary rules to detect prohibited cross-layer imports.
+ *
+ * @param graph - Map of file paths to their imported dependency file paths.
+ * @param rules - Architectural boundary rules to enforce (defaults to DEFAULT_BOUNDARY_RULES).
+ * @returns Array of detected boundary violations.
+ */
 export function detectBoundaryViolations(graph, rules = DEFAULT_BOUNDARY_RULES) {
     const violations = [];
     for (const [file, imports] of graph.entries()) {

@@ -16,36 +16,52 @@ export declare const TEMPLATE_ITEMS: readonly string[];
  * Configuration options for the primary scaffold orchestration function.
  */
 export interface ScaffoldOptions {
+    /** Target directory path where project will be scaffolded (defaults to process.cwd()). */
     targetDir?: string;
+    /** Force overwrite if target directory exists and is non-empty. */
     force?: boolean;
+    /** Skip git repository initialization. */
     noGit?: boolean;
+    /** Optional custom template directory path. */
     templateDir?: string;
+    /** Simulate scaffolding without writing files to disk. */
     dryRun?: boolean;
+    /** Suppress non-error console output. */
     silent?: boolean;
 }
 /**
  * Result object returned upon completion of a scaffold operation.
  */
 export interface ScaffoldResult {
+    /** Whether the scaffolding operation completed successfully. */
     success: boolean;
+    /** Absolute filesystem path of the scaffolded target directory. */
     targetDir: string;
+    /** Whether a git repository was initialized and committed. */
     gitInitialized: boolean;
+    /** Whether execution was a dry-run simulation without disk mutations. */
     dryRun: boolean;
+    /** List of recorded scaffolding action descriptions taken. */
     actions: string[];
 }
 /**
  * Options controlling pre-scaffold target directory validation.
  */
 export interface ValidateTargetOptions {
+    /** Custom template root directory path. */
     templateDir?: string;
+    /** Allow non-empty directory when force is true. */
     force?: boolean;
+    /** Simulate validation checks without erroring on non-empty targets. */
     dryRun?: boolean;
+    /** Allow targeting protected directories (internal testing only). */
     allowProtected?: boolean;
 }
 /**
  * Options controlling template file copying and file generation.
  */
 export interface CopyTemplateOptions {
+    /** Simulate copying without disk mutations. */
     dryRun?: boolean;
 }
 /**
@@ -75,6 +91,9 @@ export declare function copyTemplate(targetDir: string, templateDir?: string, op
 export declare function scaffold(options?: ScaffoldOptions): ScaffoldResult;
 export { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, isInsideGitWorkTree, initGit, runGit, assertInside, ScaffoldError, ERROR_CODES, isProtectedTarget };
 export type { EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorCode, ScaffoldErrorShape };
+/**
+ * Unified azcodr scaffolding functions, guards, utilities, and constants module.
+ */
 declare const _default: {
     scaffold: typeof scaffold;
     validateTarget: typeof validateTarget;

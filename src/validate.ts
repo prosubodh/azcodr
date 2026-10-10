@@ -1,20 +1,37 @@
 import path from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 
+/**
+ * Tally and results returned by the architecture governance validator.
+ */
 export interface ValidationResult {
+  /** Total count of fatal governance errors encountered. */
   errors: number;
+  /** Total count of non-fatal governance warnings encountered. */
   warnings: number;
+  /** Number of progressive disclosure domain rule files verified. */
   validatedRules: number;
+  /** Number of agent skills verified under .agents/skills/. */
   validatedSkills: number;
+  /** Total count of internal markdown links verified. */
   totalLinks: number;
+  /** List of broken link targets detected across workspace markdown files. */
   brokenLinks: string[];
 }
 
+/**
+ * Pluggable reporter interface receiving live validation events.
+ */
 export interface ValidationReporter {
+  /** Called when a check passes. */
   pass: (msg: string) => void;
+  /** Called when a non-fatal warning is raised. */
   warn: (msg: string) => void;
+  /** Called when a validation check fails. */
   fail: (msg: string) => void;
+  /** Called for informative messages and section spacing. */
   log: (msg: string) => void;
+  /** Called when a new validation phase begins. */
   heading: (msg: string) => void;
 }
 

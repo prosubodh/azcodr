@@ -9,7 +9,9 @@ const INITIAL_COMMIT_MESSAGE = 'chore: initial scaffold from azcodr template';
  * Options controlling git repository initialization.
  */
 export interface InitGitOptions {
+  /** If true, skip git repository initialization entirely. */
   noGit?: boolean;
+  /** If true, simulate git repository initialization without invoking git. */
   dryRun?: boolean;
 }
 

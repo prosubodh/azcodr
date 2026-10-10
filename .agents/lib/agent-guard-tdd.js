@@ -1,5 +1,11 @@
 import fs from 'node:fs';
 import path from 'node:path';
+/**
+ * Identifies whether a given path is a unit or integration test file.
+ *
+ * @param filePath - File path to inspect.
+ * @returns True if path matches test directory or file extension patterns.
+ */
 export function isTestFile(filePath) {
     const norm = filePath.replace(/\\/g, '/').toLowerCase();
     if (/(^|\/)(tests?|__tests__)(\/|$)/i.test(norm)) {
@@ -7,11 +13,23 @@ export function isTestFile(filePath) {
     }
     return /\.(test|spec)\.[a-z0-9]+$/i.test(norm);
 }
+/**
+ * Identifies whether a given path is a non-code file (markdown, json, yaml, images).
+ *
+ * @param filePath - File path to inspect.
+ * @returns True if file extension indicates non-code asset or configuration.
+ */
 export function isNonCodeFile(filePath) {
     const ext = path.extname(filePath).toLowerCase();
     const nonCodeExts = new Set(['.md', '.json', '.yml', '.yaml', '.txt', '.toml', '.lock', '.svg', '.png']);
     return nonCodeExts.has(ext);
 }
+/**
+ * Identifies whether a given file path corresponds to production code under src/, lib/, or app/.
+ *
+ * @param filePath - File path to inspect.
+ * @returns True if path is production source code subject to RED-before-GREEN discipline.
+ */
 export function isProductionFile(filePath) {
     if (isNonCodeFile(filePath))
         return false;
@@ -20,6 +38,12 @@ export function isProductionFile(filePath) {
     const norm = filePath.replace(/\\/g, '/').toLowerCase();
     return norm.includes('src/') || norm.includes('lib/') || norm.includes('app/');
 }
+/**
+ * Loads session TDD tracking state from disk, defaulting to unrecorded state if missing.
+ *
+ * @param stateFile - Path to the persistent session state JSON file.
+ * @returns Parsed SessionTddState object.
+ */
 export function readTddState(stateFile) {
     if (!fs.existsSync(stateFile)) {
         return { lastFailingTestRecorded: false };
@@ -32,6 +56,12 @@ export function readTddState(stateFile) {
         return { lastFailingTestRecorded: false };
     }
 }
+/**
+ * Persists session TDD state to disk with fail-safe error handling to avoid disrupting execution.
+ *
+ * @param stateFile - Path to the persistent session state JSON file.
+ * @param state - SessionTddState object to record.
+ */
 export function writeTddState(stateFile, state) {
     try {
         const dir = path.dirname(stateFile);

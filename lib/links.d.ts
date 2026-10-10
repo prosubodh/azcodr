@@ -2,9 +2,13 @@
  * Configuration options for symlink and pointer creation.
  */
 export interface EnsureSymlinkOptions {
+    /** Target directory containing the files and proposed link. */
     targetDir: string;
+    /** Name of the symbolic link or alias pointer file to create. */
     linkName: string;
+    /** Name of the target file that the symlink or pointer points to. */
     targetFileName: string;
+    /** When true, simulate link creation without disk mutations. */
     dryRun?: boolean;
 }
 /**

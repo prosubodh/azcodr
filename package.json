@@ -1,6 +1,6 @@
 {
   "name": "azcodr",
-  "version": "2.7.0",
+  "version": "2.7.1",
   "description": "Architecture governance toolkit, with an optional starter (early release)",
   "type": "module",
   "bin": {

@@ -2,7 +2,9 @@
  * Options controlling git repository initialization.
  */
 export interface InitGitOptions {
+    /** If true, skip git repository initialization entirely. */
     noGit?: boolean;
+    /** If true, simulate git repository initialization without invoking git. */
     dryRun?: boolean;
 }
 /**
