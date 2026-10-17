@@ -4,15 +4,27 @@
 
 ---
 
-## 1. Clean Code Standards (Robert C. Martin)
+## 1. Clean Code Standards (Robert C. Martin & Craftsmanship Heuristics)
 
+- **The Boy Scout Rule** (Uncle Bob): Always leave the code cleaner than you found it. Every edit, commit, and PR must improve the maintainability of the touched file.
 - **Intention-Revealing Naming**: Names of variables, functions, and classes must describe why they exist, what they do, and how they are used. Avoid abbreviations, single-letter variables, and type-encoding prefixes.
 - **Function Guidelines**:
   - **Small and Focused**: Functions should do one thing, do it well, and do only that (Single Responsibility Principle). Max 20–30 lines per function.
+  - **The Stepdown Rule & Newspaper Metaphor**: Code should read top-to-bottom like a newspaper narrative. Every function should be followed by helper functions at the next lower level of abstraction.
   - **Single Level of Abstraction (SLAP)**: Statements within a function must belong to the exact same level of abstraction.
   - **Command-Query Separation (CQS)**: A function must either perform an action (mutate state) or return a value (query state), never both.
-  - **Argument Limit**: Limit function arguments to 3 or fewer. Bundle additional parameters into typed configuration DTOs or Value Objects.
+  - **Argument Limit & No Flag Arguments**: Limit function arguments to 3 or fewer. Bundle additional parameters into typed configuration DTOs or Value Objects. Boolean "flag arguments" are strictly forbidden; they prove the function does two different things. Split into separate, intention-revealing functions.
+- **Law of Demeter (Principle of Least Knowledge)**: A module should not know about the innards of objects it manipulates ("shy code"). Never write "train wreck" method chains (e.g. `order.getCustomer().getAddress().getCity()`). Instead, tell, don't ask: `order.getDeliveryCity()`.
+- **Extract Error Handling**: Error handling is a single responsibility. Functions that execute `try/catch/finally` blocks should contain nothing else; delegate the underlying business operation to a focused helper function.
 - **Eliminate Side-Effects**: Functions must not have unexpected side effects (e.g. modifying passed arguments in-place or mutating global state) without explicit naming.
+- **Never Return or Pass Null**: Null references trigger cascading runtime exceptions. Return explicit `Result<T, E>`, `Option<T>`, or the Null Object Pattern.
+- **The Barricade Technique (Defensive Programming)** (Steve McConnell - *Code Complete*): Partition software into untrusted and trusted zones. All data crossing external boundaries (HTTP requests, files, user inputs) must be validated and sanitized at the boundary barricade (using Zod, Pydantic, etc.). Once data passes inside the barricade, internal domain routines operate on trusted, validated data without redundant defensive checks.
+- **Variable Span & Live Time** (Steve McConnell - *Code Complete*): Minimize variable span (lines between references) and live time (statements between declaration and last use). Declare and initialize variables immediately before their first use, localizing their scope.
+- **Table-Driven Methods** (Steve McConnell - *Code Complete*): Replace deeply nested conditional logic with declarative table or map lookups, isolating dynamic business variations into structured configuration tables.
+- **The Two Hats Principle** (Martin Fowler - *Refactoring*): Strictly separate structural refactoring from behavioral feature addition. When wearing the "Refactoring Hat", restructure code without altering external behavior under 100% green tests. When wearing the "Feature Hat", add new behavior driven by failing tests. Never wear both hats at once.
+- **Screaming Architecture & The Inward Dependency Rule** (Robert C. Martin - *Clean Architecture*): Software directory structures must scream the business domain (e.g. `billing`, `inventory`, `shipping`), not the delivery framework (e.g. `controllers`, `react`, `express`). Dependencies must point strictly inward toward business policy; frameworks, databases, and UI are replaceable details that depend on the domain, never vice versa.
+- **The Floating-Point Currency Trap** (Chuck Allison): Never use IEEE 754 floating-point numbers (`float`, `double`, `number`) for money, financial balances, or exact integer counts. Rounding errors corrupt ledgers. Represent currency in integer minor units (e.g. cents) or arbitrary-precision decimals.
+- **Comments as "Why", Code as "What"** (Kevlin Henney): Code clearly communicates *what* and *how*; comments must only explain *why* (business rationale, non-obvious trade-offs, regulatory requirements). Never write redundant comments that merely restate the syntax.
 - **Dead Code**: Never leave commented-out code; rely entirely on version control history.
 
 ---
@@ -20,9 +32,15 @@
 ## 2. The Pragmatic Programmer Directives (Hunt & Thomas)
 
 - **DRY (Don't Repeat Yourself)**: Every piece of knowledge must have a single, unambiguous, authoritative representation within the system. DRY applies to business domain knowledge, not superficial syntax duplication.
+- **"Beware the Share"** (Udi Dahan): Prematurely sharing code across different Bounded Contexts creates tight, artificial coupling. Duplication of code is far cheaper than the wrong abstraction.
 - **Orthogonality**: Eliminate coupling between unrelated modules. Changing one component must not cascade unexpected side effects into another.
 - **Broken Windows Theory**: Never leave bad code, failing lint checks, or out-of-date documentation unfixed. Fix defects immediately before entropy normalizes.
 - **Design by Contract (DbC)**: Define explicit preconditions (runtime boundary validation), postconditions (guaranteed response envelopes), and domain invariants.
+- **Make Invalid States Unrepresentable & "Parse, Don't Validate"**: Model domain structures and state machines using algebraic types, tagged unions, and value objects so that illegal states fail at compile time or at the parse boundary.
+- **Dead Programs Tell No Lies (Crash Early & Fail Fast)**: When an impossible condition occurs or an invariant is breached, fail immediately. Continuing execution with corrupted in-memory state leads to silent data destruction downstream.
+- **Assertive Programming vs Error Handling**: Use internal assertions exclusively for invariant checks that should *never* occur in correct software. Never use assertions for anticipated operational failures (bad user input, network outages, missing files); handle them with explicit typed results.
+- **Finish What You Start (Resource Balancing)**: The function or class that allocates a resource (file handle, socket, transaction, lock) must deallocate it. Leverage RAII, `using`, or guaranteed `try...finally` teardown.
+- **Tracer Bullets vs Prototypes**: Tracer bullets are thin, end-to-end production code paths connecting all architectural layers from Day 1 to prove integration; prototypes are disposable experiments intended to be discarded. Never convert prototypes into production code.
 
 ---
 

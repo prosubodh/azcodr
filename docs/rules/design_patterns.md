@@ -4,12 +4,22 @@
 
 ---
 
-## 1. Structural & Creational Patterns
+## 1. Foundational Design Principles & Structural Patterns
 
+### The Two Foundational Principles of Object-Oriented Design (GoF)
+1. **Program to an interface, not an implementation**: Clients remain completely decoupled from concrete classes as long as objects adhere to the interface contract.
+2. **Favor object composition over class inheritance**: Inheritance exposes subclass implementation to parent internals (white-box reuse); object composition achieves black-box reuse and allows dynamic runtime swapping.
+
+### The YAGNI Gate for Design Patterns
+- Patterns are not design goals; they are solutions to recurring structural friction.
+- Never apply a Gang of Four pattern speculatively on Day 1. Follow the **Rule of Three**: implement simple direct logic first, and introduce polymorphic Strategy, Factory, or Decorator structures only when the 3rd variant or proven variance tipping point occurs.
+
+### Core Creational & Structural Standards
 - **Adapter Pattern (Hexagonal Boundary)**: Wrap all external libraries, database drivers, cloud SDKs, and third-party APIs in project-owned adapter interfaces. *Rule: Only mock types you own.*
 - **Factory Method**: Encapsulate complex collaborator instantiation (e.g. tenant-specific payment gateways or notification dispatchers) behind factory functions.
 - **Facade Pattern**: Expose a unified, simplified interface to complex underlying multi-service subsystems.
 - **Decorator / Middleware**: Compose cross-cutting concerns (observability, authentication, tenant context resolution, rate limiting) via middleware pipelines.
+- **Resist the Singleton Trap** (Kevlin Henney & Sam Saariste): Avoid global static singletons (`getInstance()`). Global singletons are disguised global variables that create hidden temporal coupling, prevent concurrent test isolation, and obscure dependencies. Manage singleton lifecycles exclusively through Dependency Injection (DI) scoping or composition root assembly.
 - **Dependency Injection & Composition Hygiene**: Application factories (`createApp(deps)`) must accept an explicit composite container (`AppDependencies`). Never provide silent default fallback instances inside factories that instantiate disconnected repositories or services when partial dependencies are passed (the Split-Brain Anti-Pattern). Assemble the full dependency graph explicitly at the composition root.
 
 ---

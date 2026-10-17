@@ -87,6 +87,28 @@ Every collaborator discovered in Phase 4 must progress through micro-cycles of o
 5. **REFACTOR (Under Green):** Clean up names, eliminate duplication (DRY), enforce SLAP and Clean Code standards while tests remain 100% green.
 6. **REPEAT:** Move to the next micro-behavior (e.g. `cart with 1 item returns item price`).
 
+### Kent Beck's TDD Tactical Patterns & Disciplines
+
+Integrate Kent Beck's core TDD patterns (*Test-Driven Development: By Example*) into every nano-cycle:
+
+1. **The Test List (To-Do List)**:
+   - Before writing code, write a concrete list of all tests you anticipate needing.
+   - When a new edge case, defect, or refactoring idea occurs while writing tests or making them pass, **do not context-switch**. Add it to the Test List and maintain flow on the current micro-assertion. Cross items off one by one.
+2. **The Three Pathways to Green**:
+   - **Fake It ('Til You Make It)**: Return a hardcoded constant to get the test green instantly. Then gradually replace constants with variables as subsequent tests demand real logic.
+   - **Triangulation**: Only generalize when you have two or more distinct examples. If `add(2, 2)` can pass by returning `4` or `a * 2` or `a + b`, write `add(2, 3) = 5` to triangulate the general addition algorithm.
+   - **Obvious Implementation**: When the operation is simple and trivial, type in the real code immediately. However, if a surprise red bar occurs, immediately revert and drop back down to *Fake It* or *Triangulation*.
+3. **Assert First**:
+   - Write the assertion statement first before writing fixture setup or method invocation. Designing backwards from the asserted outcome establishes the precise caller interface and eliminates unnecessary scaffolding.
+4. **Evident Data**:
+   - Make input and output relationships mathematically evident in test data. Never use identical constants that mask calculation logic (e.g. avoid `2 * 2 = 4` where multiplication, addition, and squaring yield the same result; prefer `price = 10, quantity = 3, expectedTotal = 30`).
+5. **Crash Test Dummy (Resilience Testing)**:
+   - Test error handling, exception flows, and fault recovery by supplying test doubles or stubs that deliberately throw specific errors (e.g. network timeout, disk full, connection refused).
+6. **One to Many**:
+   - When implementing an operation over a collection or stream, implement and verify the algorithm for a single element first. Once green and refactored, scale the design to collections.
+7. **Write Tests for People** (Gerard Meszaros & Kevlin Henney):
+   - Tests are executable specifications and living documentation. Structure test names with intention-revealing domain phrases, avoid cryptic abbreviations, and ensure test intent is readable at a glance without reading implementation code.
+
 ---
 
 ## 5. Ping-Pong Pair Programming Protocol with AI

@@ -59,6 +59,13 @@ To prevent LLM context exhaustion, attention dilution, and model degradation:
 - **Aggregate Rules Token Budget (20,000 tokens):** Continuous and directory-scoped rules share an aggregate budget. Over-budget rules are demoted to file-pointer references. Always use concise, actionable directives rather than prose tutorials.
 - **Progressive Offloading:** Offload deep specifications, schemas, or large lookup matrices to dedicated reference files loaded on demand.
 
+### Prompt Engineering & Context Mechanics (Berryman & Ziegler - *Prompt Engineering for LLMs*)
+Apply verified empirical findings in LLM attention and prompting architectures:
+1. **The "Lost in the Middle" Mitigation**: Model attention is highest at the beginning (identity, core invariants, action boundaries) and the end (output schemas, verification checklists) of the context window. Place critical architectural constraints and negative "What NOT to Do" tripwires at entry or exit boundaries rather than burying them in dense middle text.
+2. **Deterministic Tripwires vs. Probabilistic Steering**: Natural language prompt guidance is probabilistic. For non-negotiable architectural invariants (file sizes, cyclomatic complexity, boundary violations, test coverage), pair prompt directives with deterministic static tools (`npm run lint`, `npx azcodr boundaries`, `jest`) that mechanically fail the build on breach.
+3. **Dynamic In-Context Progressive Disclosure**: Do not inject global manuals upfront. Dynamically retrieve specialized rules (`docs/rules/*.md`) and skills (`.agents/skills/`) only when the relevant bounded domain is triggered, preserving model reasoning bandwidth for code execution.
+4. **Grounding on Verified Workspace Artifacts**: LLMs hallucinate when asked to make assumptions. Every statement, file path, and API signature must be grounded in verified local files or direct command output (Rule Zero).
+
 ---
 
 ## 4. Skills Architecture (`.agents/skills/<skill-name>/`)

@@ -79,11 +79,15 @@ When implementing soft-delete (`deleted_at IS NOT NULL`):
 
 Every operation mutating multiple database rows or coordinating interrelated aggregates must execute within an explicit **ACID Transaction**:
 
-### Transaction Guidelines:
+### Transaction Guidelines & The 5 Concurrency Anomalies (Martin Kleppmann - *DDIA*):
 - **Single Aggregate Transactions**: Strive to keep transactions bounded to a single aggregate root.
-- **Isolation Level Selection**:
-  - `READ COMMITTED` (Default): Acceptable for standard CRUD operations.
-  - `REPEATABLE READ` / `SERIALIZABLE`: Mandatory for financial ledger balances, inventory decrements, and ticket allocations where phantom reads cause double-spending.
+- **The 5 Classic Race Conditions & Their Isolation Defenses**:
+  1. **Dirty Reads**: A transaction reads uncommitted changes from another transaction. *Defense: `READ COMMITTED` (PostgreSQL default).*
+  2. **Dirty Writes**: One transaction overwrites uncommitted data written by another. *Defense: Engine row-level write locks.*
+  3. **Read Skew (Non-Repeatable Reads)**: A transaction observes inconsistent snapshots across different queries as concurrent transactions commit. *Defense: Snapshot Isolation (PostgreSQL `REPEATABLE READ` via MVCC).*
+  4. **Lost Updates**: Concurrent read-modify-write cycles overwrite each other's changes. *Defense: Atomic expressions (`UPDATE accounts SET balance = balance - 50`) or pessimistic locking (`SELECT ... FOR UPDATE`).*
+  5. **Write Skew & Phantom Reads**: Two transactions read the same precondition rows and concurrently make writes that violate a business invariant. *Defense: `SERIALIZABLE` isolation (Serializable Snapshot Isolation / SSI) or explicit conflict materialization.*
+- **Unreliable Wall Clocks in Distributed Systems (Kleppmann)**: Physical server wall clocks drift significantly (NTP skew). Never use wall-clock timestamps for causal ordering or distributed consensus. Rely on monotonically increasing sequence numbers, database sequences, or Lamport/version vectors.
 - **Defensive Timeouts**: Transactions must never run indefinitely. Always set a defensive statement and transaction timeout:
   ```sql
   SET LOCAL statement_timeout = '5s';

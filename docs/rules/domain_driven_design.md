@@ -37,6 +37,16 @@ Structure enterprise business capabilities into three distinct tiers:
 2. **Supporting Subdomain / Capabilities**: Business functions specific to the domain but not competitive differentiators (e.g. order tracking, invoice rendering).
 3. **Generic Subdomain / Capabilities**: Standard commoditized software (e.g. authentication, audit logging, email transport). Rely exclusively on standard open-source libraries.
 
+### Strategic Context Mapping Archetypes (Eric Evans)
+Formally define and document integration relationships between Bounded Contexts using Evans's canonical archetypes:
+- **Shared Kernel**: Two contexts share a small, tightly bounded subset of the domain model and code. Requires mutual agreement on changes.
+- **Customer / Supplier (Upstream / Downstream)**: The upstream context delivers data or services required by the downstream context, with upstream committing to prioritize downstream requirements.
+- **Conformist**: The downstream context accepts and conforms directly to the upstream model without negotiation or translation.
+- **Anti-Corruption Layer (ACL)**: A dedicated translation boundary where incoming foreign models are converted into the downstream context's native Ubiquitous Language before reaching domain entities.
+- **Open Host Service (OHS)**: An upstream subsystem exposing a stable, documented protocol/API enabling multiple distinct downstream consumers to integrate safely.
+- **Published Language (PL)**: A shared, well-documented serialization format (e.g. CloudEvents, Protocol Buffers, JSON Schema) used in conjunction with OHS.
+- **Separate Ways**: When the overhead of integration and coordination exceeds its business value, declare contexts completely disconnected with zero shared code.
+
 ---
 
 ## 2. Domain-Code Language Agreement
@@ -120,3 +130,6 @@ Acceptance criteria must be written strictly in Ubiquitous Language, serving as 
      ```
 4. **Anti-Corruption Layer (ACL)**: When integrating with third-party APIs or legacy systems that use different terminology, translate external payloads into the internal Ubiquitous Language at the boundary adapter before they enter the domain core.
 5. **Cross-Aggregate Coordination in Use Cases**: While an Aggregate Root guards its own internal invariants, business operations frequently span multiple aggregates (e.g. reserving an inventory item for an agreement). Application use cases or orchestrators must coordinate aggregate transitions atomically: asserting resource availability prior to state change, transitioning the constrained entity (e.g. `ALLOCATED`), and restoring state (`AVAILABLE`) upon cancellation, avoiding double-allocation race conditions without coupling aggregates directly.
+6. **Reference Other Aggregates by Identity Only** (Vaughn Vernon & Eric Evans): Aggregates must reference external Aggregates strictly by unique identifier (`OrderId`, `CustomerId`), never by holding direct object references (`customer.orders`). This prevents massive in-memory graph traversals and eliminates concurrent lock contention across aggregate boundaries.
+7. **One Aggregate Root Mutation per Transaction**: A single database transaction must mutate exactly one Aggregate Root. Cross-aggregate side effects and state transitions must be propagated asynchronously via Domain Events and eventual consistency (or the Transactional Outbox Pattern).
+8. **Domain Core Independence (Clean Architecture Dependency Rule)**: The domain model (Entities, Value Objects, Domain Services) must remain 100% agnostic of infrastructure. Zero imports of database drivers, ORMs, HTTP frameworks, or serialization decorators in domain entities.

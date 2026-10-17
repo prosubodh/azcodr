@@ -177,3 +177,26 @@ When deprecating an endpoint, provide clients with a minimum 90-day grace period
 - `Deprecation: @<unix-timestamp>`: Date when the endpoint was deprecated.
 - `Sunset: <HTTP-date>`: Absolute date when the endpoint will return `410 Gone`.
 - `Link: </api/v2/docs>; rel="sunset"`: Link to migration documentation.
+
+---
+
+## 8. High-Scale System Design & Rate Limiting Topologies (Alex Xu - *System Design Interview*)
+
+### 1. The 4-Step Scoping Framework
+Before designing any distributed endpoint or subsystem, establish concrete operational parameters:
+1. **Scale & Traffic Profiles**: Establish Daily Active Users (DAU), peak Queries Per Second (QPS), and read-to-write ratios (e.g. 100:1 read-heavy vs 1:1 write-heavy).
+2. **Latency & SLA Budgets**: Define hard performance percentiles (e.g. P95 < 200ms, P99 < 500ms). Tasks exceeding latency budgets must execute asynchronously (`202 Accepted`).
+3. **Stateless Compute Layer**: Keep API servers completely stateless. Offload session state and shared transient caches to distributed stores (Redis, KeyDB) so nodes can scale horizontally behind load balancers.
+4. **Data Retention & Storage Horizons**: Estimate 5-year storage projections to decide when archiving, cold-tiering, or partitioning must be triggered.
+
+### 2. Distributed Unique ID Generation
+- Never rely on central database auto-incrementing integer IDs (`SERIAL`) for distributed, high-throughput writes; they create single-point-of-failure bottlenecks.
+- Standardize on **time-sortable 128-bit or 64-bit distributed identifiers**:
+  - **UUIDv7**: Time-ordered 128-bit IDs that preserve B-Tree database indexing locality while maintaining global uniqueness across nodes without central coordination.
+  - **Snowflake IDs**: 64-bit time-sortable integers (epoch timestamp + datacenter ID + worker ID + sequence counter) for space-constrained network protocols.
+
+### 3. Rate Limiting Topologies
+Protect APIs from abuse and noisy neighbors using standard gateway algorithms:
+- **Token Bucket**: Preferred for general API gateways; allows bursts of traffic while enforcing a smooth average rate.
+- **Sliding Window Counter**: Preferred for strict rate windows (e.g. authentication attempts, credit card charging); prevents boundary-burst attacks where double the limit is sent across adjacent fixed-window edges.
+- On rate limit breach, return **`429 Too Many Requests`** with `Retry-After: <seconds>` header.
