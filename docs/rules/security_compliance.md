@@ -20,8 +20,12 @@ Production software must systematically eliminate OWASP Top 10 attack vectors:
      Strict-Transport-Security: max-age=63072000; includeSubDomains; preload
      X-Content-Type-Options: nosniff
      X-Frame-Options: DENY
-     Content-Security-Policy: default-src 'self'; script-src 'self';
+     Content-Security-Policy: default-src 'self'; frame-ancestors 'none';
      ```
+   - Frame relaxation (`frame-ancestors 'self' <trusted-partner>`) is strictly permitted only on dedicated, explicitly whitelisted embed routes.
+5. **Open Redirect Defense (CWE-601)**:
+   - When handling redirect targets (`?returnTo=`, post-auth navigation), parse and validate URLs against an explicit application host allowlist.
+   - Decode URI components repeatedly to defeat multi-pass encoding evasion (`%2f%2fevil.com`, `/\evil.com`), strictly reject protocol-relative URLs (`//evil.com`, `\\\\evil.com`), and audit log blocked external redirect attempts.
 
 ---
 
@@ -51,3 +55,6 @@ All systems handling sensitive, customer, or enterprise data must satisfy fundam
    - Systems must provide an automated data erasure pipeline capable of permanently deleting or cryptographically pseudonymizing user PII across all databases and backups within 30 days of a verified request.
 3. **Least Privilege Access (SOC 2 CC6.1)**:
    - Developers and runtime services must operate under strict principle of least privilege. Production database credentials and encryption keys must never be accessible in local development environments.
+4. **The 3 Foundational Legal Artifacts & 90-Day Review Cadence**:
+   - Production systems must maintain data-flow-grounded legal documents (Privacy Policy disclosing exact data inventory, Terms of Service, and GDPR Art 28 Data Processing Agreements for third-party sub-processors).
+   - Maintain a quarterly (90-day) compliance review calendar auditing regulatory shifts, cookie consent mechanics, sub-processor changes, and data residency invariants.
