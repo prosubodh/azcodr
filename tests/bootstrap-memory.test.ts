@@ -7,22 +7,8 @@ import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(
-  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh'
+  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs'
 );
-
-function findBash() {
-  const candidates = [
-    'C:\\Program Files\\Git\\bin\\bash.exe',
-    'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
-  ];
-  for (const c of candidates) if (fs.existsSync(c)) return c;
-  const probe = spawnSync('bash', ['--version'], { encoding: 'utf-8' });
-  return probe.status === 0 ? 'bash' : null;
-}
-
-const bash = findBash();
-const skip = bash ? false : 'bash not available';
-const describeSuite = skip ? describe.skip : describe;
 
 interface BootstrapOptions {
   topology?: string;
@@ -32,7 +18,7 @@ interface BootstrapOptions {
 
 function runBootstrap(root: string, options: BootstrapOptions = {}) {
   const { topology = 'backend', language = 'typescript', extraEnv = {} } = options;
-  const r = spawnSync(bash!, [SCRIPT, root, topology, language], {
+  const r = spawnSync(process.execPath, [SCRIPT, root, topology, language], {
     encoding: 'utf-8',
     timeout: 30000,
     env: { ...process.env, ...extraEnv }
@@ -65,7 +51,7 @@ const LIVE_MEMORY = [
   ''
 ].join('\n');
 
-describeSuite('bootstrap: preserves a live memory verbatim', () => {
+describe('bootstrap: preserves a live memory verbatim', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-'));
@@ -88,7 +74,7 @@ describeSuite('bootstrap: preserves a live memory verbatim', () => {
   });
 });
 
-describeSuite('bootstrap: preserves high numbering', () => {
+describe('bootstrap: preserves high numbering', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-'));
@@ -110,7 +96,7 @@ describeSuite('bootstrap: preserves high numbering', () => {
   });
 });
 
-describeSuite('bootstrap: idempotent across runs', () => {
+describe('bootstrap: idempotent across runs', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-'));
@@ -130,7 +116,7 @@ describeSuite('bootstrap: idempotent across runs', () => {
   });
 });
 
-describeSuite('bootstrap: clean slate when absent', () => {
+describe('bootstrap: clean slate when absent', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-'));
@@ -148,7 +134,7 @@ describeSuite('bootstrap: clean slate when absent', () => {
   });
 });
 
-describeSuite('bootstrap: untouched template alone', () => {
+describe('bootstrap: untouched template alone', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-'));
@@ -173,7 +159,7 @@ describeSuite('bootstrap: untouched template alone', () => {
   });
 });
 
-describeSuite('bootstrap: explicit reset opt-in', () => {
+describe('bootstrap: explicit reset opt-in', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-opt-'));
@@ -183,7 +169,7 @@ describeSuite('bootstrap: explicit reset opt-in', () => {
   test('AZCODR_RESET_MEMORY=1 resets, and writes a backup first', () => {
     const memoryPath = path.join(root, 'memory.md');
     fs.writeFileSync(memoryPath, LIVE_MEMORY);
-    const r = spawnSync(bash!, [SCRIPT, root, 'backend', 'typescript'], {
+    const r = spawnSync(process.execPath, [SCRIPT, root, 'backend', 'typescript'], {
       encoding: 'utf-8',
       timeout: 30000,
       env: { ...process.env, AZCODR_RESET_MEMORY: '1' }
@@ -202,7 +188,7 @@ describeSuite('bootstrap: explicit reset opt-in', () => {
   });
 });
 
-describeSuite('bootstrap: no litter without reset', () => {
+describe('bootstrap: no litter without reset', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-opt-'));

@@ -49,7 +49,7 @@ const bash = findBash();
 
 describe('shipped shell scripts: line endings', () => {
   test('the repository ships shell scripts to check', () => {
-    assert.ok(scripts.length >= 4, `expected the shipped scripts, found ${scripts.length}`);
+    assert.ok(scripts.length >= 3, `expected the shipped shell scripts, found ${scripts.length}`);
   });
 
   for (const file of scripts) {

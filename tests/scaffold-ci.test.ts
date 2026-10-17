@@ -82,11 +82,11 @@ describe('Starter CI replaces azcodr dev workflows in generated projects', () =>
 
   test('bootstrap smoke test executes the vendored boundary guard', () => {
     const script = fs.readFileSync(
-      path.join(templateDir, '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh'),
+      path.join(templateDir, '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs'),
       'utf-8'
     );
     assert.match(script, /Running boundary smoke verification/);
     assert.match(script, /boundary_guard\.js/);
-    assert.match(script, /node "\$\{ROOT\}\/\.agents\/scripts\/boundary_guard\.js"/);
+    assert.match(script, /spawnSync\(process\.execPath, \[guard, path\.join\(root, "src"\)\]/);
   });
 });

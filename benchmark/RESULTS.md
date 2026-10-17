@@ -64,7 +64,7 @@ Each trap below is a hand-written fixture. The "outcome" lines describe the fixt
 ## 5. Arm D: Raw-Scaffold Enforcement Audit (No Agent Additions)
 
 Arms A–C use synthetic fixtures. Arm D scaffolds a real project with the
-shipped template (`scaffold()` + `bootstrap_workspace.sh backend typescript`)
+shipped template (`scaffold()` + `bootstrap_workspace.mjs backend typescript`)
 and audits enforcement *presence* — the out-of-box state before any agent
 writes a line. Run it with the same command; transcripts land in
 `benchmark/results/`.

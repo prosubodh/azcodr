@@ -92,7 +92,7 @@ Inquire *only* into the dimensions relevant to the selected topology:
 Upon user confirmation:
 1. Run the topology-aware workspace initialization script:
    ```bash
-   bash .agents/skills/lets-build/scripts/bootstrap_workspace.sh . <topology> <language>
+   node .agents/skills/lets-build/scripts/bootstrap_workspace.mjs . <topology> <language>
    ```
 2. Generate base infrastructure strictly for the selected topology (zero speculative bloat) using layouts from [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md):
    - *Fullstack Web SaaS:* Backend in `src/`, Web Client in `client/` (`client/src/components/layout`, `client/src/components/ui`, `client/src/pages`, `client/src/hooks`, `client/src/services`), `specs/openapi/v1/openapi.yaml`, `specs/tokens/tokens.json`, `deploy/docker`, `deploy/compose`.
@@ -100,7 +100,7 @@ Upon user confirmation:
    - *Extension:* `manifest.json`, `src/background/index.ts`, `src/content/index.ts`, `src/popup/index.html`.
    - *Game / Engine:* `src/core/`, `src/ecs/`, asset manifest, frame loop entrypoint.
    - *CLI:* `src/cmd/`, `src/core/`, CLI entrypoint with exit code handling.
-3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`) for the recorded language, install the pinned linter from the emitted gate configuration (`eslint.config.js`, `ruff.toml`, `clippy.toml`, `.golangci.yml`, `checkstyle.xml`, `.editorconfig` CA block, `.clang-tidy` — written deterministically by `bootstrap_workspace.sh`, never invented). Node profiles arrive with `package.json` lint already rewired to `eslint .`; other profiles need the lint entry wired by hand. Prove the gate in Phase 5, and keep the boundary smoke test (`scripts/smoke_test.sh`).
+3. Generate build manifests (`Cargo.toml`, `package.json`, `go.mod`, `pyproject.toml`) for the recorded language, install the pinned linter from the emitted gate configuration (`eslint.config.js`, `ruff.toml`, `clippy.toml`, `.golangci.yml`, `checkstyle.xml`, `.editorconfig` CA block, `.clang-tidy` — written deterministically by `bootstrap_workspace.mjs`, never invented). Node profiles arrive with `package.json` lint already rewired to `eslint .`; other profiles need the lint entry wired by hand. Prove the gate in Phase 5, and keep the boundary smoke test (`scripts/smoke_test.mjs`).
 4. **Replace Starter README with Project-Specific README**:
    Generate a clean, project-specific `README.md` using [references/project_readme_template.md](./references/project_readme_template.md), completely replacing meta-template content with the project's actual name, mission, stack highlights, quickstart commands, and directory tree.
 
@@ -113,7 +113,7 @@ Upon user confirmation:
    ```
 2. Execute toolchain dependency checks, build commands, and health/smoke tests:
    - Compile code and verify zero compiler or lint errors.
-   - Verify boundary verification smoke test (`scripts/smoke_test.sh`).
+   - Verify boundary verification smoke test (`scripts/smoke_test.mjs`).
    - **Prove enforcement is live:** enable the shipped hooks in `.agents/hooks.json` (`safety-guard`, `architectural-guard`), then deliberately attempt a blocked action (e.g. append lines to a file already over budget, or a denied command) and confirm the hook rejects it before re-disabling nothing — hooks stay enabled. A guard that has never blocked anything is a rumor, not a control.
 3. **Mandatory Handover to Domain Analysis (STOP & PIVOT):**
    - **`lets-build` IS NOW COMPLETE.** Do NOT proceed to write domain business entities, repositories, or application features.
@@ -171,4 +171,4 @@ Upon user confirmation:
 - [references/architecture_interview_matrix.md](./references/architecture_interview_matrix.md): Exhaustive 5-tier problem-first architecture interview questions and branch logic.
 - [references/hexagonal_bootstrap_scaffolds.md](./references/hexagonal_bootstrap_scaffolds.md): Standardized directory trees and foundational templates across Go, Rust, Python, and TypeScript.
 - [references/project_readme_template.md](./references/project_readme_template.md): Boilerplate template for replacing starter documentation with project-specific README.
-- [scripts/bootstrap_workspace.sh](./scripts/bootstrap_workspace.sh): Topology-aware deterministic workspace initialization script.
+- [scripts/bootstrap_workspace.mjs](./scripts/bootstrap_workspace.mjs): Topology-aware deterministic workspace initialization script.

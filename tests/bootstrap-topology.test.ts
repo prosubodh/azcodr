@@ -7,22 +7,8 @@ import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(
-  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh'
+  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs'
 );
-
-function findBash() {
-  const candidates = [
-    'C:\\Program Files\\Git\\bin\\bash.exe',
-    'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
-  ];
-  for (const c of candidates) if (fs.existsSync(c)) return c;
-  const probe = spawnSync('bash', ['--version'], { encoding: 'utf-8' });
-  return probe.status === 0 ? 'bash' : null;
-}
-
-const bash = findBash();
-const skip = bash ? false : 'bash not available';
-const describeSuite = skip ? describe.skip : describe;
 
 interface BootstrapOptions {
   topology?: string;
@@ -32,7 +18,7 @@ interface BootstrapOptions {
 
 function runBootstrap(root: string, options: BootstrapOptions = {}) {
   const { topology = 'backend', language = 'typescript', extraEnv = {} } = options;
-  const r = spawnSync(bash!, [SCRIPT, root, topology, language], {
+  const r = spawnSync(process.execPath, [SCRIPT, root, topology, language], {
     encoding: 'utf-8',
     timeout: 30000,
     env: { ...process.env, ...extraEnv }
@@ -40,7 +26,7 @@ function runBootstrap(root: string, options: BootstrapOptions = {}) {
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 }
 
-describeSuite('bootstrap topology: rejects unknowns', () => {
+describe('bootstrap topology: rejects unknowns', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-topo-'));
@@ -71,7 +57,7 @@ describeSuite('bootstrap topology: rejects unknowns', () => {
   });
 });
 
-describeSuite('bootstrap topology: records profile', () => {
+describe('bootstrap topology: records profile', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-topo-'));
@@ -98,7 +84,7 @@ describeSuite('bootstrap topology: records profile', () => {
   });
 });
 
-describeSuite('bootstrap topology: known trees', () => {
+describe('bootstrap topology: known trees', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-topo-'));
@@ -118,7 +104,7 @@ describeSuite('bootstrap topology: known trees', () => {
   });
 });
 
-describeSuite('bootstrap language: reflected in output', () => {
+describe('bootstrap language: reflected in output', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-topo-'));

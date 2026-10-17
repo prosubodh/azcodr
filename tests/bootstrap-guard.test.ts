@@ -7,22 +7,8 @@ import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(
-  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh'
+  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs'
 );
-
-function findBash() {
-  const candidates = [
-    'C:\\Program Files\\Git\\bin\\bash.exe',
-    'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
-  ];
-  for (const c of candidates) if (fs.existsSync(c)) return c;
-  const probe = spawnSync('bash', ['--version'], { encoding: 'utf-8' });
-  return probe.status === 0 ? 'bash' : null;
-}
-
-const bash = findBash();
-const skip = bash ? false : 'bash not available';
-const describeSuite = skip ? describe.skip : describe;
 
 interface BootstrapOptions {
   topology?: string;
@@ -32,7 +18,7 @@ interface BootstrapOptions {
 
 function runBootstrap(root: string, options: BootstrapOptions = {}) {
   const { topology = 'backend', language = 'typescript', extraEnv = {} } = options;
-  const r = spawnSync(bash!, [SCRIPT, root, topology, language], {
+  const r = spawnSync(process.execPath, [SCRIPT, root, topology, language], {
     encoding: 'utf-8',
     timeout: 30000,
     env: { ...process.env, ...extraEnv }
@@ -40,7 +26,7 @@ function runBootstrap(root: string, options: BootstrapOptions = {}) {
   return { code: r.status, out: `${r.stdout || ''}${r.stderr || ''}` };
 }
 
-describeSuite('bootstrap guard: root and home', () => {
+describe('bootstrap guard: root and home', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-guard-'));
@@ -67,7 +53,7 @@ describeSuite('bootstrap guard: root and home', () => {
   });
 });
 
-describeSuite('bootstrap guard: home directory', () => {
+describe('bootstrap guard: home directory', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-guard-'));
@@ -92,7 +78,7 @@ describeSuite('bootstrap guard: home directory', () => {
   });
 });
 
-describeSuite('bootstrap guard: bypass and normal', () => {
+describe('bootstrap guard: bypass and normal', () => {
   let root: string;
   beforeEach(() => {
     root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-boot-guard-'));

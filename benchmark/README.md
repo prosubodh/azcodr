@@ -77,7 +77,7 @@ To run the full benchmark against an agent harness, execute each ticket in order
 `node benchmark/run-benchmark.js` also assesses a real scaffolded project with
 no agent additions (`runArmD()` in `run-benchmark.js`, checklist in
 `evaluate.js` `auditScaffoldEnforcement()`): stage 1 scores the raw
-`scaffold()` output, stage 2 re-scores after `bootstrap_workspace.sh backend
+`scaffold()` output, stage 2 re-scores after `bootstrap_workspace.mjs backend
 typescript`. Deterministic checks (guard script, resolvable engine, wired
 hooks, gate configs for the recorded language) must all hold; agent-layer
 state (tool installed, lint wired, hooks enabled) is reported but never gating.

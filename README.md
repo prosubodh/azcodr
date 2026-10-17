@@ -211,9 +211,9 @@ The agent consolidates all your choices into a formal **Architectural Specificat
 
 ### Step 5: Deterministic Topology Scaffolding (Strict YAGNI)
 Once confirmed, the agent automatically executes:
-1. Topology-aware directory scaffolding via `bootstrap_workspace.sh . <topology> <language>`, generating **0 speculative folders** (e.g. extensions get no Kubernetes or OpenAPI specs; CLIs get no Dockerfiles).
+1. Topology-aware directory scaffolding via `bootstrap_workspace.mjs . <topology> <language>`, generating **0 speculative folders** (e.g. extensions get no Kubernetes or OpenAPI specs; CLIs get no Dockerfiles).
 2. Targeted contract and entrypoint generation matching the derived topology.
-3. Build manifests, strict linter/formatter configurations, and boundary smoke test (`scripts/smoke_test.sh`).
+3. Build manifests, strict linter/formatter configurations, and boundary smoke test (`scripts/smoke_test.mjs`).
 4. **Project-Specific README Generation**: Completely replaces the starter template `README.md` with clean, project-specific documentation (mission, stack highlights, quickstart setup, build/test commands, and directory structure), preserving links to `docs/rules/`.
 5. Deterministic validation via `validate_agentic_configs.sh` and initial smoke test execution.
 6. **Handover Gate to Domain Analysis**: Halts technical scaffolding and instructs the user to invoke `product-analyst` and `relentless-questioner` for domain modeling.

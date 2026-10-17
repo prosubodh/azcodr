@@ -17,21 +17,6 @@ import { evaluateTarget, auditScaffoldEnforcement } from './evaluate.js';
 
 const selfDir = path.dirname(fileURLToPath(import.meta.url));
 
-function findBash() {
-  for (const candidate of [
-    'C:\\Program Files\\Git\\bin\\bash.exe',
-    'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
-  ]) {
-    try {
-      if (fs.existsSync(candidate)) return candidate;
-    } catch {
-      // probe next candidate
-    }
-  }
-  const probe = spawnSync('bash', ['--version'], { encoding: 'utf-8' });
-  return probe.status === 0 ? 'bash' : null;
-}
-
 function createArmADir(tmpDir) {
   const armA = path.join(tmpDir, 'arm-a-control');
   fs.mkdirSync(path.join(armA, 'src', 'domain'), { recursive: true });
@@ -164,7 +149,7 @@ export async function runFullBenchmark() {
 /**
  * Arm D: raw scaffolded project, no agent additions. Scores what ships
  * deterministically (stage 1) and what bootstrap adds (stage 2, backend +
- * typescript; skipped when bash is unavailable).
+ * typescript). The scaffolder is a Node script, so stage 2 runs everywhere.
  */
 export async function runArmD() {
   const workRoot = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-bench-armd-'));
@@ -180,15 +165,11 @@ export async function runArmD() {
     scaffoldFn({ targetDir: target, noGit: true });
     const raw = await auditScaffoldEnforcement(target);
 
-    let bootstrapped = { status: 'skipped', reason: 'bash unavailable' };
-    const script = path.join(path.resolve(selfDir, '..'), '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh');
-    const bashBin = findBash();
-    if (bashBin) {
-      const r = spawnSync(bashBin, [script, target, 'backend', 'typescript'], { encoding: 'utf-8', timeout: 30000 });
-      bootstrapped = r.status === 0
-        ? await auditScaffoldEnforcement(target)
-        : { status: 'failed', reason: `bootstrap exited ${r.status}` };
-    }
+    const script = path.join(path.resolve(selfDir, '..'), '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs');
+    const r = spawnSync(process.execPath, [script, target, 'backend', 'typescript'], { encoding: 'utf-8', timeout: 30000 });
+    const bootstrapped = r.status === 0
+      ? await auditScaffoldEnforcement(target)
+      : { status: 'failed', reason: `bootstrap exited ${r.status}` };
     return { status: 'assessed', raw, bootstrapped };
   } finally {
     fs.rmSync(workRoot, { recursive: true, force: true });

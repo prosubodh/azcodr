@@ -7,25 +7,11 @@ import { spawnSync } from 'node:child_process';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const SCRIPT = path.resolve(
-  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.sh'
+  __dirname, '..', '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs'
 );
 
-function findBash() {
-  const candidates = [
-    'C:\\Program Files\\Git\\bin\\bash.exe',
-    'C:\\Program Files\\Git\\usr\\bin\\bash.exe'
-  ];
-  for (const c of candidates) if (fs.existsSync(c)) return c;
-  const probe = spawnSync('bash', ['--version'], { encoding: 'utf-8' });
-  return probe.status === 0 ? 'bash' : null;
-}
-
-const bash = findBash();
-const skip = bash ? false : 'bash not available';
-const describeSuite = skip ? describe.skip : describe;
-
 function runBootstrap(root: string, topology = 'backend', language = 'typescript') {
-  const r = spawnSync(bash!, [SCRIPT, root, topology, language], {
+  const r = spawnSync(process.execPath, [SCRIPT, root, topology, language], {
     encoding: 'utf-8',
     timeout: 30000
   });
@@ -45,7 +31,7 @@ function mustSucceed(root: string, language: string) {
   assert.strictEqual(r.code, 0, r.out);
 }
 
-describeSuite('bootstrap toolchain: deterministic gate configs per language', () => {
+describe('bootstrap toolchain: deterministic gate configs per language', () => {
   test('typescript emits an eslint config with the documented gates', () => {
     const root = freshRoot();
     try {
