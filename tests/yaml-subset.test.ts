@@ -30,8 +30,10 @@ describe('YAML subset parser', () => {
   });
 
   test('strips comments and honours quoted strings containing colons', () => {
-    const doc = parseYamlSubset('# leading\na: 1 # trailing\nb: "x: y"\nc: \'# not a comment\'\n');
-    assert.deepStrictEqual(doc, { a: 1, b: 'x: y', c: '# not a comment' });
+    const doc = parseYamlSubset('# leading\na: 1 # trailing\nb: "x: y"\nc: \'# not a comment\'\nd: foo#bar\nu: http://example.com\nk:v: 1\n');
+    assert.deepStrictEqual(doc, {
+      a: 1, b: 'x: y', c: '# not a comment', d: 'foo#bar', u: 'http://example.com', 'k:v': 1
+    });
   });
 
   test('returns an empty document for blank or comment-only input', () => {

@@ -3,7 +3,7 @@ import path from 'node:path';
 import process from 'node:process';
 import { checkAdrIndexConsistency, checkGlossaryPopulated } from './adr.js';
 import { phaseLinks } from './links.js';
-import { createReporter, createSilentReporter, readTextOrFail } from './io.js';
+import { createReporter, readTextOrFail } from './io.js';
 import { phaseRootConfig } from './root.js';
 import { phaseRules } from './rules.js';
 import { phaseSkills } from './skills.js';

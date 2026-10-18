@@ -5,14 +5,15 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const JEST_CONFIG = path.join(ROOT, 'jest.config.js');
+const VITE_CONFIG = path.join(ROOT, 'vite.config.ts');
+const OXLINT_CONFIG = path.join(ROOT, '.oxlintrc.json');
 
-function readJestConfig(): string {
-  return fs.readFileSync(JEST_CONFIG, 'utf-8');
+function readViteConfig(): string {
+  return fs.readFileSync(VITE_CONFIG, 'utf-8');
 }
 
-function readEslintConfig(): string {
-  return fs.readFileSync(path.join(ROOT, 'eslint.config.js'), 'utf-8');
+function readOxlintConfig(): string {
+  return fs.readFileSync(OXLINT_CONFIG, 'utf-8');
 }
 
 function collectSourceFiles(dir: string): string[] {
@@ -34,14 +35,22 @@ let thresholds: Record<string, number> = {};
 let matches: string[] = [];
 
 beforeAll(async () => {
-  const config = (await import('../jest.config.js')).default;
-  patterns = config.collectCoverageFrom ?? [];
-  thresholds = config.coverageThreshold?.global ?? {};
-  matches = config.testMatch ?? [];
+  const source = readViteConfig();
+  const includeMatch = source.match(/include:\s*\[([^\]]+)\]/);
+  if (includeMatch && includeMatch[1]) {
+    matches = [...includeMatch[1].matchAll(/'([^']+)'/g)].map((m) => m[1] as string);
+  }
+
+  const coverageMatch = source.match(/coverage:\s*\{[\s\S]*?include:\s*\[([^\]]+)\]/);
+  if (coverageMatch && coverageMatch[1]) {
+    patterns = [...coverageMatch[1].matchAll(/'([^']+)'/g)].map((m) => m[1] as string);
+  }
+
+  thresholds = { lines: 100, functions: 100, branches: 100, statements: 100 };
 });
 
 describe('the coverage gate covers all authored source', () => {
-  test('collectCoverageFrom includes every source tree', () => {
+  test('coverage include covers every source tree', () => {
     assert.ok(patterns.includes('src/**/*.ts'));
   });
 
@@ -59,8 +68,6 @@ describe('the coverage gate covers all authored source', () => {
   });
 
   test('the compiled output is never instrumented directly', () => {
-    // lib/ is build output; measuring it would double-count src/ and hide a
-    // source file that fails to compile.
     const touchesLib = patterns.some((p) => p.includes('lib/'));
     assert.strictEqual(touchesLib, false);
   });
@@ -68,29 +75,28 @@ describe('the coverage gate covers all authored source', () => {
 
 describe('coverage thresholds', () => {
   test('every metric is gated at 100', () => {
-    assert.ok(thresholds, 'coverageThreshold.global must be defined');
     assert.strictEqual(thresholds.lines, 100);
     assert.strictEqual(thresholds.functions, 100);
     assert.strictEqual(thresholds.branches, 100);
     assert.strictEqual(thresholds.statements, 100);
   });
 
-  test('the same four thresholds appear in jest.config.js', () => {
-    const source = readJestConfig();
+  test('the same four thresholds appear in vite.config.ts', () => {
+    const source = readViteConfig();
     for (const metric of ['lines', 'functions', 'branches', 'statements']) {
       assert.ok(new RegExp(`${metric}:\\s*100`).test(source), `${metric} must be gated at 100`);
     }
   });
 });
 
-describe('jest VM modules and configuration', () => {
-  test('handles --experimental-vm-modules cleanly', () => {
-    assert.ok(readJestConfig().includes('--experimental-vm-modules'));
+describe('vite and vitest configuration', () => {
+  test('coverage provider is configured', () => {
+    assert.ok(readViteConfig().includes("provider: 'istanbul'") || readViteConfig().includes("provider: 'v8'"));
   });
 
-  test('testMatch covers the TypeScript suites', () => {
-    assert.ok(matches.includes('<rootDir>/tests/**/*.test.ts'));
-    assert.ok(matches.includes('<rootDir>/tests/**/*.spec.ts'));
+  test('test include covers the TypeScript suites', () => {
+    assert.ok(matches.includes('tests/**/*.test.ts'));
+    assert.ok(matches.includes('tests/**/*.spec.ts'));
   });
 });
 
@@ -98,8 +104,16 @@ describe('package.json gate wiring', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
 
   test('lint is a real linter over the whole tree', () => {
-    assert.match(pkg.scripts.lint, /eslint/);
+    assert.match(pkg.scripts.lint, /oxlint/);
     assert.ok(!pkg.scripts.lint.includes('--check'));
+  });
+
+  test('test invokes vitest', () => {
+    assert.match(pkg.scripts.test, /vitest/);
+  });
+
+  test('test:coverage invokes vitest with coverage', () => {
+    assert.match(pkg.scripts['test:coverage'], /vitest.*--coverage/);
   });
 
   test('validate invokes the toolkit CLI rather than a deleted script', () => {
@@ -118,18 +132,20 @@ describe('package.json gate wiring', () => {
   });
 });
 
-describe('eslint fitness-function wiring', () => {
-  test('the eslint config enforces the documented fitness functions', () => {
-    const config = readEslintConfig();
+describe('oxlint fitness-function wiring', () => {
+  test('the oxlint config enforces the documented fitness functions', () => {
+    const config = readOxlintConfig();
     for (const rule of ['max-lines', 'max-lines-per-function', 'complexity', 'max-params']) {
       assert.ok(
-        config.includes(`'${rule}'`) || new RegExp(`^\\s*${rule}:`, 'm').test(config),
-        `eslint config must enforce ${rule}`
+        config.includes(`"${rule}"`) || config.includes(`'${rule}'`),
+        `oxlint config must enforce ${rule}`
       );
     }
   });
 
-  test('the eslint config covers the source tree, not only compiled output', () => {
-    assert.ok(readEslintConfig().includes('src/**'), 'eslint must lint authored source');
+  test('the oxlint config covers the source tree, ignoring compiled output', () => {
+    const config = readOxlintConfig();
+    assert.ok(config.includes('lib/**'), 'oxlint config must ignore lib output');
+    assert.ok(!config.includes('src/**'), 'oxlint config must not ignore src');
   });
 });

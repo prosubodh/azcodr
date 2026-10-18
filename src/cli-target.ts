@@ -18,11 +18,9 @@ export function askQuestion(
   return new Promise((resolve) => {
     let resolved = false;
     rl.question(query, (answer: string) => {
-      if (!resolved) {
-        resolved = true;
-        rl.close();
-        resolve(answer.trim());
-      }
+      resolved = true;
+      rl.close();
+      resolve(answer.trim());
     });
     rl.on('close', () => {
       if (!resolved) {

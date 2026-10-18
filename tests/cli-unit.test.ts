@@ -86,6 +86,13 @@ async function testDefaultDot() {
   await runCli(['--no-git', '--force'], io);
   assert.strictEqual(io.exitCode, 0);
   assert.strictEqual(fs.existsSync(path.join(subDir, 'AGENTS.md')), true);
+
+  const dotSlashDir = path.join(tmpDir, 'dot-slash');
+  fs.mkdirSync(dotSlashDir, { recursive: true });
+  const ioDotSlash = createMockIo({ cwd: dotSlashDir });
+  await runCli(['./', '--no-git', '--force'], ioDotSlash);
+  assert.strictEqual(ioDotSlash.exitCode, 0);
+  assert.strictEqual(fs.existsSync(path.join(dotSlashDir, 'AGENTS.md')), true);
 }
 
 async function testTemplateDirGuard() {

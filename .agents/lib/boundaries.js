@@ -92,12 +92,10 @@ export function extractLocalImports(filePath) {
     const imports = [];
     const regex = /(?:import|export)\s+(?:(?:[\s\S]*?from\s+)|)['"](\.[^'"]+)['"]|import\s*\(\s*['"](\.[^'"]+)['"]\s*\)/g;
     for (const match of content.matchAll(regex)) {
-        const spec = match[1] ?? match[2];
-        if (spec) {
-            const resolved = resolveImportTarget(filePath, spec);
-            if (resolved && !imports.includes(resolved)) {
-                imports.push(resolved);
-            }
+        const spec = (match[1] ?? match[2]);
+        const resolved = resolveImportTarget(filePath, spec);
+        if (resolved && !imports.includes(resolved)) {
+            imports.push(resolved);
         }
     }
     return imports.sort();
@@ -136,9 +134,7 @@ export function detectDependencyCycles(graph) {
             }
             else if (inStack.has(neighbor)) {
                 const startIdx = pathStack.indexOf(neighbor);
-                if (startIdx !== -1) {
-                    cycles.push([...pathStack.slice(startIdx), neighbor]);
-                }
+                cycles.push([...pathStack.slice(startIdx), neighbor]);
             }
         }
         inStack.delete(node);

@@ -74,17 +74,6 @@ export interface TddEnforcement {
     /** Extensions treated as non-code. */
     nonCodeExtensions?: readonly string[];
 }
-/**
- * Checks whether an edit is permitted under RED-before-GREEN rules.
- *
- * Fails open in every ambiguous case: an unconfigured project, or a rule with
- * no production paths declared, blocks nothing.
- *
- * @param filePath - Path of file being edited.
- * @param state - Current session state.
- * @param config - Project-declared enforcement settings.
- * @returns Decision result indicating whether the edit is blocked.
- */
 export declare function inspectTddRequirement(filePath: string, state: SessionTddState, config: TddEnforcement): TddCheckResult;
 declare const _default: {
     isTestFile: typeof isTestFile;

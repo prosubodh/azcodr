@@ -155,16 +155,30 @@ export interface TddEnforcement {
  * @param config - Project-declared enforcement settings.
  * @returns Decision result indicating whether the edit is blocked.
  */
+function resolveTddRules(config: TddEnforcement): PathMatcher {
+  return {
+    productionPaths: config.productionPaths ?? [],
+    testPaths: config.testPaths ?? [],
+    nonCodeExtensions: config.nonCodeExtensions ?? []
+  };
+}
+
+function buildBlockedResult(filePath: string): TddCheckResult {
+  return {
+    blocked: true,
+    isProductionFile: true,
+    reason:
+      `Test-first: '${path.basename(filePath)}' is a configured production path and cannot be ` +
+      'edited before a failing test (RED) has been recorded and observed.'
+  };
+}
+
 export function inspectTddRequirement(
   filePath: string,
   state: SessionTddState,
   config: TddEnforcement
 ): TddCheckResult {
-  const rules: PathMatcher = {
-    productionPaths: config.productionPaths ?? [],
-    testPaths: config.testPaths ?? [],
-    nonCodeExtensions: config.nonCodeExtensions ?? []
-  };
+  const rules = resolveTddRules(config);
   const prod = isProductionFile(filePath, rules);
 
   if (!config.enforceTestFirst) {
@@ -184,13 +198,7 @@ export function inspectTddRequirement(
     return { blocked: false, isProductionFile: true, reason: 'A failing test has been recorded.' };
   }
 
-  return {
-    blocked: true,
-    isProductionFile: true,
-    reason:
-      `Test-first: '${path.basename(filePath)}' is a configured production path and cannot be ` +
-      'edited before a failing test (RED) has been recorded and observed.'
-  };
+  return buildBlockedResult(filePath);
 }
 
 export default {

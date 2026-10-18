@@ -143,6 +143,7 @@ describe('Track 3: Boundary Enforcement - File Scanning & Import Parsing', () =>
       export { x } from './helper.js';
       const m = await import('./helper.js');
       import { missing } from './unresolvable.js';
+      import { nonJs } from './unresolvable.custom';
     `);
 
     const imports = extractLocalImports(targetFile);

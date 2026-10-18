@@ -60,8 +60,8 @@ describe('Self-validation: package scripts are runnable as declared', () => {
     assert.ok(fs.existsSync(path.join(ROOT, 'bin', 'azcodr.js')));
   });
 
-  test('lint resolves through the eslint config, which must exist', () => {
-    assert.match(pkg.scripts.lint, /eslint/);
-    assert.ok(fs.existsSync(path.join(ROOT, 'eslint.config.js')));
+  test('lint resolves through the oxlint config, which must exist', () => {
+    assert.match(pkg.scripts.lint, /oxlint/);
+    assert.ok(fs.existsSync(path.join(ROOT, '.oxlintrc.json')));
   });
 });

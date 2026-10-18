@@ -101,7 +101,7 @@ jobs:
             const required = [
               "package.json", "README.md", "LICENSE",
               "bin/azcodr.js", "lib/index.js", "lib/index.d.ts", "lib/scaffold.js",
-              "scripts/validate.js", "scripts/validate-cli.js"
+              "lib/validator/run.js", "lib/validator/root.js"
             ];
             const missing = required.filter((f) => !files.has(f));
             if (missing.length) {

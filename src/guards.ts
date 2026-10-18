@@ -11,7 +11,7 @@ import { ScaffoldError, ERROR_CODES } from './errors.js';
  * @returns Absolute filesystem path to the template root directory.
  */
 export function getTemplateDir(): string {
-  const currentDir = import.meta.dirname ?? path.dirname(fileURLToPath(import.meta.url));
+  const currentDir = path.dirname(fileURLToPath(import.meta.url));
   return path.resolve(currentDir, '..');
 }
 

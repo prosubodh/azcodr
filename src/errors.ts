@@ -41,7 +41,7 @@ export interface ScaffoldErrorShape extends Error {
  */
 export class ScaffoldError extends Error implements ScaffoldErrorShape {
   /** Error class name identifier. */
-  override readonly name: 'ScaffoldError' = 'ScaffoldError';
+  override readonly name = 'ScaffoldError' as const;
   /** Machine-readable error code identifying failure cause. */
   readonly code: ScaffoldErrorCode;
 

@@ -38,7 +38,7 @@ export interface ScaffoldErrorShape extends Error {
  */
 export declare class ScaffoldError extends Error implements ScaffoldErrorShape {
     /** Error class name identifier. */
-    readonly name: 'ScaffoldError';
+    readonly name: "ScaffoldError";
     /** Machine-readable error code identifying failure cause. */
     readonly code: ScaffoldErrorCode;
     /**
