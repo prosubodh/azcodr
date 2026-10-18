@@ -25,26 +25,26 @@ description: Use when initiating a new feature, complex user story, architectura
 ## 2. Step-by-Step Execution Workflow
 
 ```
-1. CLASSIFY (Detect Archetype) ──► 2. ADAPTIVE DRILL-DOWN (Chained Questions) ──► 3. RECONCILE (Rule Invariants) ──► 4. CONVERGE (Signed-Off FAS)
+1. CLASSIFY (Domain & Constraints) ──► 2. ADAPTIVE DRILL-DOWN (Chained Questions) ──► 3. RECONCILE (Rule Invariants) ──► 4. CONVERGE (Signed-Off FAS)
 ```
 
 ---
 
-### Phase 1: Intent & Technical Archetype Classification
-Upon receiving a user task or feature prompt, classify the functional archetype into one or more categories using [references/adaptive_question_trees.md](./references/adaptive_question_trees.md):
-- **Archetype A: State Mutations & Financials** (balances, orders, payments, inventories)
-- **Archetype B: Multi-Tenancy & Authorization** (tenant boundaries, custom fields, permissions)
-- **Archetype C: Asynchronous & Event Streaming** (background jobs, webhooks, queues, pub/sub)
-- **Archetype D: 3rd-Party & External Integrations** (external APIs, payment gateways, mailers)
-- **Archetype E: Read Performance & Search** (dashboards, aggregations, high-scale read traffic)
-- **Archetype F: User Interface, Experience Duality & Interaction Flows** (personas, app shell, screen journeys, URL synchronization, WCAG accessibility per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md) and [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md))
+### Phase 1: Intent & Domain Concern Classification
+Upon receiving a user task or feature prompt, classify the functional domain concerns using [references/adaptive_question_trees.md](./references/adaptive_question_trees.md):
+- **Concern A: State Mutations & Financials** (balances, orders, payments, inventories)
+- **Concern B: Multi-Tenancy & Authorization** (tenant boundaries, custom fields, permissions)
+- **Concern C: Asynchronous & Event Streaming** (background jobs, webhooks, queues, pub/sub)
+- **Concern D: 3rd-Party & External Integrations** (external APIs, payment gateways, mailers)
+- **Concern E: Read Performance & Search** (dashboards, aggregations, high-scale read traffic)
+- **Concern F: User Interface, Experience Duality & Interaction Flows** (personas, app shell, screen journeys, URL synchronization, WCAG accessibility per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md) and [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md))
 
 ---
 
 ### Phase 2: Context-Aware Dynamic Interrogation
 Do NOT dump a massive 20-question static checklist. Execute the interview in **dynamic batches of 2–3 questions**:
 
-1. **Initial Archetype Branch**: Ask the foundational branching questions for the detected archetype.
+1. **Initial Domain Branch**: Ask the foundational branching questions for the detected technical concern.
 2. **Contextual Chaining (The Adaptive Rule)**:
    - Carefully parse the user's response.
    - **Every subsequent question MUST build on the previous answer**:
@@ -77,6 +77,8 @@ Synthesize the answers into an unambiguous **Feature Alignment Specification (FA
 
 ## 3. Gotchas & What NOT to Do
 
+- **DO NOT** invent or ask the user to classify their system into abstract "Archetypes". Ground all architectural interviews and system discoveries strictly in 4 concrete pillars: **Stack**, **Language**, **Patterns**, and **Methodologies**, drilling into specific domain concerns and operational invariants.
+- **DO NOT** assume greenfield on existing codebases. Discover the existing Stack, Language, Patterns, and Methodologies first before interrogating new requirements.
 - **DO NOT** use static checklists that ignore user responses. Every question turn must reflect the user's prior answers.
 - **DO NOT** ask 10+ questions at once. Keep batches small (2–3 questions) to maintain a collaborative conversation.
 - **DO NOT** start coding or planning in parallel while the interrogation is in progress.
@@ -96,7 +98,7 @@ Synthesize the answers into an unambiguous **Feature Alignment Specification (FA
 - **Core Invariant:** [Immutable business rule that must never be violated].
 
 ## 2. Technical Decisions & Boundaries
-- **Interaction Archetype:** [Mutating / Read-Only / Async Event / 3rd-Party]
+- **Interaction Concern:** [Mutating State / Read-Only Query / Async Event / 3rd-Party Integration]
 - **Tenant Isolation Model:** [AST Interceptor / DB RLS / Schema / Instance]
 - **Transaction Boundary:** [Isolation level, timeouts, Outbox requirements]
 - **Port/Adapter Boundary:** [Project-owned interface for any external dependency]

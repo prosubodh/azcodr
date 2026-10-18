@@ -19,7 +19,6 @@
     "bin",
     "lib",
     "src",
-    "scripts",
     "data",
     ".github",
     "AGENTS.md",
@@ -63,8 +62,7 @@
     "test:coverage": "node --experimental-vm-modules node_modules/jest/bin/jest.js --coverage",
     "lint": "eslint .",
     "typecheck": "tsc --noEmit",
-    "validate": "node scripts/validate-cli.js",
-    "test:mutation": "node benchmark/mutation-test.js",
+    "validate": "node bin/azcodr.js check",
     "prepublishOnly": "npm run build && npm run lint && npm run test:coverage && npm run validate"
   },
   "devDependencies": {

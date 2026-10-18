@@ -8,7 +8,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -17,6 +17,7 @@ function collect(root: string) {
     pass: (m: string) => lines.push(`PASS ${m}`),
     warn: (m: string) => lines.push(`WARN ${m}`),
     fail: (m: string) => lines.push(`FAIL ${m}`),
+    skip: (m: string) => lines.push(`SKIP ${m}`),
     log: (m: string) => lines.push(`LOG ${m}`),
     heading: (m) => phases.push(m)
   });
@@ -115,25 +116,28 @@ describe('coverage: workspace with no rules or skills directories', () => {
   });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('fails when docs/rules is missing', () => {
+  test('skips rules validation when docs/rules is absent', () => {
     fs.writeFileSync(path.join(root, 'AGENTS.md'), '# A\n');
-    const { joined } = collect(root);
-    assert.match(joined, /FAIL Missing docs\/rules directory/);
+    const { joined, result } = collect(root);
+    assert.match(joined, /SKIP .*docs\/rules/);
+    assert.strictEqual(result.errors, 0, 'absent rules must not fail an unrelated project');
   });
 
-  test('fails when .agents/skills is missing', () => {
+  test('skips skills validation when .agents/skills is absent', () => {
     fs.mkdirSync(path.join(root, 'docs', 'rules'), { recursive: true });
-    fs.writeFileSync(path.join(root, 'docs', 'rules', 'r.md'), '# R\n\n> **Core Mandate:** x\n');
+    fs.writeFileSync(path.join(root, 'docs', 'rules', 'r.md'), '# R\n');
     fs.writeFileSync(path.join(root, 'AGENTS.md'), '# A\n');
-    const { joined } = collect(root);
-    assert.match(joined, /FAIL Missing \.agents\/skills directory/);
+    const { joined, result } = collect(root);
+    assert.match(joined, /SKIP .*skills/);
+    assert.strictEqual(result.errors, 0);
   });
 
-  test('fails when memory.md is missing', () => {
+  test('skips ledger validation when memory.md is absent', () => {
     fs.mkdirSync(path.join(root, 'docs', 'rules'), { recursive: true });
-    fs.writeFileSync(path.join(root, 'docs', 'rules', 'r.md'), '# R\n\n> **Core Mandate:** x\n');
+    fs.writeFileSync(path.join(root, 'docs', 'rules', 'r.md'), '# R\n');
     fs.writeFileSync(path.join(root, 'AGENTS.md'), '# A\n');
-    const { joined } = collect(root);
-    assert.match(joined, /FAIL Missing memory\.md ADR ledger/);
+    const { joined, result } = collect(root);
+    assert.match(joined, /SKIP No memory\.md/);
+    assert.strictEqual(result.errors, 0);
   });
 });

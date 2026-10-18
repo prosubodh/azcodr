@@ -7,7 +7,7 @@ import {
   readProfileLanguage,
   expectedToolchainFiles,
   TOOLCHAIN_FILES
-} from '../scripts/validate.js';
+} from '../src/validator/run.js';
 
 function makeCtx(root: string) {
   const lines: string[] = [];
@@ -15,6 +15,7 @@ function makeCtx(root: string) {
     ctx: {
       workspaceRoot: root,
       log: () => {},
+      skip: (msg: string) => lines.push(`SKIP ${msg}`),
       heading: () => {},
       pass: (m: string) => lines.push(`PASS ${m}`),
       warn: (m: string) => lines.push(`WARN ${m}`),
@@ -70,7 +71,7 @@ describe('validate toolchain: phase verdicts', () => {
     try {
       const { ctx, joined } = makeCtx(root);
       phaseToolchain(ctx as any);
-      assert.match(joined(), /skipped/);
+      assert.match(joined(), /SKIP/);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

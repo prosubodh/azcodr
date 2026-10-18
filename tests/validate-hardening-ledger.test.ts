@@ -9,7 +9,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -18,6 +18,7 @@ function collect(root: string) {
     warn: (m: string) => lines.push(`WARN ${m}`),
     fail: (m: string) => lines.push(`FAIL ${m}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   });
   return { result, lines, joined: lines.join('\n') };

@@ -1,25 +1,120 @@
 /**
  * @module @azcodr/azcodr
- * Architecture governance toolkit, with an optional starter.
  *
- * Provides problem-first, topology-aligned project scaffolding with strict systemic atomicity,
- * filesystem scope guards, git worktree initialization, and multi-agent harness parity.
+ * A workspace governance toolkit. It provides a declarative configuration
+ * format, mechanical safety checks, and scaffolding — but no methodology by
+ * default. What a project enforces is declared in `harness.yaml`; what it does
+ * not declare is not enforced.
  */
 
-/**
- * Union type of all valid machine-readable error codes.
- */
-export type ScaffoldErrorCode =
-  | 'E_TARGET_IS_TEMPLATE'
-  | 'E_TARGET_NOT_EMPTY'
-  | 'E_TARGET_IS_PROTECTED'
-  | 'E_GIT_ARGS_INVALID'
-  | 'E_GIT_BLOCKED'
-  | 'E_PATH_ESCAPE';
+export type {
+  HarnessConfig,
+  CheckDeclaration,
+  ProjectFacts,
+  AppliesWhen,
+  Severity,
+  Methodology
+} from './harness-config.js';
+
+export type {
+  ValidationContext,
+  ValidationResult,
+  Reporter as ValidationReporter
+} from './validator/types.js';
+
+export {
+  loadHarnessConfig,
+  parseHarnessConfig,
+  defaultConfig,
+  HarnessConfigError,
+  CONFIG_FILE_NAMES,
+  CORE_CHECK_IDS,
+  OPTIONAL_CHECK_IDS,
+  KNOWN_CHECK_IDS,
+  SUPPORTED_VERSION
+} from './harness-config.js';
+
+export { resolveChecks, explainCheck, matchGlob, matchesAny } from './harness-resolve.js';
+export type { ResolvedCheck } from './harness-resolve.js';
+
+export { parseYamlSubset, YamlSubsetError } from './yaml-subset.js';
 
 /**
- * Core scaffolding functions, guards, utilities, error classes, and constants.
+ * Agent-runtime enforcement: destructive-command safety, an opt-in file-size
+ * budget, and opt-in test-first discipline.
  */
+export {
+  inspectPreTool,
+  inspectCommand,
+  inspectFileWrite,
+  inspectTddRequirement,
+  readTddState,
+  writeTddState
+} from './agent-guard.js';
+export type {
+  GuardDecision,
+  GuardOptions,
+  ToolEnvelope,
+  CommandViolation,
+  FileCheckResult,
+  SessionTddState,
+  PathMatcher,
+  TddEnforcement,
+  TddCheckResult
+} from './agent-guard.js';
+
+/**
+ * Dependency-cycle detection, plus layer boundaries when a project declares
+ * its own layer vocabulary.
+ */
+export {
+  inspectBoundaries,
+  detectDependencyCycles,
+  detectBoundaryViolations,
+  findSourceFiles,
+  extractLocalImports,
+  buildDependencyGraph,
+  DEFAULT_SCAN_EXTENSIONS
+} from './boundaries.js';
+export type { BoundaryRule, BoundaryViolation, BoundaryReport, ScanOptions } from './boundaries.js';
+
+/**
+ * Workspace validation: internal link integrity, decision-index consistency,
+ * and structural checks for whatever governance files a project actually keeps.
+ * Checks whose subject is absent are skipped, never failed.
+ */
+export { runValidation, parseArgs, main, createReporter,
+  walkMarkdown,
+  readTextOrFail,
+  readSkillFolders,
+  parseAdrLedger,
+  checkAdrIndexConsistency,
+  checkGlossaryPopulated,
+  evaluateParityTarget,
+  isValidAgentsTarget,
+  createLowercaseParityLink,
+  checkFile,
+  normalizeLinkTarget,
+  phaseLinks,
+  phaseRootConfig,
+  checkHarnessParity,
+  phaseRules,
+  checkOneRule,
+  phaseSkills,
+  checkOneSkill,
+  extractSkillDescription,
+  frontMatterBlock,
+  phaseToolchain,
+  readProfileLanguage,
+  expectedToolchainFiles,
+  TOOLCHAIN_FILES,
+  stripHtmlComments,
+  stripFencedCode
+} from './validator/run.js';
+
+export { validate } from './validate.js';
+export { createSilentReporter } from './validator/io.js';
+
 export {
   scaffold,
   validateTarget,
@@ -39,49 +134,6 @@ export {
   ERROR_CODES
 } from './scaffold.js';
 
-/**
- * Standalone architecture validation engine.
- */
-export { validate, createSilentReporter } from './validate.js';
-export type { ValidationResult, ValidationReporter } from './validate.js';
-
-/**
- * Agent-runtime architectural enforcement and safety guards.
- */
-export {
-  inspectPreTool,
-  inspectCommand,
-  inspectFileWrite,
-  inspectTddRequirement,
-  readTddState,
-  writeTddState
-} from './agent-guard.js';
-export type {
-  GuardDecision,
-  GuardOptions,
-  ToolEnvelope,
-  CommandViolation,
-  FileCheckResult,
-  SessionTddState
-} from './agent-guard.js';
-
-/**
- * Architectural boundary enforcement and dependency cycle prevention.
- */
-export {
-  inspectBoundaries,
-  detectDependencyCycles,
-  detectBoundaryViolations,
-  findSourceFiles,
-  extractLocalImports,
-  buildDependencyGraph,
-  DEFAULT_BOUNDARY_RULES
-} from './boundaries.js';
-export type { BoundaryRule, BoundaryViolation, BoundaryReport } from './boundaries.js';
-
-/**
- * Type definitions and option interfaces for scaffolding operations.
- */
 export type {
   ScaffoldOptions,
   ScaffoldResult,
@@ -89,12 +141,11 @@ export type {
   CopyTemplateOptions,
   EnsureSymlinkOptions,
   InitGitOptions,
-  ScaffoldErrorShape
+  ScaffoldErrorShape,
+  ScaffoldErrorCode
 } from './scaffold.js';
 
 import scaffoldModule from './scaffold.js';
 
-/**
- * Default export providing the unified azcodr scaffolding module.
- */
+/** Default export: the scaffolding surface, for `import azcodr from '@azcodr/azcodr'`. */
 export default scaffoldModule;

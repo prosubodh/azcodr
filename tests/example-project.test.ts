@@ -2,7 +2,13 @@ import assert from 'node:assert/strict';
 import path from 'node:path';
 import fs from 'node:fs';
 import { fileURLToPath } from 'node:url';
-import { inspectBoundaries, DEFAULT_BOUNDARY_RULES } from '../src/boundaries.js';
+import { inspectBoundaries } from '../src/boundaries.js';
+
+/**
+ * Layer vocabulary for the reference example, declared by the test rather than
+ * defaulted by the library: layer names are project vocabulary, not a standard.
+ */
+const EXAMPLE_LAYERS = [{ fromLayer: 'domain', disallowImportsFrom: ['adapters', 'infrastructure'] }];
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
@@ -12,7 +18,7 @@ const EXAMPLE_SRC = path.join(EXAMPLE_DIR, 'src');
 describe('Example Project Architecture Governance (Phase 1)', () => {
   test('example project adheres to Clean Architecture with zero cycles or layer breaches', () => {
     assert.ok(fs.existsSync(EXAMPLE_SRC), 'example src directory must exist');
-    const report = inspectBoundaries(EXAMPLE_SRC, DEFAULT_BOUNDARY_RULES);
+    const report = inspectBoundaries(EXAMPLE_SRC, EXAMPLE_LAYERS);
 
     assert.strictEqual(report.ok, true, 'example architecture must be 100% compliant');
     assert.strictEqual(report.cycles.length, 0, 'must have zero circular dependency cycles');

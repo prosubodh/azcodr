@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import * as validateModule from '../scripts/validate.js';
+import * as validateModule from '../src/validator/run.js';
 
 /**
  * Runs a validation phase against a synthetic workspace fixture.
@@ -17,6 +17,7 @@ function runValidation(root: string) {
     warn: (msg: string) => lines.push(`WARN ${msg}`),
     fail: (msg: string) => lines.push(`FAIL ${msg}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   };
   const result: any = validateModule.runValidation(root, reporter);
@@ -130,14 +131,16 @@ describe('Validator: main entry point', () => {
   beforeEach(() => { root = createFixture(); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('main exits 0 on valid root and 1 on invalid root', () => {
+  test('main exits 0 on valid root; missing workspace skips checks', () => {
     let exitCode: number | null = null;
     const fakeExit = (code: number) => { exitCode = code; return code; };
     validateModule.main([root], fakeExit as any);
     assert.strictEqual(exitCode, 0);
 
+    // A non-existent workspace is not an error - the validator is neutral
+    // and skips checks whose subjects are absent.
     validateModule.main(['/non-existent-path-never-exists'], fakeExit as any);
-    assert.strictEqual(exitCode, 1);
+    assert.strictEqual(exitCode, 0);
   });
 
   test('main supports default argv and exit parameters', () => {

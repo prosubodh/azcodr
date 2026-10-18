@@ -1,7 +1,9 @@
 import path from 'node:path';
 import fs from 'node:fs';
 import { inspectBoundaries } from './boundaries.js';
-import type { BoundaryReport } from './boundaries.js';
+import type { BoundaryReport, BoundaryRule } from './boundaries.js';
+import { loadHarnessConfig } from './harness-config.js';
+import { resolveChecks } from './harness-resolve.js';
 import type { CliParsedOptions } from './cli-parse.js';
 
 export interface BoundaryIo {
@@ -19,6 +21,28 @@ export function resolveBoundaryTarget(targetDir: string | null, cwd: string): st
   return fs.existsSync(defaultSrc) ? defaultSrc : cwd;
 }
 
+/**
+ * Converts declared layer rules into boundary-engine rules.
+ *
+ * Layer rules live in the project's configuration, so a run with no config
+ * performs cycle detection only and never invents a layer vocabulary.
+ */
+export function declaredLayerRules(root: string): BoundaryRule[] {
+  const config = loadHarnessConfig(root);
+  const report = resolveChecks(config, config.project);
+  const layers = report.get('layer-boundaries')!.layers;
+  return Object.entries(layers).map(([fromLayer, disallowed]) => ({
+    fromLayer,
+    disallowImportsFrom: disallowed
+  }));
+}
+
+function printEmpty(out: (msg: string) => void): void {
+  out('⚠️  No analysable source files were found in the target.');
+  out('   This is NOT a clean result: nothing was checked. Point --target at a');
+  out('   source directory, or declare source extensions in harness.yaml.\n');
+}
+
 function printViolations(report: BoundaryReport, out: (msg: string) => void): void {
   const total = report.cycles.length + report.violations.length;
   out(`🚨 ARCHITECTURAL VIOLATIONS DETECTED (${total}):`);
@@ -28,7 +52,8 @@ function printViolations(report: BoundaryReport, out: (msg: string) => void): vo
   for (const v of report.violations) {
     out(`   - Layer Boundary Breach: ${v.file} illegally imports ${v.importedFile} (${v.fromLayer} -> ${v.toLayer})`);
   }
-  out('   Action Required: Invert dependencies via Ports or extract shared modules.\n');
+  out('   Remedy: extract the shared piece behind an interface, or declare an');
+  out('   exemption in harness.yaml if this dependency is intentional.\n');
 }
 
 export function formatBoundaryReport(
@@ -38,9 +63,10 @@ export function formatBoundaryReport(
 ): void {
   out(`\n🔍 Inspecting Architectural Boundaries in: ${targetDir}`);
   out('--------------------------------------------------------------');
-  if (report.ok) {
+  if (report.moduleCount === 0) {
+    printEmpty(out);
+  } else if (report.ok) {
     out(`✅ Analyzed ${report.moduleCount} modules: 0 circular cycles, 0 boundary violations.`);
-    out('🎉 SUCCESS: Architecture is clean and drift-free! (0 violations)\n');
   } else {
     printViolations(report, out);
   }
@@ -51,7 +77,11 @@ export async function handleBoundariesCommand(
   io: BoundaryIo
 ): Promise<void | number> {
   const targetDir = resolveBoundaryTarget(parsed.targetDir, io.cwd);
-  const report = inspectBoundaries(targetDir);
+  const root = fs.existsSync(path.join(targetDir, 'harness.yaml'))
+    ? targetDir
+    : path.dirname(targetDir);
+  const rules = declaredLayerRules(root);
+  const report = inspectBoundaries(targetDir, rules);
 
   if (!parsed.silent) {
     formatBoundaryReport(targetDir, report, io.out);

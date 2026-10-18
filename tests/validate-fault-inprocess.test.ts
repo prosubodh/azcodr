@@ -18,7 +18,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 const orig: Record<string, any> = {
   readdirSync: fs.readdirSync, realpathSync: fs.realpathSync, statSync: fs.statSync,
@@ -45,6 +45,7 @@ function collect(root: string) {
     warn: (m: string) => lines.push(`WARN ${m}`),
     fail: (m: string) => lines.push(`FAIL ${m}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   });
   return { result, lines, joined: lines.join('\n') };

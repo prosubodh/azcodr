@@ -1,5 +1,28 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { loadHarnessConfig } from './harness-config.js';
+import { resolveChecks } from './harness-resolve.js';
+
+/**
+ * Loads layer rules from harness.yaml. Falls back to empty rules on error.
+ */
+function declaredLayerRules(sourceDir: string): BoundaryRule[] {
+  try {
+    const config = loadHarnessConfig(sourceDir);
+    const report = resolveChecks(config, config.project);
+    const layers = report.get('layer-boundaries')!.layers as Record<string, readonly string[]>;
+    return (Object.entries(layers) as [string, readonly string[]][]).map(([fromLayer, disallowed]): BoundaryRule => ({
+      fromLayer,
+      disallowImportsFrom: disallowed
+    }));
+  } catch {
+    return [];
+  }
+}
+
+async function loadLayerRules(sourceDir: string): Promise<BoundaryRule[]> {
+  return declaredLayerRules(sourceDir);
+}
 
 /**
  * Defines an architectural layer boundary rule disallowing imports from foreign layers.
@@ -29,6 +52,8 @@ export interface BoundaryViolation {
  * Report summarizing module count, detected circular cycles, and boundary violations.
  */
 export interface BoundaryReport {
+  /** Target directory inspected. */
+  targetDir?: string;
   /** Total number of source modules scanned. */
   moduleCount: number;
   /** List of detected circular dependency cycles. */
@@ -40,47 +65,56 @@ export interface BoundaryReport {
 }
 
 /**
- * Canonical architectural boundary rules enforcing Hexagonal / Clean Architecture layer constraints.
+ * Source-file discovery settings. With no extensions declared the scanner
+ * reports zero modules rather than silently scanning only JavaScript.
  */
-export const DEFAULT_BOUNDARY_RULES: readonly BoundaryRule[] = [
-  {
-    fromLayer: 'domain',
-    disallowImportsFrom: ['infrastructure', 'infra', 'adapters', 'cli', 'transport', 'controllers']
-  },
-  {
-    fromLayer: 'core',
-    disallowImportsFrom: ['infrastructure', 'infra', 'adapters', 'presentation', 'ui']
-  }
-];
-
-function isSkippedDir(name: string): boolean {
-  return name.startsWith('.') || name === 'node_modules' || name === 'lib';
+export interface ScanOptions {
+  /** File extensions to treat as source. */
+  extensions: readonly string[];
+  /** Directory names to skip entirely. */
+  skipDirs: readonly string[];
 }
 
-function isEligibleSource(name: string): boolean {
-  const isScript = name.endsWith('.ts') || name.endsWith('.js');
-  if (!isScript || name.endsWith('.d.ts')) return false;
+/**
+ * Extensions scanned when a project declares no preference.
+ *
+ * The JavaScript-family default exists because the import graph extractor
+ * understands ECMAScript module syntax. It is a limitation of the analyzer,
+ * not a claim that other languages have no cycles.
+ */
+export const DEFAULT_SCAN_EXTENSIONS: readonly string[] = ['.ts', '.js', '.mjs', '.tsx', '.jsx'];
+
+function isSkippedDir(name: string, skipDirs: readonly string[]): boolean {
+  return name.startsWith('.') || name === 'node_modules' || skipDirs.includes(name);
+}
+
+function isEligibleSource(name: string, extensions: readonly string[]): boolean {
+  const ext = path.extname(name).toLowerCase();
+  if (!extensions.includes(ext) || name.endsWith('.d.ts')) return false;
   return !name.includes('.test.') && !name.includes('.spec.');
 }
 
 /**
- * Recursively discovers all eligible source files (.ts and .js) within a directory,
- * ignoring skipped directories (e.g. node_modules, lib) and test files.
+ * Recursively discovers source files under a directory.
  *
  * @param dir - Root directory to search.
+ * @param options - Extension and skip-directory settings.
  * @returns Sorted array of absolute file paths.
  */
-export function findSourceFiles(dir: string): string[] {
+export function findSourceFiles(dir: string, options: ScanOptions = {
+  extensions: DEFAULT_SCAN_EXTENSIONS,
+  skipDirs: ['lib', 'dist', 'build', 'target', 'vendor']
+}): string[] {
   if (!fs.existsSync(dir)) return [];
   const results: string[] = [];
   const entries = fs.readdirSync(dir, { withFileTypes: true });
 
   for (const entry of entries) {
-    if (isSkippedDir(entry.name)) continue;
+    if (isSkippedDir(entry.name, options.skipDirs)) continue;
     const full = path.join(dir, entry.name);
     if (entry.isDirectory()) {
-      results.push(...findSourceFiles(full));
-    } else if (isEligibleSource(entry.name)) {
+      results.push(...findSourceFiles(full, options));
+    } else if (isEligibleSource(entry.name, options.extensions)) {
       results.push(path.resolve(full));
     }
   }
@@ -186,12 +220,12 @@ function hasLayerSegment(pathStr: string, segment: string): boolean {
  * Evaluates a dependency graph against architectural boundary rules to detect prohibited cross-layer imports.
  *
  * @param graph - Map of file paths to their imported dependency file paths.
- * @param rules - Architectural boundary rules to enforce (defaults to DEFAULT_BOUNDARY_RULES).
+ * @param rules - Architectural boundary rules to enforce.
  * @returns Array of detected boundary violations.
  */
 export function detectBoundaryViolations(
   graph: Map<string, string[]>,
-  rules: readonly BoundaryRule[] = DEFAULT_BOUNDARY_RULES
+  rules: readonly BoundaryRule[] = []
 ): BoundaryViolation[] {
   const violations: BoundaryViolation[] = [];
 
@@ -222,31 +256,45 @@ export function detectBoundaryViolations(
  *
  * @param sourceDir - Directory containing source code (e.g. src/).
  * @param rules - Architectural boundary rules.
+ * @param options - Source discovery settings.
  * @returns Report summarizing cycle and boundary findings.
  */
 export function inspectBoundaries(
   sourceDir: string,
-  rules: readonly BoundaryRule[] = DEFAULT_BOUNDARY_RULES
+  rules?: readonly BoundaryRule[],
+  options?: ScanOptions
 ): BoundaryReport {
-  const files = findSourceFiles(sourceDir);
+  // Synchronous path: use sync rule loader (for CLI and tests).
+  const effectiveRules = rules ?? declaredLayerRules(sourceDir);
+  const files = findSourceFiles(sourceDir, options);
   const graph = buildDependencyGraph(files);
   const cycles = detectDependencyCycles(graph);
-  const violations = detectBoundaryViolations(graph, rules);
+  const violations = detectBoundaryViolations(graph, effectiveRules);
 
   return {
+    targetDir: sourceDir,
     moduleCount: files.length,
     cycles,
     violations,
-    ok: cycles.length === 0 && violations.length === 0
+    ok: files.length > 0 && cycles.length === 0 && violations.length === 0
   };
 }
 
+/**
+ * Async variant that auto-loads layer rules from harness.yaml.
+ * Used by async callers (e.g., boundary guard script).
+ */
+export async function inspectBoundariesAsync(
+  sourceDir: string,
+  rules?: readonly BoundaryRule[],
+  options?: ScanOptions
+): Promise<BoundaryReport> {
+  return inspectBoundaries(sourceDir, rules, options);
+}
+
+export { loadLayerRules, declaredLayerRules };
+
 export default {
-  DEFAULT_BOUNDARY_RULES,
-  findSourceFiles,
-  extractLocalImports,
-  buildDependencyGraph,
-  detectDependencyCycles,
-  detectBoundaryViolations,
-  inspectBoundaries
+  DEFAULT_SCAN_EXTENSIONS, findSourceFiles, extractLocalImports, buildDependencyGraph,
+  detectDependencyCycles, detectBoundaryViolations, inspectBoundaries, inspectBoundariesAsync
 };

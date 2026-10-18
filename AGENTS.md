@@ -1,55 +1,36 @@
 # AGENTS.md
 
-> **azcodr: Architecture governance toolkit, with an optional starter**  
+> **azcodr: Strict Architecture Governance & Agentic Engineering Harness**  
 > **Workspace Mission:** Problem-first, topology-aligned production architectures governed by strict systemic atomicity, 100% open-source standards, true incremental TDD nano-cycles, and zero speculative bloat.  
-> **Runtime & Tools:** Node.js (`>=22.8.0`), npm (`>=10.0.0`) | `npm test` (test runner), `npm run test:coverage` (coverage gate), `npm run lint`, `npm run validate`.
-> **Node floor rationale:** `>=22.8.0` satisfies Jest native ESM requirements (`--experimental-vm-modules`) and modern LTS security baselines. Node 18 (EOL 2025-04-30) and 20 (EOL 2026-04-30) no longer receive security patches.  
+> **Runtime & Tools:** Node.js (`>=22.8.0`), npm (`>=10.0.0`) | `npm test` (test runner), `npm run test:coverage` (coverage gate), `npm run lint`, `npm run validate`.  
 > **Rule Zero:** Assume nothing. Every action must be grounded in verified evidence from this workspace or direct instructions from the user.  
-> **Atomicity Mandate:** All rules, skills, code units, migrations, and transactions must be strictly atomic (indivisible, self-contained, composable with full ACID safety).  
-> **Architecture Mandate:** Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero tool/platform bias). Match architectural style to problem topology (Hexagonal for backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, Game Loop for canvas games).
+> **Strict Harness Policy:** Rules apply unconditionally to ALL codebases (greenfield AND existing legacy codebases alike). Legacy debt or missing tests is NEVER an exemption.
 
 ---
 
-## 1. Zero-Assumption Operating Framework
-### Core Principles
-1. **No External Assumptions:** You have no prior knowledge of external setups, hidden tools, libraries, or unverified conventions outside this workspace.
-2. **Ground Truth Only:** A statement is only true if proven by a workspace file, verified command output, or direct user instruction.
-3. **Unknown Until Verified:** If something is not explicitly written in the workspace or stated by the user, treat it as unknown.
-4. **Strict Open Standards:** Standardize on open-source solutions and open specs (Semgrep, Trivy, Gitleaks, OpenTelemetry, OPA, OCI, Wasm, CloudEvents).
-5. **Problem-First & Topology Alignment:** Problem domain and operational constraints (latency budget, GC tolerance, memory, execution environment) strictly dictate the architectural style and toolchain. Never select tools before defining the problem space.
-6. **Evolutionary Architecture & Refactor-Before-Add:** As complexity grows, code must graduate across explicit architectural tipping points. Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
-7. **True Incremental TDD & Nano-Cycles:** Never dump test suites in batches ("Test-First Waterfall"). Follow Uncle Bob's Three Laws: write one micro-assertion at a time, verify RED failure output, write minimal code to turn GREEN, and refactor under green.
-8. **Systemic Atomicity:** Every skill, rule, database transaction, and refactoring step must be atomic (Single Responsibility, zero side-effects, full rollback).
-9. **Workspace Sovereignty:** Total containment within the local workspace root (`./`). Zero interference from global configs, tools, or sibling projects.
-10. **Continuous Learning:** Ingest all verified defects, lessons, and architectural invariants directly into domain rules and `memory.md`.
+## 1. Strict Non-Negotiable Invariants (Mandatory in All Cases)
+1. **Incremental TDD Nano-Cycles (Uncle Bob's 3 Laws):** STRICTLY FORBIDDEN to write or edit production code (`src/`, `lib/`, `app/`) without FIRST authoring a failing micro-test (RED) and observing test runner failure output. Batch testing ("Test-First Waterfall") is strictly BANNED. One micro-assertion at a time: RED ➔ verify failure ➔ MINIMAL pass GREEN ➔ verify pass ➔ REFACTOR under green.
+2. **File & Function Line Ceilings (Kent Beck's Refactor-Before-Add):** Maximum 300 lines per file (250 target), 30 lines per function, 3 parameters max. If an existing file in an existing codebase is already > 300 lines, adding or maintaining lines is STRICTLY BLOCKED; you MUST refactor into modular submodules under passing tests before adding new capabilities.
+3. **Clean Code & Systemic Atomicity:** Intention-revealing naming, Command-Query Separation (CQS), Single Level of Abstraction (SLAP), DRY, explicit types, Result `<T, E>` / typed errors, zero unexpected mutations or side effects.
+4. **Pillars of System Inquiry (Zero Speculative "Archetypes"):** Never categorize systems or features into arbitrary "Archetypes". Ground all interviews and architectural choices strictly in 4 concrete pillars: **Stack** (runtime, frameworks, DBs), **Language** (types, toolchains), **Patterns** (Hexagonal, Platform Scripting, Command Pipeline, Outbox, CQRS), and **Methodologies** (TDD, Clean Code, Refactor-Before-Add, 100% coverage gates). On existing codebases, inspect and discover the existing Stack, Language, Patterns, and Methodologies first.
+5. **Existing Codebase Governance:** Legacy technical debt is never an excuse to bypass rules. Every touch must leave the codebase cleaner (Boy Scout Rule). Characterize untested legacy code with tests before modifying.
+6. **Rule Reading Gate:** Before modifying or implementing code in any domain, you MUST inspect the corresponding reference rule in `docs/rules/`.
 
-### The 5 Core Branch Questions
-Before acting on any decision branch, answer:
-1. **Current State:** What do workspace files currently show? (Inspect before assuming).
-2. **Target Goal:** Is the goal clear, bounded, and explicit? (Stop & ask if ambiguous).
-3. **Tools & Setup:** Are tools defined in workspace configs? (Never assume commands exist).
-4. **Impact & Risk:** Have all references, callers, and side effects been traced?
-5. **Verification:** How will we prove it works with tests or build commands?
-
-### Conflict Resolution & Order of Authority
-1. **User Request (Current Session)** ➔ 2. **Workspace Configurations** (lockfiles, linters, scripts) ➔ 3. **Existing Code Patterns** ➔ 4. **Direct Confirmation (Stop & Ask)**.
-
-### Action Boundaries
-- **ALWAYS:** Read files before editing; verify commands before running; verify results with evidence.
-- **ASK FIRST:** Adding/removing external dependencies; deleting/renaming files; changing DB schemas or build scripts; modifying existing tests.
-- **NEVER:** Guess paths, flags, or signatures; silently ignore errors; bypass unresolved questions.
 ---
 
-## 2. Execution Lifecycle
+## 2. Execution Lifecycle & Decision Boundaries
 
-Progress all tasks systematically through the unified **Agent Cognitive & Agile Domain Lifecycle**, seamlessly interlocking the 5 agent operational disciplines with the 5-phase domain engineering pipeline:
+Progress all tasks systematically through the unified **Agent Cognitive & Agile Domain Lifecycle**:
 ```
-1. DISCOVER / REQUIREMENTS   ──► Read-only inspection; Problem Space & operational constraints; INVEST stories & Gherkin.
-2. INTERROGATE / DOMAIN     ──► Relentless questioning; Ubiquitous Language, Aggregate invariants & state machines.
+1. DISCOVER / REQUIREMENTS   ──► Read-only inspection of Stack, Language, Patterns; INVEST stories & Gherkin.
+2. INTERROGATE / DOMAIN     ──► Relentless questioning on Domain Concerns & Invariants (State, Auth, Async, UI).
 3. PLAN / OUTER TDD         ──► Minimal blast radius; failing Outer Acceptance Test (UI/API RED).
-4. EXECUTE / INNER TDD      ──► Incremental nano-cycles (Uncle Bob's 3 Laws: 1 micro-assertion RED ➔ MINIMAL pass GREEN ➔ REFACTOR).
+4. EXECUTE / INNER TDD      ──► Incremental nano-cycles (Uncle Bob's 3 Laws: micro-assertion RED ➔ MINIMAL GREEN ➔ REFACTOR).
 5. VERIFY / DoD & PROOF     ──► Outer test turns GREEN; boundary smoke tests & 100% coverage on all metrics + mutation gate.
 ```
+- **Branch Questions:** (1) Current State? (2) Target Goal? (3) Tools & Setup? (4) Impact & Risk? (5) Verification?
+- **Authority Order:** 1. User Request (Current Session) ➔ 2. Workspace Configs ➔ 3. Existing Code Patterns ➔ 4. Direct Confirmation (Stop & Ask).
+- **Action Boundaries:** ALWAYS read files before editing; verify commands before running; verify results with evidence. NEVER guess paths/flags/signatures or ignore errors.
 ---
 
 ## 3. Progressive Disclosure: Specialized Domain Rules

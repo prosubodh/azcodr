@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -12,6 +12,7 @@ function collect(root: string) {
     warn: (msg: string) => lines.push(`WARN ${msg}`),
     fail: (msg: string) => lines.push(`FAIL ${msg}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   };
   return { result: runValidation(root, reporter), lines };
@@ -76,7 +77,7 @@ describe('glossary: missing or template', () => {
     );
   });
 
-  test('FAILS when the glossary is still the untouched template', () => {
+  test('WARNS when the glossary is the untouched template', () => {
     writeGlossary(root, [
       '# Ubiquitous Language',
       '',
@@ -86,7 +87,7 @@ describe('glossary: missing or template', () => {
     ].join('\n'));
     const { ledgerLines } = collectLedgerOnly(root);
     assert.ok(
-      ledgerLines.some((l) => /FAIL ubiquitous_language\.md has no domain terms/.test(l)),
+      ledgerLines.some((l) => /WARN ubiquitous_language\.md has no domain terms/.test(l)),
       ledgerLines.join(' | ')
     );
   });

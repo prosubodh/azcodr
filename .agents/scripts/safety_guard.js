@@ -55,6 +55,19 @@ async function readStdin(timeoutMs = 1500) {
   });
 }
 
+function extractCommandString(raw) {
+  try {
+    const trimmed = raw.trim();
+    if (!trimmed.startsWith('{')) return raw;
+    const parsed = JSON.parse(trimmed);
+    const tc = parsed.toolCall || parsed.tool_call;
+    const args = (tc && (tc.args || tc.arguments || tc.parameters)) || parsed.tool_input || parsed.input || parsed.parameters || parsed;
+    return args.CommandLine || args.commandLine || args.command || args.cmd || raw;
+  } catch {
+    return raw;
+  }
+}
+
 async function main() {
   const argvInput = process.argv.slice(2).join(' ').trim();
   const stdinInput = (await readStdin()).trim();
@@ -65,11 +78,12 @@ async function main() {
   }
 
   const { inspectCommand } = await getCommandModule();
-  const decision = inspectCommand(rawInput);
+  const commandToInspect = extractCommandString(rawInput);
+  const decision = inspectCommand(commandToInspect);
 
   if (decision.blocked) {
     console.error(`🚨 Safety Guard: ${decision.reason}`);
-    console.error(`   command: ${decision.command || rawInput.slice(0, 300)}`);
+    console.error(`   command: ${decision.command || commandToInspect.slice(0, 300)}`);
     process.exit(1);
   }
 

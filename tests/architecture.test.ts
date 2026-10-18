@@ -41,8 +41,10 @@ describe('Architecture: no shell-string spawning', () => {
     const offenders = [];
     for (const { path: file, source } of codeFiles) {
       if (/\.execSync\s*\(/.test(source)) offenders.push(`${path.relative(ROOT, file)} (execSync)`);
-      if (/\bexec\s*\(/.test(source)) offenders.push(`${path.relative(ROOT, file)} (exec)`);
-      if (/child_process\.exec\b/.test(source)) offenders.push(`${path.relative(ROOT, file)} (child_process.exec)`);
+      // Match child_process.exec / cp.exec / require('child_process').exec but NOT regex.exec()
+      if (/child_process\.exec\b|\bcp\.exec\s*\(|require\(['"]child_process['"]\)\.exec\s*\(/.test(source)) {
+        offenders.push(`${path.relative(ROOT, file)} (child_process.exec)`);
+      }
     }
     assert.deepStrictEqual(offenders, [], `shell-string spawning found: ${offenders.join(', ')}`);
   });
@@ -126,9 +128,13 @@ describe('Architecture: dev tooling pins', () => {
 describe('Architecture: require hygiene', () => {
   test('runtime code requires only node: builtins', () => {
     for (const { path: file, source } of codeFiles) {
+      // Strip comments so documentation examples don't satisfy import checks.
+      const live = source
+        .replace(/\/\/.*$/gm, '')
+        .replace(/\/\*[\s\S]*?\*\//g, '');
       const imports = [
-        ...source.matchAll(/(?:import\s+(?:[^'"]*from\s+)?|export\s+[^'"]*from\s+)['"]([^'"]+)['"]/g),
-        ...source.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)
+        ...live.matchAll(/(?:import\s+(?:[^'"]*from\s+)?|export\s+[^'"]*from\s+)['"]([^'"]+)['"]/g),
+        ...live.matchAll(/import\(\s*['"]([^'"]+)['"]\s*\)/g)
       ].map((m) => m[1] as string);
       for (const spec of imports) {
         assert.ok(
@@ -156,9 +162,14 @@ describe('Architecture: manifest and template stay in sync', () => {
   test('the shipped .d.ts declares every error code the runtime can throw', () => {
   // The runtime is the source of truth; a code present in ERROR_CODES but
   // absent from the public type declarations makes `err.code` untypeable.
-  const dts = fs.readFileSync(path.join(ROOT, 'lib', 'index.d.ts'), 'utf-8');
+  // ERROR_CODES is re-exported through scaffold.d.ts, so check both.
+  const dts = [
+    fs.readFileSync(path.join(ROOT, 'lib', 'index.d.ts'), 'utf-8'),
+    fs.readFileSync(path.join(ROOT, 'lib', 'scaffold.d.ts'), 'utf-8')
+  ].join('\n');
   for (const code of Object.keys(ERROR_CODES)) {
-    assert.ok(dts.includes(`'${code}'`), `lib/index.d.ts must declare error code ${code}`);
+    // TypeScript declarations use unquoted property names: readonly E_CODE: "msg";
+    assert.ok(dts.includes(code), `lib/index.d.ts must declare error code ${code}`);
   }
 });
 
@@ -239,7 +250,7 @@ describe('Architecture: rules and ledger hygiene', () => {
     const withoutComments = mem.replace(/<!--[\s\S]*?-->/g, '');
     const ids = [...withoutComments.matchAll(/^#### ADR-(\d+)/gm)].map((m) => Number(m[1]));
     for (const id of ids) {
-      assert.ok(id >= 1 && id <= 24, `ADR-${id} looks like leaked template numbering`);
+      assert.ok(id >= 1 && id <= 25, `ADR-${id} looks like leaked template numbering`);
     }
   });
 });

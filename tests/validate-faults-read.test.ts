@@ -8,7 +8,7 @@ import assert from 'node:assert/strict';
 import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 /**
  * Runs the validator against a fixture with `node:fs` fault injection.
@@ -30,6 +30,7 @@ function runWithFaults(root: string, patch: string) {
     warn: (m: string) => lines.push('WARN ' + m),
     fail: (m: string) => lines.push('FAIL ' + m),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   };
   try {
@@ -82,7 +83,7 @@ afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 describe('break: readlink faults are reported', () => {
   test('readlink failure is reported, not treated as a valid pointer', () => {
     // This host cannot create real symlinks (EPERM), so pretend lstat sees
-    // one and make readlink fail — the dangling-link path under test.
+    // one and make readlink fail: the dangling-link path under test.
     const { lines } = runWithFaults(root, `{
       lstatSync: (p, ...rest) => {
         const st = orig.lstatSync(p, ...rest);

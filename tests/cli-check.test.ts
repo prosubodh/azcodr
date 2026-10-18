@@ -174,8 +174,8 @@ describe('CLI Check & Validate Command (Track 1)', () => {
         encoding: 'utf-8',
         cwd: REPO_ROOT
       });
-      assert.match(output, /Validating Agentic Architecture/);
-      assert.match(output, /SUCCESS: All agentic configurations are valid/);
+      assert.match(output, /Validating Workspace/);
+      assert.match(output, /SUCCESS: \d+ warning\(s\), 0 error\(s\)/);
     });
 
     test('runs bin/azcodr.js check --silent with empty stdout', () => {
@@ -186,11 +186,11 @@ describe('CLI Check & Validate Command (Track 1)', () => {
       assert.strictEqual(output.trim(), '');
     });
 
-    test('runs bin/azcodr.js check against nonexistent dir and exits 1', () => {
+    test('runs bin/azcodr.js check against nonexistent dir and exits 0 (skips missing)', () => {
       let exitCode: number | null = null;
-      let stdout = '';
+      let output = '';
       try {
-        execFileSync(process.execPath, [CLI_PATH, 'check', './nonexistent-workspace-path'], {
+        output = execFileSync(process.execPath, [CLI_PATH, 'check', './nonexistent-workspace-path'], {
           encoding: 'utf-8',
           cwd: REPO_ROOT,
           stdio: ['ignore', 'pipe', 'pipe']
@@ -198,10 +198,10 @@ describe('CLI Check & Validate Command (Track 1)', () => {
         exitCode = 0;
       } catch (err: any) {
         exitCode = err.status;
-        stdout = err.stdout;
+        output = err.stdout + err.stderr;
       }
-      assert.strictEqual(exitCode, 1);
-      assert.match(stdout, /FAILURE: Found \d+ error\(s\)/);
+      assert.strictEqual(exitCode, 0);
+      assert.match(output, /SKIP No AGENTS\.md/);
     });
   });
 });

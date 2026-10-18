@@ -4,11 +4,11 @@
 [![JSR Package](https://jsr.io/badges/@azcodr/azcodr)](https://jsr.io/@azcodr/azcodr)
 [![CI Status](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml/badge.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
 [![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
-[![Mutation Score](https://img.shields.io/badge/mutants%20killed-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr/blob/main/benchmark/RESULTS.md)
+[![Clean Code](https://img.shields.io/badge/clean%20code-100%25%20passing-brightgreen.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)](https://www.npmjs.com/package/azcodr)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-> CI-enforced 100% gate (lines / branches / functions / statements) + 100% mutant kill on guards; the public report is the `coverage-report` artifact on every CI run.
+> CI-enforced 100% gate (lines / branches / functions / statements); the public report is the `coverage-report` artifact on every CI run.
 
 > **Production-oriented architecture governance and topology-scoped scaffolding for AI-assisted development (early release).**  
 > *AI agents move fast. Architecture drifts. Azcodr turns architectural intent into executable constraints your agent cannot skip.*
@@ -19,7 +19,7 @@
 
 1. **Problem-First & Topology Alignment**: Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero preemptive tool bias). Architectural styles match the problem topology: Hexagonal for enterprise backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, and Game Loop for canvas games.
 2. **Systemic Atomicity**: Every rule, skill, database transaction, and code unit adheres to the Single Responsibility Principle (SRP)—indivisible, self-contained, orthogonal, and composable with zero conjunction naming.
-3. **Evolutionary Architecture & Refactor-Before-Add**: To catch AI-accelerated architectural drift, code graduates across [5 deterministic tipping points](./docs/tipping-points.md). Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
+3. **Evolutionary Architecture & Refactor-Before-Add**: To catch AI-accelerated architectural drift, code graduates across 5 deterministic tipping points. Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
 4. **True Incremental TDD & Nano-Cycles**: Prohibit batch-test dumps ("Test-First Waterfall"). Follow Uncle Bob's Three Laws: write one micro-assertion at a time, verify RED failure output, write minimal code to turn GREEN, and refactor under green with Ping-Pong pair programming.
 5. **100% Open-Source & Open Standards**: Standardized exclusively on open-source solutions and vendor-neutral specifications (OpenTelemetry, OPA, OpenFGA, Protocol Buffers, OpenAPI 3.1, JSON Schema Draft 2020-12, CloudEvents, Semgrep, Trivy, Gitleaks, Cosign).
 6. **Zero-Assumption Framework**: Ground truth is established solely through workspace configurations, code evidence, or direct user confirmation.
@@ -78,20 +78,22 @@ npx azcodr boundaries [directory]
    Action Required: Invert dependencies via Ports or extract shared modules.
 ```
 
-### 4. Detector Validation on Synthetic Fixtures (Not a Live-Agent Trial)
-The evaluator's ability to detect the 3 trap classes is exercised against **hand-written fixtures**, not live agent output ([`benchmark/RESULTS.md`](https://github.com/prosubodh/azcodr/blob/main/benchmark/RESULTS.md)):
-
-| Metric | Arm A (Control) | Arm B (Hooks Only) | Arm C (Full Azcodr) |
-|---|:---:|:---:|:---:|
-| **Files >300 Lines** | 1 (365 lines in `auth.ts`) | **0** (Modularized) | **0** (Modularized) |
-| **Circular Dependency Cycles** | 1 (`billing <-> tenant`) | 1 (`billing <-> tenant`) | **0** (Decoupled Port) |
-| **Layer Boundary Breaches** | 1 (`domain -> infra`) | 1 (`domain -> infra`) | **0** (Hexagonal Port) |
-| **Detected drift-free** | ❌ FAILED | ❌ FAILED | ✅ **0 detector violations** |
-
-These fixtures are committed by hand to prove the detector fires; they are **not evidence** that an AI agent drifts. Real-agent results (tokens, completion, review minutes) are planned and not yet measured. Run the detector yourself:
-```bash
-node benchmark/run-benchmark.js
+### 4. Declarative Project Governance (`harness.yaml`)
+Azcodr is a genuinely neutral harness: it enforces project-declared standards rather than imposing arbitrary archetypes. Projects declare their runtime languages, testing methodologies (`tdd`, `bdd`, `contract-first`, `property-based`, `none`), line budgets, and layer boundaries in `harness.yaml`:
+```yaml
+version: 1
+methodology: tdd
+packs:
+  - clean-architecture
+checks:
+  - id: max-file-lines
+    params:
+      max: 300
+  - id: layer-boundaries
+    layers:
+      domain: ["infrastructure", "application"]
 ```
+Core safety invariants (`destructive-commands`, `protected-targets`, `dependency-cycles`) remain non-negotiably enforced, while methodology and tooling rules dynamically adapt to project facts.
 
 ---
 

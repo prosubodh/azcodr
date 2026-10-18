@@ -108,7 +108,7 @@ Inquire *only* into the dimensions relevant to the selected topology. **Never as
 ### For Game Engines & High-Performance Simulators ONLY:
 - **Graphics Backend:** Native Vulkan, DirectX 12, Metal, or portable `wgpu`.
 - **Memory Allocation Strategy:** Linear allocators, frame allocators, arena allocators, or pool allocators.
-- **Entity Model:** Archetype ECS (e.g. `bevy_ecs`, `hecs`, `EnTT`) vs dense component arrays.
+- **Entity Model:** Table/archetype-based ECS storage (e.g. `bevy_ecs`, `hecs`, `EnTT`) vs sparse sets and dense component arrays.
 
 ### For Desktop CLIs ONLY:
 - **CLI Framework:** Zero-dependency argument parser vs battle-tested CLI library (e.g. `clap` for Rust, `cobra` for Go).

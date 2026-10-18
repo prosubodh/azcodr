@@ -81,6 +81,10 @@ describe('CLI Boundaries Command (Architecture Linter)', () => {
           path.join(tmp, 'domain', 'order.ts'),
           "import '../infrastructure/db.js';\nexport const order = 1;"
         );
+        fs.writeFileSync(
+          path.join(tmp, 'harness.yaml'),
+          'version: 1\nchecks:\n  - id: layer-boundaries\n    layers: { domain: [infrastructure] }\n'
+        );
 
         const logs: string[] = [];
         let exitCode: number | null = null;

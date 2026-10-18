@@ -1,47 +1,67 @@
 import fs from 'node:fs';
 import path from 'node:path';
+import { loadHarnessConfig } from './harness-config.js';
+import { resolveChecks } from './harness-resolve.js';
 /**
- * Canonical architectural boundary rules enforcing Hexagonal / Clean Architecture layer constraints.
+ * Loads layer rules from harness.yaml. Falls back to empty rules on error.
  */
-export const DEFAULT_BOUNDARY_RULES = [
-    {
-        fromLayer: 'domain',
-        disallowImportsFrom: ['infrastructure', 'infra', 'adapters', 'cli', 'transport', 'controllers']
-    },
-    {
-        fromLayer: 'core',
-        disallowImportsFrom: ['infrastructure', 'infra', 'adapters', 'presentation', 'ui']
+function declaredLayerRules(sourceDir) {
+    try {
+        const config = loadHarnessConfig(sourceDir);
+        const report = resolveChecks(config, config.project);
+        const layers = report.get('layer-boundaries').layers;
+        return Object.entries(layers).map(([fromLayer, disallowed]) => ({
+            fromLayer,
+            disallowImportsFrom: disallowed
+        }));
     }
-];
-function isSkippedDir(name) {
-    return name.startsWith('.') || name === 'node_modules' || name === 'lib';
+    catch {
+        return [];
+    }
 }
-function isEligibleSource(name) {
-    const isScript = name.endsWith('.ts') || name.endsWith('.js');
-    if (!isScript || name.endsWith('.d.ts'))
+async function loadLayerRules(sourceDir) {
+    return declaredLayerRules(sourceDir);
+}
+/**
+ * Extensions scanned when a project declares no preference.
+ *
+ * The JavaScript-family default exists because the import graph extractor
+ * understands ECMAScript module syntax. It is a limitation of the analyzer,
+ * not a claim that other languages have no cycles.
+ */
+export const DEFAULT_SCAN_EXTENSIONS = ['.ts', '.js', '.mjs', '.tsx', '.jsx'];
+function isSkippedDir(name, skipDirs) {
+    return name.startsWith('.') || name === 'node_modules' || skipDirs.includes(name);
+}
+function isEligibleSource(name, extensions) {
+    const ext = path.extname(name).toLowerCase();
+    if (!extensions.includes(ext) || name.endsWith('.d.ts'))
         return false;
     return !name.includes('.test.') && !name.includes('.spec.');
 }
 /**
- * Recursively discovers all eligible source files (.ts and .js) within a directory,
- * ignoring skipped directories (e.g. node_modules, lib) and test files.
+ * Recursively discovers source files under a directory.
  *
  * @param dir - Root directory to search.
+ * @param options - Extension and skip-directory settings.
  * @returns Sorted array of absolute file paths.
  */
-export function findSourceFiles(dir) {
+export function findSourceFiles(dir, options = {
+    extensions: DEFAULT_SCAN_EXTENSIONS,
+    skipDirs: ['lib', 'dist', 'build', 'target', 'vendor']
+}) {
     if (!fs.existsSync(dir))
         return [];
     const results = [];
     const entries = fs.readdirSync(dir, { withFileTypes: true });
     for (const entry of entries) {
-        if (isSkippedDir(entry.name))
+        if (isSkippedDir(entry.name, options.skipDirs))
             continue;
         const full = path.join(dir, entry.name);
         if (entry.isDirectory()) {
-            results.push(...findSourceFiles(full));
+            results.push(...findSourceFiles(full, options));
         }
-        else if (isEligibleSource(entry.name)) {
+        else if (isEligibleSource(entry.name, options.extensions)) {
             results.push(path.resolve(full));
         }
     }
@@ -137,10 +157,10 @@ function hasLayerSegment(pathStr, segment) {
  * Evaluates a dependency graph against architectural boundary rules to detect prohibited cross-layer imports.
  *
  * @param graph - Map of file paths to their imported dependency file paths.
- * @param rules - Architectural boundary rules to enforce (defaults to DEFAULT_BOUNDARY_RULES).
+ * @param rules - Architectural boundary rules to enforce.
  * @returns Array of detected boundary violations.
  */
-export function detectBoundaryViolations(graph, rules = DEFAULT_BOUNDARY_RULES) {
+export function detectBoundaryViolations(graph, rules = []) {
     const violations = [];
     for (const [file, imports] of graph.entries()) {
         for (const rule of rules) {
@@ -167,27 +187,34 @@ export function detectBoundaryViolations(graph, rules = DEFAULT_BOUNDARY_RULES) 
  *
  * @param sourceDir - Directory containing source code (e.g. src/).
  * @param rules - Architectural boundary rules.
+ * @param options - Source discovery settings.
  * @returns Report summarizing cycle and boundary findings.
  */
-export function inspectBoundaries(sourceDir, rules = DEFAULT_BOUNDARY_RULES) {
-    const files = findSourceFiles(sourceDir);
+export function inspectBoundaries(sourceDir, rules, options) {
+    // Synchronous path: use sync rule loader (for CLI and tests).
+    const effectiveRules = rules ?? declaredLayerRules(sourceDir);
+    const files = findSourceFiles(sourceDir, options);
     const graph = buildDependencyGraph(files);
     const cycles = detectDependencyCycles(graph);
-    const violations = detectBoundaryViolations(graph, rules);
+    const violations = detectBoundaryViolations(graph, effectiveRules);
     return {
+        targetDir: sourceDir,
         moduleCount: files.length,
         cycles,
         violations,
-        ok: cycles.length === 0 && violations.length === 0
+        ok: files.length > 0 && cycles.length === 0 && violations.length === 0
     };
 }
+/**
+ * Async variant that auto-loads layer rules from harness.yaml.
+ * Used by async callers (e.g., boundary guard script).
+ */
+export async function inspectBoundariesAsync(sourceDir, rules, options) {
+    return inspectBoundaries(sourceDir, rules, options);
+}
+export { loadLayerRules, declaredLayerRules };
 export default {
-    DEFAULT_BOUNDARY_RULES,
-    findSourceFiles,
-    extractLocalImports,
-    buildDependencyGraph,
-    detectDependencyCycles,
-    detectBoundaryViolations,
-    inspectBoundaries
+    DEFAULT_SCAN_EXTENSIONS, findSourceFiles, extractLocalImports, buildDependencyGraph,
+    detectDependencyCycles, detectBoundaryViolations, inspectBoundaries, inspectBoundariesAsync
 };
 //# sourceMappingURL=boundaries.js.map

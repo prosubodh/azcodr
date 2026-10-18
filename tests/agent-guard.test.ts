@@ -57,6 +57,7 @@ describe('Track 2: Agent Runtime Guard - Command Safety', () => {
     assert.strictEqual(inspectCommand('git add -A').blocked, false);
     assert.strictEqual(inspectCommand('git commit -m "feat: work"').blocked, false);
     assert.strictEqual(inspectCommand('rm -rf node_modules').blocked, false);
+    assert.strictEqual(inspectCommand('echo "|:---:|:---:|"').blocked, false);
     assert.strictEqual(inspectCommand('').blocked, false);
   });
 });
@@ -65,32 +66,39 @@ describe('Track 2: Agent Runtime Guard - Refactor-Before-Add', () => {
   beforeEach(setUpTmp);
   afterEach(tearDownTmp);
 
-  test('permits creating a new file within the 300 line budget', () => {
+  test('permits creating a new file within the configured budget', () => {
     const file = path.join(tmpDir, 'small.ts');
     const content = Array(50).fill('console.log("hello");').join('\n');
-    const result = inspectFileWrite({ filePath: file, incomingContent: content });
+    const result = inspectFileWrite({ filePath: file, incomingContent: content, maxLines: 300 });
     assert.strictEqual(result.blocked, false);
     assert.strictEqual(result.projectedLines, 50);
   });
 
-  test('blocks creating a new file that exceeds the 300 line budget', () => {
+  test('blocks creating a new file that exceeds the configured budget', () => {
     const file = path.join(tmpDir, 'huge.ts');
     const content = Array(350).fill('console.log("hello");').join('\n');
-    const result = inspectFileWrite({ filePath: file, incomingContent: content });
+    const result = inspectFileWrite({ filePath: file, incomingContent: content, maxLines: 300 });
     assert.strictEqual(result.blocked, true);
-    assert.match(result.reason!, /File line budget exceeded/);
+    assert.match(result.reason!, /would grow to 350 lines \(limit: 300\)/);
   });
 
-  test('blocks adding code to an existing file that is already over 300 lines', () => {
+  test('blocks adding code to an existing file that is already over the configured budget', () => {
     const file = path.join(tmpDir, 'existing-huge.ts');
     fs.writeFileSync(file, Array(320).fill('line;').join('\n'), 'utf-8');
 
     const result = inspectFileWrite({
       filePath: file,
-      incomingContent: Array(330).fill('line;').join('\n')
+      incomingContent: Array(330).fill('line;').join('\n'),
+      maxLines: 300
     });
     assert.strictEqual(result.blocked, true);
-    assert.match(result.reason!, /Refactor-Before-Add violation/);
+    assert.match(result.reason!, /currently has 320 lines/);
+  });
+
+  test('permits any file size when the project declares no budget', () => {
+    const file = path.join(tmpDir, 'huge.ts');
+    const content = Array(350).fill('console.log("hello");').join('\n');
+    assert.strictEqual(inspectFileWrite({ filePath: file, incomingContent: content }).blocked, false);
   });
 
   test('permits refactoring down an overflowing file (reducing lines)', () => {
@@ -99,7 +107,8 @@ describe('Track 2: Agent Runtime Guard - Refactor-Before-Add', () => {
 
     const result = inspectFileWrite({
       filePath: file,
-      incomingContent: Array(200).fill('line;').join('\n')
+      incomingContent: Array(200).fill('line;').join('\n'),
+      maxLines: 300
     });
     assert.strictEqual(result.blocked, false);
   });
@@ -111,14 +120,16 @@ describe('Track 2: Agent Runtime Guard - Refactor-Before-Add', () => {
     const willOverflow = inspectFileWrite({
       filePath: file,
       targetContent: 'line;',
-      replacementContent: Array(25).fill('line;').join('\n')
+      replacementContent: Array(25).fill('line;').join('\n'),
+      maxLines: 300
     });
     assert.strictEqual(willOverflow.blocked, true);
 
     const willStayUnder = inspectFileWrite({
       filePath: file,
       targetContent: 'line;',
-      replacementContent: 'line;\nline;'
+      replacementContent: 'line;\nline;',
+      maxLines: 300
     });
     assert.strictEqual(willStayUnder.blocked, false);
   });
@@ -128,24 +139,39 @@ describe('Track 2: Agent Runtime Guard - Test-First RED Enforcement', () => {
   beforeEach(setUpTmp);
   afterEach(tearDownTmp);
 
+  const ENFORCE = { enforceTestFirst: true, productionPaths: ['src/**'] };
+  const OFF = { enforceTestFirst: false };
+
   test('permits edits to test files and docs unconditionally', () => {
     const state = { lastFailingTestRecorded: false };
-    assert.strictEqual(inspectTddRequirement('tests/sample.test.ts', state, true).blocked, false);
-    assert.strictEqual(inspectTddRequirement('README.md', state, true).blocked, false);
-    assert.strictEqual(inspectTddRequirement('package.json', state, true).blocked, false);
+    assert.strictEqual(inspectTddRequirement('tests/sample.test.ts', state, ENFORCE).blocked, false);
+    assert.strictEqual(inspectTddRequirement('README.md', state, ENFORCE).blocked, false);
+    assert.strictEqual(inspectTddRequirement('package.json', state, ENFORCE).blocked, false);
   });
 
   test('blocks edits to production files when no failing test is recorded', () => {
     const state = { lastFailingTestRecorded: false };
-    const r = inspectTddRequirement('src/feature.ts', state, true);
+    const r = inspectTddRequirement('src/feature.ts', state, ENFORCE);
     assert.strictEqual(r.blocked, true);
-    assert.match(r.reason!, /Test-First \(RED-before-GREEN\)/);
+    assert.match(r.reason!, /Test-first/);
   });
 
   test('permits edits to production files once a failing test is recorded', () => {
     const state = { lastFailingTestRecorded: true, lastTestPath: 'tests/feature.test.ts' };
-    const r = inspectTddRequirement('src/feature.ts', state, true);
+    const r = inspectTddRequirement('src/feature.ts', state, ENFORCE);
     assert.strictEqual(r.blocked, false);
+  });
+
+  test('enforcement is off unless the project declares it', () => {
+    const state = { lastFailingTestRecorded: false };
+    assert.strictEqual(inspectTddRequirement('src/feature.ts', state, OFF).blocked, false);
+  });
+
+  test('a project with no declared production paths is never blocked', () => {
+    const state = { lastFailingTestRecorded: false };
+    const r = inspectTddRequirement('src/feature.ts', state, { enforceTestFirst: true });
+    assert.strictEqual(r.blocked, false);
+    assert.match(r.reason!, /no production paths/i);
   });
 
   test('reads and persists TDD session state cleanly', () => {
@@ -183,7 +209,7 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     const blocked = inspectPreTool(JSON.stringify({
       tool_name: 'write_to_file',
       tool_input: { TargetFile: 'src/oversized.ts', CodeContent: huge }
-    }));
+    }), { maxFileLines: 300 });
     assert.strictEqual(blocked.allowed, false);
     assert.strictEqual(blocked.source, 'file');
 
@@ -196,9 +222,27 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     const tddBlocked = inspectPreTool(JSON.stringify({
       tool_name: 'write_to_file',
       tool_input: { TargetFile: 'src/prod.ts', CodeContent: 'const a = 1;' }
-    }), { enforceTestFirst: true, workspaceRoot: tmpDir });
+    }), { tdd: { enforceTestFirst: true, productionPaths: ['src/**'] }, workspaceRoot: tmpDir });
     assert.strictEqual(tddBlocked.allowed, false);
     assert.strictEqual(tddBlocked.source, 'tdd');
+  });
+
+  test('inspectPreTool handles Antigravity toolCall envelope for commands and file writes', () => {
+    const agyCmdBlocked = inspectPreTool(JSON.stringify({
+      toolCall: {
+        name: 'run_command',
+        args: { CommandLine: 'rm -rf /' }
+      }
+    }));
+    assert.strictEqual(agyCmdBlocked.allowed, false);
+
+    const agyFileAllowed = inspectPreTool(JSON.stringify({
+      toolCall: {
+        name: 'replace_file_content',
+        args: { TargetFile: 'README.md', TargetContent: '|:---:|:---:|', ReplacementContent: 'updated' }
+      }
+    }));
+    assert.strictEqual(agyFileAllowed.allowed, true);
   });
 
   test('handles edge-case inputs gracefully', () => {
@@ -206,6 +250,7 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     assert.strictEqual(inspectPreTool('{not valid json}').allowed, true);
     // Envelope without recognized command or file
     assert.strictEqual(inspectPreTool(JSON.stringify({ tool_name: 'other', tool_input: {} })).allowed, true);
+    assert.strictEqual(inspectPreTool(JSON.stringify({ otherField: 'custom', toolCall: 'not-object' })).allowed, true);
     // Inspect file write with no content
     assert.strictEqual(inspectFileWrite({ filePath: path.join(tmpDir, 'empty.ts') }).blocked, false);
     // Unreadable file returns 0 lines
@@ -215,11 +260,13 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     fs.writeFileSync(badState, 'invalid-json', 'utf-8');
     assert.strictEqual(readTddState(badState).lastFailingTestRecorded, false);
     // Test directory paths
-    assert.strictEqual(inspectTddRequirement('/test/a.js', { lastFailingTestRecorded: false }, true).blocked, false);
-    assert.strictEqual(inspectTddRequirement('/__tests__/b.js', { lastFailingTestRecorded: false }, true).blocked, false);
+    const SRC_RULES = { productionPaths: ['src/**'], testPaths: [], nonCodeExtensions: [] };
+    const TDD = { enforceTestFirst: true, productionPaths: ['src/**'] };
+    assert.strictEqual(inspectTddRequirement('/test/a.js', { lastFailingTestRecorded: false }, TDD).blocked, false);
+    assert.strictEqual(inspectTddRequirement('/__tests__/b.js', { lastFailingTestRecorded: false }, TDD).blocked, false);
     assert.strictEqual(countLines(''), 0);
-    assert.strictEqual(isProductionFile('docs/index.html'), false);
-    assert.strictEqual(isProductionFile('src/index.ts'), true);
+    assert.strictEqual(isProductionFile('docs/index.html', SRC_RULES), false);
+    assert.strictEqual(isProductionFile('src/index.ts', SRC_RULES), true);
     assert.strictEqual(isTestFile('tests/foo.ts'), true);
     assert.strictEqual(isNonCodeFile('README.md'), true);
     assert.strictEqual(isNonCodeFile('src/code.ts'), false);

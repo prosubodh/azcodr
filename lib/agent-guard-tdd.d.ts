@@ -1,8 +1,8 @@
 /**
- * Persistent state tracking test-first TDD progress across an agent session.
+ * Persistent state tracking test-first progress across an agent session.
  */
 export interface SessionTddState {
-    /** Whether a failing test execution (RED phase) has been recorded in the session. */
+    /** Whether a failing test execution (RED phase) has been recorded. */
     lastFailingTestRecorded: boolean;
     /** Unix timestamp in milliseconds when the last test execution occurred. */
     lastTestRunTime?: number;
@@ -10,60 +10,82 @@ export interface SessionTddState {
     lastTestPath?: string;
 }
 /**
- * Result of evaluating a file edit against RED-before-GREEN TDD rules.
+ * Project-declared path classifications that decide what counts as
+ * production code. With no `productionPaths` declared, nothing is production.
+ */
+export interface PathMatcher {
+    /** Globs identifying production source. */
+    productionPaths: readonly string[];
+    /** Globs identifying test artefacts, including BDD step definitions. */
+    testPaths: readonly string[];
+    /** Extensions treated as data or configuration rather than code. */
+    nonCodeExtensions: readonly string[];
+}
+/**
+ * Result of evaluating a file edit against RED-before-GREEN rules.
  */
 export interface TddCheckResult {
-    /** Whether the file edit is blocked due to missing failing test. */
+    /** Whether the file edit is blocked due to a missing failing test. */
     blocked: boolean;
-    /** Explanatory reason if the operation is blocked. */
+    /** Explanatory reason, present whenever the rule is active. */
     reason?: string;
     /** Whether the target file was identified as production source code. */
     isProductionFile: boolean;
 }
 /**
- * Identifies whether a given path is a unit or integration test file.
+ * Identifies whether a path is a test artefact using built-in conventions.
  *
  * @param filePath - File path to inspect.
- * @returns True if path matches test directory or file extension patterns.
+ * @returns True if the path matches a conventional test layout.
  */
 export declare function isTestFile(filePath: string): boolean;
 /**
- * Identifies whether a given path is a non-code file (markdown, json, yaml, images).
+ * Identifies whether a path is a non-code asset or configuration file.
  *
  * @param filePath - File path to inspect.
- * @returns True if file extension indicates non-code asset or configuration.
+ * @returns True if the extension indicates non-code content.
  */
 export declare function isNonCodeFile(filePath: string): boolean;
+export declare function isProductionFile(filePath: string, rules: PathMatcher): boolean;
 /**
- * Identifies whether a given file path corresponds to production code under src/, lib/, or app/.
- *
- * @param filePath - File path to inspect.
- * @returns True if path is production source code subject to RED-before-GREEN discipline.
- */
-export declare function isProductionFile(filePath: string): boolean;
-/**
- * Loads session TDD tracking state from disk, defaulting to unrecorded state if missing.
+ * Loads session test-first tracking state, defaulting to unrecorded.
  *
  * @param stateFile - Path to the persistent session state JSON file.
  * @returns Parsed SessionTddState object.
  */
 export declare function readTddState(stateFile: string): SessionTddState;
 /**
- * Persists session TDD state to disk with fail-safe error handling to avoid disrupting execution.
+ * Persists session state, failing silently so a write error cannot interrupt work.
  *
  * @param stateFile - Path to the persistent session state JSON file.
- * @param state - SessionTddState object to record.
+ * @param state - State to record.
  */
 export declare function writeTddState(stateFile: string, state: SessionTddState): void;
 /**
- * Checks whether an edit to a file is allowed under RED-before-GREEN TDD rules.
- *
- * @param filePath - Path to file being edited.
- * @param state - Current session TDD state.
- * @param enforceTestFirst - Whether test-first enforcement is strictly enabled.
- * @returns Decision result indicating whether edit is blocked.
+ * Configuration governing RED-before-GREEN enforcement.
  */
-export declare function inspectTddRequirement(filePath: string, state: SessionTddState, enforceTestFirst?: boolean): TddCheckResult;
+export interface TddEnforcement {
+    /** Whether the rule is active at all. */
+    enforceTestFirst: boolean;
+    /** Globs identifying production source. Empty means the rule cannot fire. */
+    productionPaths?: readonly string[];
+    /** Globs identifying test artefacts. */
+    testPaths?: readonly string[];
+    /** Extensions treated as non-code. */
+    nonCodeExtensions?: readonly string[];
+}
+/**
+ * Checks whether an edit is permitted under RED-before-GREEN rules.
+ *
+ * Fails open in every ambiguous case: an unconfigured project, or a rule with
+ * no production paths declared, blocks nothing.
+ *
+ * @param filePath - Path of file being edited.
+ * @param state - Current session state.
+ * @param config - Project-declared enforcement settings.
+ * @returns Decision result indicating whether the edit is blocked.
+ */
+export declare function inspectTddRequirement(filePath: string, state: SessionTddState, config: TddEnforcement): TddCheckResult;
 declare const _default: {
     isTestFile: typeof isTestFile;
     isNonCodeFile: typeof isNonCodeFile;

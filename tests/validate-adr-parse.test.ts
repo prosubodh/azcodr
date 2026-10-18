@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation, parseAdrLedger } from '../scripts/validate.js';
+import { runValidation, parseAdrLedger } from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -12,6 +12,7 @@ function collect(root: string) {
     warn: (msg: string) => lines.push(`WARN ${msg}`),
     fail: (msg: string) => lines.push(`FAIL ${msg}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   };
   return { result: runValidation(root, reporter), lines };

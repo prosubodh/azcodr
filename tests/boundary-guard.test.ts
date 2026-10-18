@@ -91,16 +91,17 @@ describe('Boundary guard: verdict exits', () => {
     assert.match(stderr, /Circular Dependency/);
   });
 
-  test('exits 1 and reports a layer boundary breach', () => {
+  test('exits 1 and reports a layer boundary breach when rules are declared', () => {
     const fixture = path.join(tmpDir, 'breach');
     writeFixture(fixture, {
       'src/infrastructure/db.ts': 'export const query = () => [];',
-      'src/domain/payment.ts': "import '../infrastructure/db.js';\nexport const reconcile = () => true;"
+      'src/domain/payment.ts': "import '../infrastructure/db.js';\nexport const reconcile = () => true;",
+      'harness.yaml': 'version: 1\nchecks:\n  - id: layer-boundaries\n    layers: { domain: [infrastructure] }\n'
     });
     const { exitCode, stderr } = runGuard([fixture]);
     assert.strictEqual(exitCode, 1);
     assert.match(stderr, /Layer Boundary Breach/);
-    assert.match(stderr, /domain .* -> .*infrastructur|infrastructur/);
+    assert.match(stderr, /domain[\s\S]*->[\s\S]*infrastructur/);
   });
 
   test('--silent suppresses the report but keeps the 0/1 verdict', () => {

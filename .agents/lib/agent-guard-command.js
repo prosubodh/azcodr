@@ -59,7 +59,7 @@ export const DESTRUCTIVE_RULES = [
         reason: 'raw disk operation'
     },
     {
-        pattern: /(:[\s]*\([\s]*\)[\s]*\{|:[\s]*\|[\s]*:)/,
+        pattern: /(:[\s]*\([\s]*\)[\s]*\{|:[\s]*\x7c[\s]*:[\s]*&)/,
         reason: 'fork bomb'
     },
     {

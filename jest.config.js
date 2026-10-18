@@ -40,11 +40,7 @@ export default {
     '<rootDir>/tests/**/*.test.ts',
     '<rootDir>/tests/**/*.spec.ts'
   ],
-  collectCoverageFrom: [
-    'src/**/*.ts',
-    'scripts/validate/**/*.js',
-    'scripts/validate.js'
-  ],
+  collectCoverageFrom: ['src/**/*.ts'],
   coverageDirectory: 'coverage',
   coverageThreshold: {
     global: {

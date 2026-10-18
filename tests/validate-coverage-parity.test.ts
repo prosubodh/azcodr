@@ -16,7 +16,7 @@ import {
   createReporter,
   stripHtmlComments,
   stripFencedCode
-} from '../scripts/validate.js';
+} from '../src/validator/run.js';
 
 const AGENTS_FILE = '/workspace/AGENTS.md';
 const AGENTS_CONTENT = '# AGENTS\nbody\n';

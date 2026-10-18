@@ -3,18 +3,12 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
+import { collector, silent } from './support/reporter.js';
 
 function collect(root: string) {
-  const lines: string[] = [];
-  const reporter = {
-    pass: (msg: string) => lines.push(`PASS ${msg}`),
-    warn: (msg: string) => lines.push(`WARN ${msg}`),
-    fail: (msg: string) => lines.push(`FAIL ${msg}`),
-    log: () => {},
-    heading: () => {}
-  };
-  return { result: runValidation(root, reporter), lines };
+  const { logs, reporter } = collector();
+  return { result: runValidation(root, reporter), lines: logs };
 }
 
 const INDEX_HEAD = [
@@ -27,16 +21,9 @@ function ledgerWith(rows: string[], entries: string) {
 }
 
 function collectLedgerOnly(root: string) {
-  const lines: string[] = [];
-  const reporter = {
-    pass: (msg: string) => lines.push(`PASS ${msg}`),
-    warn: (msg: string) => lines.push(`WARN ${msg}`),
-    fail: (msg: string) => lines.push(`FAIL ${msg}`),
-    log: () => {},
-    heading: () => {}
-  };
+  const { logs, reporter } = collector();
   runValidation(root, reporter);
-  const ledgerLines = lines.filter((l) => /ADR Master Index|ubiquitous_language/.test(l));
+  const ledgerLines = logs.filter((l) => /ADR Master Index|ubiquitous_language/.test(l));
   return {
     ledgerLines,
     ledgerFailures: ledgerLines.filter((l) => /^FAIL/.test(l))
@@ -44,7 +31,7 @@ function collectLedgerOnly(root: string) {
 }
 
 function silentReporter() {
-  return { pass: () => {}, warn: () => {}, fail: () => {}, log: () => {}, heading: () => {} };
+  return silent();
 }
 
 function writeWaivedGlossary(dir: string) {

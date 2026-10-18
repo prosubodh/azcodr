@@ -9,8 +9,7 @@ import {
   detectBoundaryViolations,
   findSourceFiles,
   extractLocalImports,
-  buildDependencyGraph,
-  DEFAULT_BOUNDARY_RULES
+  buildDependencyGraph
 } from '../src/index.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -60,22 +59,38 @@ describe('Track 3: Boundary Enforcement - Cycle Detection', () => {
   });
 });
 
+/**
+ * Hexagonal layer rules declared by the test. The library ships none: layer
+ * vocabulary is a project decision, so there is no default rule set.
+ */
+const HEX_LAYERS = [
+  { fromLayer: 'domain', disallowImportsFrom: ['infrastructure', 'adapters'] },
+  { fromLayer: 'core', disallowImportsFrom: ['infrastructure', 'adapters', 'presentation', 'ui'] }
+];
+
 describe('Track 3: Boundary Enforcement - Layer Boundary Rules', () => {
   test('flags when domain layer illegally imports infrastructure', () => {
     const graph = new Map<string, string[]>([
       ['src/domain/order.ts', ['src/infrastructure/postgres.ts']]
     ]);
-    const violations = detectBoundaryViolations(graph, DEFAULT_BOUNDARY_RULES);
+    const violations = detectBoundaryViolations(graph, HEX_LAYERS);
     assert.strictEqual(violations.length, 1);
     assert.strictEqual(violations[0]!.fromLayer, 'domain');
     assert.strictEqual(violations[0]!.toLayer, 'infrastructure');
+  });
+
+  test('no rules means no boundary violations, because layers are project vocabulary', () => {
+    const graph = new Map<string, string[]>([
+      ['src/domain/order.ts', ['src/infrastructure/postgres.ts']]
+    ]);
+    assert.deepStrictEqual(detectBoundaryViolations(graph), []);
   });
 
   test('flags when core layer illegally imports presentation or ui', () => {
     const graph = new Map<string, string[]>([
       ['src/core/auth.ts', ['src/presentation/login-view.ts']]
     ]);
-    const violations = detectBoundaryViolations(graph, DEFAULT_BOUNDARY_RULES);
+    const violations = detectBoundaryViolations(graph, HEX_LAYERS);
     assert.strictEqual(violations.length, 1);
     assert.strictEqual(violations[0]!.fromLayer, 'core');
     assert.strictEqual(violations[0]!.toLayer, 'presentation');

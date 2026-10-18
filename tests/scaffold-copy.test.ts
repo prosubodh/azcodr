@@ -193,7 +193,7 @@ describe('index.js public API surface', () => {
     assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('LICENSE'), true);
-    assert.strictEqual(api.TEMPLATE_ITEMS.includes('scripts'), true);
+    assert.strictEqual(api.TEMPLATE_ITEMS.includes('.agents'), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.github'), true);
   });
 });

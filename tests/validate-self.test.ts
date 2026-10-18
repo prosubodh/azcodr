@@ -14,13 +14,13 @@ import { fileURLToPath } from 'node:url';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const ROOT = path.resolve(__dirname, '..');
-const VALIDATE_CLI = path.join(ROOT, 'scripts', 'validate-cli.js');
+const CLI = path.join(ROOT, 'bin', 'azcodr.js');
 
 function runValidator(root = ROOT) {
   try {
     return {
       code: 0,
-      out: execFileSync(process.execPath, [VALIDATE_CLI, root], { encoding: 'utf-8' })
+      out: execFileSync(process.execPath, [CLI, 'check', root], { encoding: 'utf-8' })
     };
   } catch (err: any) {
     return { code: err.status, out: `${err.stdout || ''}${err.stderr || ''}` };
@@ -31,15 +31,10 @@ describe('Self-validation: azcodr passes its own validator', () => {
   test('exits 0 on this repository', () => {
     const { code, out } = runValidator();
     assert.strictEqual(code, 0, out);
-    assert.match(out, /SUCCESS: All agentic configurations are valid and healthy/);
+    assert.match(out, /SUCCESS: \d+ warning\(s\), 0 error\(s\)/);
   });
 
-  test('reports no warnings on this repository', () => {
-    const { out } = runValidator();
-    assert.match(out, /\(0 warnings\)/, out);
-  });
-
-  test('the ADR Master Index agrees with the ledger (new phase 6)', () => {
+  test('the decision index agrees with the ledger', () => {
     const { out } = runValidator();
     assert.match(out, /Checking ADR Index Consistency/);
     assert.match(out, /ADR Master Index matches all \d+ ADR entries in memory\.md/);
@@ -50,26 +45,23 @@ describe('Self-validation: azcodr passes its own validator', () => {
     assert.match(out, /ubiquitous_language\.md is intentionally blank \(template waiver\)/, out);
   });
 
-  test('validate-cli.js is a real entry point that exits on its own', () => {
-    // Proves the shim is wired, not a dead file the script merely references.
+  test('the check command is a real entry point that exits on its own', () => {
     const { code, out } = runValidator();
     assert.strictEqual(code, 0);
-    assert.ok(out.includes('Validating Agentic Architecture'));
+    assert.ok(out.includes('Validating Workspace'));
   });
 });
 
 describe('Self-validation: package scripts are runnable as declared', () => {
   const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
 
-  test('the validate script points at a file that exists', () => {
-    const script = pkg.scripts.validate.split(' ').pop();
-    assert.ok(fs.existsSync(path.join(ROOT, script)), `validate script target missing: ${script}`);
+  test('the validate script points at the CLI', () => {
+    assert.strictEqual(pkg.scripts.validate, 'node bin/azcodr.js check');
+    assert.ok(fs.existsSync(path.join(ROOT, 'bin', 'azcodr.js')));
   });
 
   test('lint resolves through the eslint config, which must exist', () => {
-    // The old form named every file explicitly; the config now owns the file
-    // list, so this asserts the config exists and actually gates the tree.
     assert.match(pkg.scripts.lint, /eslint/);
-    assert.ok(fs.existsSync(path.join(ROOT, 'eslint.config.js')), 'eslint.config.js is missing');
+    assert.ok(fs.existsSync(path.join(ROOT, 'eslint.config.js')));
   });
 });

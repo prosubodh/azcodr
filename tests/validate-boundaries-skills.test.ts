@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -12,6 +12,7 @@ function collect(root: string) {
     warn: (msg: string) => lines.push(`WARN ${msg}`),
     fail: (msg: string) => lines.push(`FAIL ${msg}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   };
   return { result: runValidation(root, reporter), lines };
@@ -46,10 +47,10 @@ describe('skills front-matter: presence', () => {
   });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('fails when .agents/skills is absent', () => {
+  test('skips skills validation when .agents/skills is absent', () => {
     fs.rmSync(path.join(root, '.agents'), { recursive: true });
     const { lines } = collect(root);
-    assert.ok(lines.some((l) => /^FAIL Missing \.agents\/skills directory/.test(l)), lines.join(' | '));
+    assert.ok(lines.some((l) => /^SKIP .*skills/.test(l)), lines.join(' | '));
   });
 
   test('fails a skill folder with no SKILL.md', () => {
@@ -191,10 +192,10 @@ describe('memory.md ADR ledger: presence', () => {
   beforeEach(() => { root = baseFixture(); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('fails when memory.md is absent', () => {
+  test('skips memory.md validation when absent', () => {
     fs.rmSync(path.join(root, 'memory.md'));
     const { lines } = collect(root);
-    assert.ok(lines.some((l) => /FAIL Missing memory\.md ADR ledger/.test(l)), lines.join(' | '));
+    assert.ok(lines.some((l) => /SKIP No memory\.md/.test(l)), lines.join(' | '));
   });
 
   test('fails when memory.md has no H1', () => {

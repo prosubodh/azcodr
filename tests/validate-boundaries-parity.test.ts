@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import os from 'node:os';
 
-import { runValidation } from '../scripts/validate.js';
+import { runValidation } from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -12,6 +12,7 @@ function collect(root: string) {
     warn: (msg: string) => lines.push(`WARN ${msg}`),
     fail: (msg: string) => lines.push(`FAIL ${msg}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   };
   return { result: runValidation(root, reporter), lines };
@@ -88,10 +89,10 @@ describe('rules directory defects: presence', () => {
   beforeEach(() => { root = baseFixture(); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('fails when docs/rules is absent', () => {
+  test('skips rules validation when docs/rules is absent', () => {
     fs.rmSync(path.join(root, 'docs', 'rules'), { recursive: true });
     const { lines } = collect(root);
-    assert.ok(lines.some((l) => /^FAIL Missing docs\/rules directory/.test(l)), lines.join(' | '));
+    assert.ok(lines.some((l) => /^SKIP .*rules/.test(l)), lines.join(' | '));
   });
 
   test('fails a rule file with no H1 header', () => {

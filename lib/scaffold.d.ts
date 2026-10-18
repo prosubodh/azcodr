@@ -11,6 +11,13 @@ export { getTemplateDir };
 /**
  * Canonical list of template files and directories copied into a new workspace.
  */
+/**
+ * Files and directories copied into a new workspace.
+ *
+ * The validator ships as a library, not as copied source, so a scaffolded
+ * project runs `npx azcodr check` instead of carrying its own copy of the
+ * tooling.
+ */
 export declare const TEMPLATE_ITEMS: readonly string[];
 /**
  * Configuration options for the primary scaffold orchestration function.

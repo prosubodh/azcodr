@@ -1,8 +1,4 @@
 /**
- * Default maximum lines allowed per file before triggering Refactor-Before-Add enforcement.
- */
-export declare const DEFAULT_MAX_FILE_LINES = 300;
-/**
  * Parameters provided to evaluate a proposed file write or edit operation.
  */
 export interface FileCheckInput {
@@ -14,26 +10,29 @@ export interface FileCheckInput {
     replacementContent?: string;
     /** Target content chunk being matched and replaced. */
     targetContent?: string;
-    /** Optional custom maximum line threshold (defaults to DEFAULT_MAX_FILE_LINES). */
+    /** Configured line budget; omit to disable the check entirely. */
     maxLines?: number;
+    /** Globs exempted from the budget, for generated or vendored files. */
+    excludePaths?: readonly string[];
 }
 /**
  * Outcome of evaluating a proposed file modification against file size fitness functions.
  */
 export interface FileCheckResult {
-    /** Whether the file edit is blocked under Refactor-Before-Add. */
+    /** Whether the file edit is blocked. */
     blocked: boolean;
-    /** Human-readable explanation when the write is blocked. */
+    /** Explanation of the verdict, present whenever the budget is active. */
     reason?: string;
     /** Current line count of the file on disk. */
     currentLines: number;
     /** Projected line count after applying the proposed modification. */
     projectedLines: number;
-    /** Maximum line limit enforced for this file. */
-    maxLines: number;
+    /** Active line budget, or null when the check is not configured. */
+    maxLines: number | null;
 }
 /**
- * Calculates the number of newline-delimited lines in a given text string.
+ * Counts lines, treating a trailing newline as a terminator rather than an
+ * extra line, so a file whose last line is exactly at the limit still fits.
  *
  * @param text - Input string to evaluate.
  * @returns Total count of lines.
@@ -42,19 +41,21 @@ export declare function countLines(text: string): number;
 /**
  * Reads an existing file from disk and returns its current line count.
  *
- * @param filePath - Path of the file to inspect.
+ * @param filePath - Path of file to inspect.
  * @returns Total number of lines, or 0 if unreadable or non-existent.
  */
 export declare function readExistingLines(filePath: string): number;
 /**
- * Checks a proposed file write or edit against Refactor-Before-Add rules.
+ * Checks a proposed file write or edit against the configured line budget.
  *
- * @param input - File path and proposed content.
+ * With no `maxLines` the check is inert: a file of any size is permitted. This
+ * is deliberate — a line budget is a project decision, not a universal law.
+ *
+ * @param input - File path, proposed content and configured budget.
  * @returns Decision result indicating whether the write is blocked.
  */
 export declare function inspectFileWrite(input: FileCheckInput): FileCheckResult;
 declare const _default: {
-    DEFAULT_MAX_FILE_LINES: number;
     countLines: typeof countLines;
     readExistingLines: typeof readExistingLines;
     inspectFileWrite: typeof inspectFileWrite;

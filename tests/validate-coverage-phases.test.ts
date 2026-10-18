@@ -12,7 +12,7 @@ import {
   runValidation,
   walkMarkdown,
   parseAdrLedger
-} from '../scripts/validate.js';
+} from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -22,6 +22,7 @@ function collect(root: string) {
     warn: (m: string) => lines.push(`WARN ${m}`),
     fail: (m: string) => lines.push(`FAIL ${m}`),
     log: (m: string) => lines.push(`LOG ${m}`),
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: (m) => phases.push(m)
   });
   return { result, lines, joined: lines.join('\n'), phases };
@@ -88,45 +89,41 @@ describe('coverage: parseAdrLedger index-row variants', () => {
   });
 });
 
-describe('coverage: phase paths for missing files and AGENTS size', () => {
+describe('coverage: optional governance files are skipped, not failed', () => {
   let root: string;
   beforeEach(() => { root = fixture('paths'); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('warns when .github/copilot-instructions.md is missing', () => {
+  test('a missing .github/copilot-instructions.md is not a failure', () => {
     fs.rmSync(path.join(root, '.github', 'copilot-instructions.md'));
-    const { joined } = collect(root);
-    assert.match(joined, /WARN \.github\/copilot-instructions\.md is missing/);
+    const { joined, result } = collect(root);
+    assert.ok(!/FAIL .*copilot/.test(joined), 'an optional file must not fail the run');
+    assert.strictEqual(result.errors, 0);
   });
 
-  test('warns when .github/workflows is missing', () => {
+  test('a missing .github/workflows directory is not a failure', () => {
     fs.rmSync(path.join(root, '.github', 'workflows'), { recursive: true });
-    const { joined } = collect(root);
-    assert.match(joined, /WARN \.github\/workflows is missing/);
+    const { result } = collect(root);
+    assert.strictEqual(result.errors, 0);
   });
 
-  test('warns when AGENTS.md is between 121 and 150 lines', () => {
-    fs.writeFileSync(path.join(root, 'AGENTS.md'), new Array(130).fill('l').join('\n'));
-    const { joined } = collect(root);
+  test('an over-long AGENTS.md warns but never fails the build', () => {
+    fs.writeFileSync(path.join(root, 'AGENTS.md'), new Array(400).fill('l').join('\n'));
+    const { joined, result } = collect(root);
     assert.match(joined, /WARN AGENTS\.md line count is getting large/);
+    assert.strictEqual(result.errors, 0, 'document length is advisory, not a defect');
   });
 });
 
-describe('coverage: phase paths for AGENTS and rule limits', () => {
+describe('coverage: phase paths for rule limits', () => {
   let root: string;
   beforeEach(() => { root = fixture('paths'); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
 
-  test('fails when AGENTS.md exceeds 150 lines', () => {
-    fs.writeFileSync(path.join(root, 'AGENTS.md'), new Array(200).fill('l').join('\n'));
+  test('fails a rule file with no H1 title', () => {
+    fs.writeFileSync(path.join(root, 'docs', 'rules', 'nohead.md'), 'no heading here\n');
     const { joined } = collect(root);
-    assert.match(joined, /FAIL AGENTS\.md exceeds maximum line limit/);
-  });
-
-  test('warns when a rule file lacks the Core Mandate line', () => {
-    fs.writeFileSync(path.join(root, 'docs', 'rules', 'nomad.md'), '# Title\n');
-    const { joined } = collect(root);
-    assert.match(joined, /WARN Rule nomad\.md missing standardized/);
+    assert.match(joined, /FAIL Rule nohead\.md missing H1 header/);
   });
 
   test('warns when a rule file exceeds 24KB', () => {
@@ -140,13 +137,6 @@ describe('coverage: phase paths for skill description gates', () => {
   let root: string;
   beforeEach(() => { root = fixture('paths'); });
   afterEach(() => { fs.rmSync(root, { recursive: true, force: true }); });
-
-  test('warns when a skill description lacks the Use when prefix', () => {
-    const body = '---\nname: demo\ndescription: Helps with things. Do not use in prod.\n---\n\n## Gotchas\n';
-    fs.writeFileSync(path.join(root, '.agents', 'skills', 'demo', 'SKILL.md'), body);
-    const { joined } = collect(root);
-    assert.match(joined, /should start with imperative 'Use when/);
-  });
 
   test('warns when a skill description lacks a negative boundary', () => {
     const body = '---\nname: demo\ndescription: Use when testing things.\n---\n\n## Gotchas\n';

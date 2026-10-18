@@ -1,6 +1,6 @@
 import assert from 'node:assert/strict';
 
-import { evaluateParityTarget, isValidAgentsTarget, createReporter } from '../scripts/validate.js';
+import { evaluateParityTarget, isValidAgentsTarget, createReporter } from '../src/validator/run.js';
 
 const AGENTS_CONTENT = '# AGENTS\nbody\n';
 const AGENTS_FILE = '/workspace/AGENTS.md';

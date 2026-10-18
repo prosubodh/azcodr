@@ -14,7 +14,7 @@ import {
   stripHtmlComments,
   stripFencedCode,
   walkMarkdown
-} from '../scripts/validate.js';
+} from '../src/validator/run.js';
 
 function collect(root: string) {
   const lines: string[] = [];
@@ -23,6 +23,7 @@ function collect(root: string) {
     warn: (m: string) => lines.push(`WARN ${m}`),
     fail: (m: string) => lines.push(`FAIL ${m}`),
     log: () => {},
+    skip: (msg: string) => lines.push(`SKIP ${msg}`),
     heading: () => {}
   });
   return { result, lines, joined: lines.join('\n') };

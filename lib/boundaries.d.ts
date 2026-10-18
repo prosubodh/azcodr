@@ -1,4 +1,9 @@
 /**
+ * Loads layer rules from harness.yaml. Falls back to empty rules on error.
+ */
+declare function declaredLayerRules(sourceDir: string): BoundaryRule[];
+declare function loadLayerRules(sourceDir: string): Promise<BoundaryRule[]>;
+/**
  * Defines an architectural layer boundary rule disallowing imports from foreign layers.
  */
 export interface BoundaryRule {
@@ -24,6 +29,8 @@ export interface BoundaryViolation {
  * Report summarizing module count, detected circular cycles, and boundary violations.
  */
 export interface BoundaryReport {
+    /** Target directory inspected. */
+    targetDir?: string;
     /** Total number of source modules scanned. */
     moduleCount: number;
     /** List of detected circular dependency cycles. */
@@ -34,17 +41,31 @@ export interface BoundaryReport {
     ok: boolean;
 }
 /**
- * Canonical architectural boundary rules enforcing Hexagonal / Clean Architecture layer constraints.
+ * Source-file discovery settings. With no extensions declared the scanner
+ * reports zero modules rather than silently scanning only JavaScript.
  */
-export declare const DEFAULT_BOUNDARY_RULES: readonly BoundaryRule[];
+export interface ScanOptions {
+    /** File extensions to treat as source. */
+    extensions: readonly string[];
+    /** Directory names to skip entirely. */
+    skipDirs: readonly string[];
+}
 /**
- * Recursively discovers all eligible source files (.ts and .js) within a directory,
- * ignoring skipped directories (e.g. node_modules, lib) and test files.
+ * Extensions scanned when a project declares no preference.
+ *
+ * The JavaScript-family default exists because the import graph extractor
+ * understands ECMAScript module syntax. It is a limitation of the analyzer,
+ * not a claim that other languages have no cycles.
+ */
+export declare const DEFAULT_SCAN_EXTENSIONS: readonly string[];
+/**
+ * Recursively discovers source files under a directory.
  *
  * @param dir - Root directory to search.
+ * @param options - Extension and skip-directory settings.
  * @returns Sorted array of absolute file paths.
  */
-export declare function findSourceFiles(dir: string): string[];
+export declare function findSourceFiles(dir: string, options?: ScanOptions): string[];
 /**
  * Scans a source file and extracts all local relative import and export paths.
  *
@@ -70,7 +91,7 @@ export declare function detectDependencyCycles(graph: Map<string, string[]>): st
  * Evaluates a dependency graph against architectural boundary rules to detect prohibited cross-layer imports.
  *
  * @param graph - Map of file paths to their imported dependency file paths.
- * @param rules - Architectural boundary rules to enforce (defaults to DEFAULT_BOUNDARY_RULES).
+ * @param rules - Architectural boundary rules to enforce.
  * @returns Array of detected boundary violations.
  */
 export declare function detectBoundaryViolations(graph: Map<string, string[]>, rules?: readonly BoundaryRule[]): BoundaryViolation[];
@@ -79,17 +100,25 @@ export declare function detectBoundaryViolations(graph: Map<string, string[]>, r
  *
  * @param sourceDir - Directory containing source code (e.g. src/).
  * @param rules - Architectural boundary rules.
+ * @param options - Source discovery settings.
  * @returns Report summarizing cycle and boundary findings.
  */
-export declare function inspectBoundaries(sourceDir: string, rules?: readonly BoundaryRule[]): BoundaryReport;
+export declare function inspectBoundaries(sourceDir: string, rules?: readonly BoundaryRule[], options?: ScanOptions): BoundaryReport;
+/**
+ * Async variant that auto-loads layer rules from harness.yaml.
+ * Used by async callers (e.g., boundary guard script).
+ */
+export declare function inspectBoundariesAsync(sourceDir: string, rules?: readonly BoundaryRule[], options?: ScanOptions): Promise<BoundaryReport>;
+export { loadLayerRules, declaredLayerRules };
 declare const _default: {
-    DEFAULT_BOUNDARY_RULES: readonly BoundaryRule[];
+    DEFAULT_SCAN_EXTENSIONS: readonly string[];
     findSourceFiles: typeof findSourceFiles;
     extractLocalImports: typeof extractLocalImports;
     buildDependencyGraph: typeof buildDependencyGraph;
     detectDependencyCycles: typeof detectDependencyCycles;
     detectBoundaryViolations: typeof detectBoundaryViolations;
     inspectBoundaries: typeof inspectBoundaries;
+    inspectBoundariesAsync: typeof inspectBoundariesAsync;
 };
 export default _default;
 //# sourceMappingURL=boundaries.d.ts.map

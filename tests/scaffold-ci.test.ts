@@ -31,9 +31,8 @@ describe('Starter CI replaces azcodr dev workflows in generated projects', () =>
     assert.strictEqual(fs.existsSync(ciPath), true);
     const ci = fs.readFileSync(ciPath, 'utf-8');
 
-    // Runs the vendored boundary guard and the governance validator...
-    assert.match(ci, /boundary_guard\.js/);
-    assert.match(ci, /validate-cli\.js/);
+    // Runs workspace check via the azcodr toolkit CLI
+    assert.match(ci, /azcodr check/);
     // ...and nothing that only azcodr's own repo has.
     assert.doesNotMatch(ci, /benchmark\/run-benchmark\.js/);
     assert.doesNotMatch(ci, /test:mutation/);
@@ -67,7 +66,7 @@ describe('Starter CI replaces azcodr dev workflows in generated projects', () =>
     const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf-8'));
     assert.strictEqual(pkg.scripts.boundaries, 'node .agents/scripts/boundary_guard.js');
     assert.strictEqual(pkg.scripts.smoke, 'node .agents/scripts/smoke_test.js');
-    assert.strictEqual(pkg.scripts.validate, 'node scripts/validate-cli.js');
+    assert.strictEqual(pkg.scripts.validate, 'npx azcodr check');
   });
 
   test('starter CI is written even when the target already has a package.json', () => {
@@ -75,7 +74,7 @@ describe('Starter CI replaces azcodr dev workflows in generated projects', () =>
     copyTemplate(tmpDir, templateDir);
 
     const ci = fs.readFileSync(path.join(tmpDir, '.github', 'workflows', 'ci.yml'), 'utf-8');
-    assert.match(ci, /boundary_guard\.js/);
+    assert.match(ci, /azcodr check/);
     const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf-8'));
     assert.strictEqual(pkg.name, 'existing-app');
   });

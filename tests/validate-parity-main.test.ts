@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 
-import { main } from '../scripts/validate.js';
+import { main } from '../src/validator/run.js';
 
 function workspace() {
   const root = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-main-'));
@@ -47,11 +47,25 @@ describe('main exit-code contract: health', () => {
     }
   });
 
-  test('exits 1 when the workspace is broken', () => {
+  test('exits 1 when the workspace has a real defect', () => {
     const root = workspace();
     try {
-      fs.rmSync(path.join(root, '.gitignore'));
+      // A broken internal link is a genuine defect, unlike a missing optional file.
+      fs.appendFileSync(path.join(root, 'AGENTS.md'), '\nSee [gone](./nowhere.md)\n');
       assert.deepStrictEqual(runMain([root]), [1]);
+    } finally {
+      fs.rmSync(root, { recursive: true, force: true });
+    }
+  });
+
+  test('exits 0 when only optional governance files are absent', () => {
+    const root = workspace();
+    try {
+      // .gitignore, memory.md and the parity files are all optional: a project
+      // that does not adopt the harness must not fail its build for lacking them.
+      fs.rmSync(path.join(root, '.gitignore'));
+      fs.rmSync(path.join(root, 'memory.md'));
+      assert.deepStrictEqual(runMain([root]), [0]);
     } finally {
       fs.rmSync(root, { recursive: true, force: true });
     }

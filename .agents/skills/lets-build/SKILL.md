@@ -34,6 +34,7 @@ Progress through five mandatory stages:
 
 ### Phase 1: Discover (Toolchain & Workspace Inspection)
 1. Inspect the workspace root: confirm whether this is a fresh copy or an existing codebase.
+   - **If an Existing Codebase is detected** (existing source code, build manifests, or established repository structure): **DO NOT** attempt to re-bootstrap or ask the user to re-invent what already exists. First discover and map the existing **Stack, Language, Patterns, and Methodologies**, report this baseline to the user, and ensure all strict harness rules (TDD nano-cycles, max line limits, clean code) govern all modifications.
 2. Check for pre-installed development runtimes and CLI tools (`go`, `rustc`/`cargo`, `python3`/`uv`, `node`/`pnpm`, `docker`, `semgrep`).
 3. Verify that `AGENTS.md`, `memory.md`, and `docs/rules/` exist and remain intact.
 
@@ -76,7 +77,7 @@ Inquire *only* into the dimensions relevant to the selected topology:
   - **Backend & Data:** API protocol (REST/OpenAPI 3.1 vs gRPC), DB migration engine (Atlas/Flyway), tenancy isolation model, authentication, and OCI distroless containers.
 - *If Browser Extension:* MV3 content script isolation (IIFE bundle), `chrome.storage.sync` flow, permissions. (Zero Docker/K8s/OpenAPI!).
 - *If Frontend-only (Topology A variant):* Framework & build tool (React + Vite, Vue 3, Svelte 5), styling & headless primitives (Tailwind + Radix/shadcn per [`frontend_architecture.md`](../../../docs/rules/frontend_architecture.md)), `src/components|pages|hooks|services` layout, app-shell triage per [`ui_ux_architecture.md`](../../../docs/rules/ui_ux_architecture.md). (Zero Docker/SQL migrations!).
-- *If Game Engine:* Graphics backend (Vulkan/DirectX/wgpu), memory allocators (arena/frame), ECS archetype model. (Zero Docker/SQL!).
+- *If Game Engine:* Graphics backend (Vulkan/DirectX/wgpu), memory allocators (arena/frame), ECS storage model (archetype-based vs sparse sets). (Zero Docker/SQL!).
 - *If CLI:* Arg parsing library, POSIX exit codes, streaming I/O, `--json` formatting. (Zero Docker/SQL!).
 
 ---
@@ -125,6 +126,8 @@ Upon user confirmation:
 
 ## 3. Gotchas & What NOT to Do
 
+- **MAJOR DONT: NEVER categorize or interview systems into abstract 'Archetypes'.** Ground the interview strictly in the 4 foundational pillars: **Stack, Language, Patterns, and Methodologies**.
+- **MAJOR DONT: NEVER assume a greenfield blank slate on existing codebases.** On an existing codebase, discover and map the existing Stack, Language, Patterns, and Methodologies first. Never attempt to re-scaffold over an established repository.
 - **MAJOR DONT: NEVER carry over template-internal ADRs from azcodr into a new project.** When scaffolding or bootstrapping a new project, `memory.md` must be a clean slate and start at `ADR-001`. Do NOT number the first architecture decision as ADR-025 or ADR-028 based on azcodr's template development history.
 - **MAJOR DONT: NEVER silently drop the frontend or treat Fullstack Web SaaS as a headless backend API!** If the user selects a Fullstack Web application with a UI, you MUST scaffold both the client (`client/`) and backend (`src/`) baselines, configure build manifests for both, execute the 7-Pillar Design Architecture Triage Gate, and ensure user stories slice vertically across both UI and API layers.
 - **MAJOR DONT: DO NOT invent, assume, or scaffold application domain entities, business logic, or feature pages during `/lets-build`.** The `lets-build` skill is strictly an infrastructure and technical stack bootstrapper. Fabricating business domain features without dedicated domain analysis and relentless questioning of the user is a fatal architectural defect.

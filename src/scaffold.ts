@@ -17,6 +17,13 @@ export { getTemplateDir };
 /**
  * Canonical list of template files and directories copied into a new workspace.
  */
+/**
+ * Files and directories copied into a new workspace.
+ *
+ * The validator ships as a library, not as copied source, so a scaffolded
+ * project runs `npx azcodr check` instead of carrying its own copy of the
+ * tooling.
+ */
 export const TEMPLATE_ITEMS: readonly string[] = [
   'AGENTS.md',
   'memory.md',
@@ -24,7 +31,6 @@ export const TEMPLATE_ITEMS: readonly string[] = [
   'docs',
   '.agents',
   '.github',
-  'scripts',
   '.gitignore',
   '.editorconfig',
   'LICENSE'
@@ -193,6 +199,13 @@ function ensureCopilotParity(resolvedTarget: string, dryRun: boolean): string[] 
   return ['symlink: .github/copilot-instructions.md -> ../AGENTS.md'];
 }
 
+/**
+ * Minimal npm manifest for a Node-ecosystem scaffold.
+ *
+ * No test runner, linter or coverage tool is named: those are project choices,
+ * and hard-coding one is how a Go or Python project ends up with commands it
+ * cannot run. `harness.yaml` and the recorded interview fill these in.
+ */
 function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
   const projectName = path.basename(resolvedTarget) || 'my-project';
   return {
@@ -200,14 +213,12 @@ function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
     version: '0.1.0',
     type: 'module',
     private: true,
-    description: 'Scaffolded with the azcodr architecture governance toolkit',
+    description: 'Project scaffolded with the azcodr workspace toolkit',
     scripts: {
-      test: 'node --test',
-      'test:coverage': 'jest --coverage',
-      lint: 'echo "No linter configured yet. Run /lets-build to configure toolchain."',
+      check: 'npx azcodr check',
+      validate: 'npx azcodr check',
       boundaries: 'node .agents/scripts/boundary_guard.js',
-      smoke: 'node .agents/scripts/smoke_test.js',
-      validate: 'node scripts/validate-cli.js'
+      smoke: 'node .agents/scripts/smoke_test.js'
     }
   };
 }
