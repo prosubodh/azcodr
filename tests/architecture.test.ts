@@ -253,4 +253,12 @@ describe('Architecture: rules and ledger hygiene', () => {
       assert.ok(id >= 1 && id <= 29, `ADR-${id} looks like leaked template numbering`);
     }
   });
+
+  test('package.json, jsr.json, and package-lock.json versions are strictly aligned', () => {
+    const pkg = JSON.parse(fs.readFileSync(path.join(ROOT, 'package.json'), 'utf-8'));
+    const jsr = JSON.parse(fs.readFileSync(path.join(ROOT, 'jsr.json'), 'utf-8'));
+    const lock = JSON.parse(fs.readFileSync(path.join(ROOT, 'package-lock.json'), 'utf-8'));
+    assert.strictEqual(jsr.version, pkg.version, `jsr.json version (${jsr.version}) !== package.json version (${pkg.version})`);
+    assert.strictEqual(lock.version, pkg.version, `package-lock.json version (${lock.version}) !== package.json version (${pkg.version})`);
+  });
 });

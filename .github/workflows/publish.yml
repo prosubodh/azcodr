@@ -181,7 +181,15 @@ jobs:
 
       - name: Publish to npm
         if: inputs.dry-run != true
-        run: npm publish --access public --provenance
+        shell: bash
+        run: |
+          set -euo pipefail
+          pkg_version="$(node -p "require('./package.json').version")"
+          if npm view "azcodr@${pkg_version}" version >/dev/null 2>&1; then
+            echo "Notice: azcodr@${pkg_version} is already published on npm; skipping upload."
+          else
+            npm publish --access public --provenance
+          fi
         env:
           NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}
 
@@ -199,5 +207,10 @@ jobs:
         with:
           deno-version: v2.x
 
+      - name: Publish to JSR (dry run)
+        if: inputs.dry-run == true
+        run: npx jsr publish --dry-run
+
       - name: Publish to JSR
+        if: inputs.dry-run != true
         run: npx jsr publish

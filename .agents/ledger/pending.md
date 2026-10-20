@@ -75,3 +75,19 @@
   - Verified: Re-build, re-lint, re-validate, commit fix, force-update tag `v2.10.0` to latest commit, and push.
 - [x] **ITEM-19: Create GitHub Release v2.10.0 to Trigger Publish Workflow**
   - Verified: Run `gh release create v2.10.0` triggering `.github/workflows/publish.yml` to publish `azcodr@2.10.0` to npm.
+
+## Current Active Prompt (2026-10-20T20:53:43+05:45)
+**Raw Prompt:**
+> "yes"
+
+### Discrete Request Items:
+- [x] **ITEM-20: Version Synchronization in jsr.json and package-lock.json to 2.10.0**
+  - Verified: `jsr.json` updated to `"version": "2.10.0"`; `package-lock.json` updated via `npm install --package-lock-only`.
+- [x] **ITEM-21: Parity Enforcement Test for package.json, jsr.json, and package-lock.json**
+  - Verified: Added test to `tests/architecture.test.ts`; verified RED failure on version divergence and GREEN on parity.
+- [x] **ITEM-22: CI/CD Publish Idempotency (prevent npm conflict & handle JSR dry-run)**
+  - Verified: Updated `.github/workflows/publish.yml` to check if package version is already on npm before publishing, and added `inputs.dry-run` handling for `publish-jsr`.
+- [x] **ITEM-23: Full Verification Suite (Build, Lint, 100% Coverage, Validate)**
+  - Verified: `npm run build` passed, `npm run lint` passed with 0 errors/warnings, `npm run validate` passed, and `npm run test:coverage` passed with 100.00% across statements, branches, functions, and lines (665 tests).
+- [x] **ITEM-24: Commit, Tag Synchronization & JSR Publication Verification**
+  - Verified: Staged and committed changes, updated remote tag and release, verified JSR publish workflow execution.
