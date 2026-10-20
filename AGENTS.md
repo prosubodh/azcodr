@@ -15,6 +15,7 @@
 4. **Pillars of System Inquiry (Zero Speculative "Archetypes"):** Never categorize systems or features into arbitrary "Archetypes". Ground all interviews and architectural choices strictly in 4 concrete pillars: **Stack** (runtime, frameworks, DBs), **Language** (types, toolchains), **Patterns** (Hexagonal, Platform Scripting, Command Pipeline, Outbox, CQRS), and **Methodologies** (TDD, Clean Code, Refactor-Before-Add, 100% coverage gates). On existing codebases, inspect and discover the existing Stack, Language, Patterns, and Methodologies first.
 5. **Existing Codebase Governance:** Legacy technical debt is never an excuse to bypass rules. Every touch must leave the codebase cleaner (Boy Scout Rule). Characterize untested legacy code with tests before modifying.
 6. **Rule Reading Gate:** Before modifying or implementing code in any domain, you MUST inspect the corresponding reference rule in `docs/rules/`.
+7. **Zero Unattended Requests (The Raw Request Ledger):** STRICTLY FORBIDDEN to leave any user prompt directive, question, or constraint unattended. Every incoming user prompt must be logged into an active Pending Request Ledger and tracked until handled. An item is marked handled or removed ONLY when concrete, verified evidence (test assertions, execution proofs, or explicit answers) confirms full resolution.
 
 ---
 
@@ -61,12 +62,12 @@ To prevent context bloat and keep prompt overhead minimal, detailed engineering 
 | **Frontend Architecture** | [docs/rules/frontend_architecture.md](./docs/rules/frontend_architecture.md) | Accessible headless primitives, WCAG 2.2 AA, server cache sync, form validation, 5-tier state, URL navigation. |
 | **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
 | **Product Ownership** | [docs/rules/product_ownership.md](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
-| **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), SMART developer tasks, Definition of Done. |
+| **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | WIP = 1, Anti-Rubber-Stamp circuit breaker, Behavioral parity gates, Brooks conceptual integrity, DoD. |
 | **Domain-Driven Design** | [docs/rules/domain_driven_design.md](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Aggregates, Capability Mapping. |
 | **CQRS & Projections** | [docs/rules/cqrs.md](./docs/rules/cqrs.md) | Evolutionary CQRS spectrum, YAGNI defense, read projections, outbox CDC. |
 | **Workflow State Machines** | [docs/rules/workflow_state_machines.md](./docs/rules/workflow_state_machines.md) | Configurable workflows, in-aggregate invariant FSMs, transition guards & audit logs & YAGNI gate. |
-| **Agentic Governance** | [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) | Progressive disclosure, ADR ledger, workspace sovereignty, continuous learning, YAGNI gate triad. |
-| **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
+| **Agentic Governance** | [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) | Progressive disclosure, ADR ledger, container isolates, anti-rubber-stamp, YAGNI gate triad. |
+| **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Context-aware interrogation loops, passive assent circuit breaker, adaptive decision trees. |
 ---
 
 ## 4. Agent Configuration & Workspace Architecture

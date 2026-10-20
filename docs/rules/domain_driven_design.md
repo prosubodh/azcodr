@@ -133,3 +133,40 @@ Acceptance criteria must be written strictly in Ubiquitous Language, serving as 
 6. **Reference Other Aggregates by Identity Only** (Vaughn Vernon & Eric Evans): Aggregates must reference external Aggregates strictly by unique identifier (`OrderId`, `CustomerId`), never by holding direct object references (`customer.orders`). This prevents massive in-memory graph traversals and eliminates concurrent lock contention across aggregate boundaries.
 7. **One Aggregate Root Mutation per Transaction**: A single database transaction must mutate exactly one Aggregate Root. Cross-aggregate side effects and state transitions must be propagated asynchronously via Domain Events and eventual consistency (or the Transactional Outbox Pattern).
 8. **Domain Core Independence (Clean Architecture Dependency Rule)**: The domain model (Entities, Value Objects, Domain Services) must remain 100% agnostic of infrastructure. Zero imports of database drivers, ORMs, HTTP frameworks, or serialization decorators in domain entities.
+
+---
+
+## 6. Distributed Sagas & Enterprise Integration (Richardson, Hohpe & Woolf)
+
+When business transactions span multiple Bounded Contexts or microservices, traditional two-phase commit (2PC) distributed locks are prohibited due to latency and availability degradation. Systems must implement the **Saga Pattern** (*Microservices Patterns* - Chris Richardson) and **Enterprise Integration Patterns** (Hohpe & Woolf):
+
+### 1. The Saga Pattern & Transaction Classification
+A Saga coordinates multi-service transactions as a sequence of local ACID transactions:
+
+```mermaid
+flowchart LR
+    S1["1. Create Order (Pending)"] --> S2["2. Reserve Credit (Compensatable)"]
+    S2 --> S3["3. Authorize Payment (Pivot Step)"]
+    S3 --> S4["4. Confirm Order (Retriable)"]
+
+    S2 -.->|Fails| C1["Compensate: Cancel Order"]
+```
+
+- **Compensatable Transactions**: Transactions that can potentially be reversed if a downstream step fails (e.g. releasing an inventory reservation, unblocking reserved funds).
+- **Pivot Transaction**: The definitive point of no return. If the pivot transaction commits, the saga is committed to succeed; compensating transactions are no longer possible.
+- **Retriable Transactions**: Transactions following the pivot step that must eventually succeed. Must be designed as idempotent operations retried with exponential backoff.
+
+### 2. Choreography vs. Orchestration Sagas
+- **Choreography (Event-Driven)**: Services publish domain events and react to events emitted by other services. Permissible only for simple 2–3 step workflows. Prohibited for complex enterprise flows due to cyclic dependencies and invisible control flow.
+- **Orchestration (State Machine Coordinator)**: A dedicated Saga Orchestrator class/worker coordinates workflow state, sends command messages to participants, tracks completion in an audit log, and executes compensating actions on failure.
+
+### 3. Core Enterprise Integration Patterns (Hohpe & Woolf)
+- **Message Channel & Pipes/Filters**: Decouple event producers from consumers via discrete channels, processing data through chained, single-responsibility filter stages.
+- **Message Translator (ACL)**: Intercept external vendor or legacy message formats and map them into the context's internal Ubiquitous Language before dispatching to domain handlers.
+- **Idempotent Receiver**: Every message handler must guard against duplicate message delivery (at-least-once delivery) by recording processed `messageId` keys in an atomic deduplication store.
+- **Dead Letter Channel (DLC)**: Messages that fail processing after maximum retry attempts (e.g. 5 attempts with exponential jitter) must be routed to a dead-letter queue with original error headers preserved for engineer triage.
+
+### 4. Legacy Monolith Migration: Strangler Fig Pattern (Fowler & Sam Newman)
+- Never attempt a high-risk "Big Bang" rewrite of an existing legacy system.
+- Deploy an API Gateway / Reverse Proxy facade in front of the legacy monolith.
+- Incrementally carve out discrete Bounded Contexts, rerouting specific URL paths (`/api/v1/billing`) to the new autonomous service while leaving remaining routes on the monolith until legacy usage reaches zero.

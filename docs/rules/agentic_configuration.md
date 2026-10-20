@@ -153,7 +153,7 @@ Coding tasks and agentic skills exhibit an explicit **Many-to-Many ($M:N$) Relat
 - **Pattern 3: Multi-Agent Subagent Delegation (Division of Labor):** A coordinator agent delegates isolated sub-tasks to specialized subagents equipped with specific skills, synthesizing their outputs into a single atomic change.
 
 #### Invariants for Valid Skill Composition:
-- **Standardized Output Contracts:** Skills must emit predictable, structured markdown or JSON envelopes (e.g. FAS, Gherkin blocks, ADR templates).
+- **Standardized Output Contracts:** Skills must emit predictable, structured markdown or JSON envelopes (e.g. Parity Matrices, Gherkin blocks, ADR templates).
 - **Zero Cross-Contamination:** No skill may write code or modify files outside its declared functional boundary.
 - **Pure Function Semantics:** Analysis skills must remain read-only and side-effect free.
 
@@ -263,4 +263,35 @@ Significant architectural, technical stack, or invariant decisions must be captu
 - ADR numbers are monotonically increasing (`ADR-001`, `ADR-002`, ...).
 - ADR entries are **immutable history**. Never edit past accepted ADRs to represent new decisions; author a new ADR that explicitly supersedes the former.
 - **Fresh Project Baseline (ADR Clean Slate):** When starting or bootstrapping a new project from this starter template, the memory ledger in [`memory.md`](../../memory.md) must be a clean slate with zero prior decisions recorded. The initial technical foundation derived during `/lets-build` must always be recorded as **`ADR-001`**. Template development history from `azcodr` must never bleed into downstream project memory ledgers.
+
+---
+
+## 12. Hermetic Toolchain Fallback & Ephemeral Container Isolates
+
+Agent execution environments frequently lack required language runtimes, compilers, or databases on the host `PATH`:
+- **Autonomous Detection:** Inspect local toolchain availability (`Get-Command`, `which`) during bootstrapping.
+- **Hermetic Container Fallback:** If a target runtime (PHP, Go, Rust, Python, etc.) or database service is absent on the host, the harness must autonomously route all test commands, linters, and daemons through ephemeral container isolates:
+  ```bash
+  docker run --rm -v "${PWD}:/app" -w /app <official-runtime-image> <test-runner-cmd>
+  ```
+- **Zero Host Pollution:** Avoid demanding manual host environment installations when container engines (Docker/Podman) are available. Keep all test artifacts isolated.
+
+---
+
+## 13. Anti-Rubber-Stamp Governance (The "Don't Be a YES-Man" Invariant)
+
+When operating autonomously over multi-turn sessions:
+- **Passive Assent Circuit Breaker:** After $\ge 3$ consecutive low-information approvals (*"ok"*, *"go"*, *"yes please"*), the agent must immediately freeze execution and execute the **Domain Intent Checkpoint** defined in [`project_management.md`](./project_management.md).
+- **Challenge Premature Architecture:** The agent is required to challenge ungrounded requests that add secondary complexity (DLQs, webhooks, speculative microservices) before primary value is validated.
+
+---
+
+## 14. Zero Unattended Prompts & The Raw Request Queue
+
+To eliminate "directive drop"—where an autonomous agent addresses one part of a multi-clause user prompt while silently dropping secondary constraints or questions:
+- **Raw Request Ledger:** Every incoming user prompt must be parsed into atomic directives and logged into an active Pending Request Ledger upon receipt.
+- **Queue Accountability:** An item is only marked resolved or removed from the pending queue when verified with concrete evidence (passing test assertion output, terminal verification, code diff, or explicit answers).
+- **Zero Premature Completion:** An agent is strictly prohibited from declaring a milestone complete or ending a task turn while any raw user directive remains unaddressed in the pending queue.
+
+
 

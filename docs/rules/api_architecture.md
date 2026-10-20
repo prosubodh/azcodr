@@ -75,42 +75,39 @@ sequenceDiagram
 Clients must not duplicate complex server-side business and authorization rules to decide whether UI actions (edit, delete, approve, cancel, refund) are permitted. **The server is the authoritative source of truth.**
 
 ### Pattern: `_actions` and `_links` Envelope
-Every resource response must embed an `_actions` boolean map and optional `_links` hypermedia block indicating what the requesting caller is permitted to do based on their role, tenant boundaries, and the entity's current lifecycle state:
+When building hypermedia-driven or UI-facing APIs where user actions depend on permissions and lifecycle states, resource responses can embed an `_actions` boolean map and optional `_links` hypermedia block indicating what the requesting caller is permitted to do:
 
 ```json
 {
-  "id": "ord_9876",
-  "status": "SHIPPED",
-  "totalAmount": 149.99,
-  "currency": "USD",
+  "id": "res_9876",
+  "status": "ACTIVE",
+  "title": "Production Deployment Pipeline",
   "_actions": {
-    "canEdit": false,
-    "canCancel": false,
-    "canTrack": true,
-    "canRequestRefund": true
+    "canEdit": true,
+    "canDelete": false,
+    "canExecute": true
   },
   "_links": {
-    "self": { "href": "/api/v1/orders/ord_9876", "method": "GET" },
-    "track": { "href": "/api/v1/orders/ord_9876/tracking", "method": "GET" },
-    "refund": { "href": "/api/v1/orders/ord_9876/refunds", "method": "POST" }
+    "self": { "href": "/api/v1/resources/res_9876", "method": "GET" },
+    "execute": { "href": "/api/v1/resources/res_9876/execute", "method": "POST" }
   }
 }
 ```
 
 ### Frontend Binding:
-- UI action buttons directly bind visibility or disabled state to `resource._actions.canCancel`.
-- When business logic evolves (e.g. orders over $1,000 require manager approval), only backend policy changes—zero frontend redeployment required.
+- UI action buttons directly bind visibility or disabled state to `resource._actions.canExecute`.
+- When authorization or lifecycle rules evolve, only backend policy changes—zero frontend redeployment required.
 
 ---
 
 ## 4. Safe Mutations via Idempotency Keys (IETF Draft)
 
-To prevent duplicate execution (double charging, duplicate orders) caused by network retries or transient connection drops:
+To prevent duplicate execution caused by network retries or transient connection drops:
 
 ### Protocol Standards:
 - Clients generating mutating requests (`POST`, `PATCH`) must supply a unique `Idempotency-Key: <uuid-v4>` header.
 - **Server Execution Lifecycle**:
-  1. Check distributed idempotency cache for key `idemp:<tenantId>:<idempotencyKey>`.
+  1. Check distributed idempotency cache for key `idemp:<scopeId>:<idempotencyKey>` (where `scopeId` is tenant, user, or client identifier).
   2. If found with status `IN_FLIGHT`: return **`409 Conflict`** (`IDEMPOTENT_OPERATION_IN_PROGRESS`).
   3. If found with status `COMPLETED`: return the cached HTTP status code, headers, and response payload without re-executing.
   4. If not found: Acquire distributed lock, execute mutation within an atomic database transaction, cache the response envelope with a 24-hour TTL, and release the lock.
@@ -136,13 +133,14 @@ Never use offset pagination (`OFFSET 10000 LIMIT 20`) on large tables. Offsets d
   ```
 - **Agnostic Keyset Query Pattern**:
   ```sql
-  SELECT * FROM orders
-  WHERE tenant_id = :tenantId
+  SELECT * FROM items
+  WHERE partition_id = :partitionId
     AND (created_at, id) < (:cursorCreatedAt, :cursorId)
   ORDER BY created_at DESC, id DESC
   LIMIT :limit + 1;
   ```
   If `results.length > limit`, slice the extra item and encode its composite values (`created_at`, `id`) into the base64 `nextCursor`.
+
 
 ---
 
@@ -200,3 +198,48 @@ Protect APIs from abuse and noisy neighbors using standard gateway algorithms:
 - **Token Bucket**: Preferred for general API gateways; allows bursts of traffic while enforcing a smooth average rate.
 - **Sliding Window Counter**: Preferred for strict rate windows (e.g. authentication attempts, credit card charging); prevents boundary-burst attacks where double the limit is sent across adjacent fixed-window edges.
 - On rate limit breach, return **`429 Too Many Requests`** with `Retry-After: <seconds>` header.
+
+---
+
+## 9. REST URI Design Rules & Webhook Architecture (Masse & Jin)
+
+Clean API design demands strict structural consistency across endpoints and asynchronous event egress (*REST API Design Rulebook* - Mark Masse, *Designing Web APIs* - Brenda Jin et al.):
+
+### 1. REST URI Grammar Rules (Masse)
+- **Hierarchical Separation**: Forward slash (`/`) indicates a hierarchical relationship between parent collections and child resources.
+- **No Trailing Slash**: URIs must never include a trailing slash (`/api/v1/orders`, not `/api/v1/orders/`).
+- **Kebab-Case Paths**: Use lowercase letters and hyphens (`-`) for multi-word paths. Underscores (`_`) and camelCase are strictly forbidden in URI path segments (`/api/v1/user-profiles`).
+- **Zero File Extensions**: URIs must identify resources, not file formats (`/api/v1/orders/123`, never `/api/v1/orders/123.json`). Use standard `Accept: application/json` headers for content negotiation.
+- **Plural Collection Naming**: Use plural nouns for collection resources (`/customers`, `/orders`) and specific identifier paths for individual instances (`/customers/:id`).
+- **Standardized Query Operators**:
+  - Filtering: `?status=active` or `?filter[status]=active`
+  - Sorting: `?sort=-createdAt,id` (hyphen prefix denotes descending order)
+  - Field Selection (Sparse Fieldsets): `?fields=id,title,status`
+
+### 2. Reliable Webhook Egress Architecture (Jin et al.)
+When broadcasting domain events to third-party consumer endpoints:
+1. **Standardized Webhook Envelope**:
+   ```json
+   {
+     "id": "evt_01HXYZ...",
+     "event": "invoice.paid",
+     "timestamp": "2026-10-20T11:00:00Z",
+     "attempt": 1,
+     "data": { "invoiceId": "inv_123", "amountCents": 5000 }
+   }
+   ```
+2. **Cryptographic Payload Verification**:
+   - Compute an HMAC-SHA256 signature using a shared webhook secret.
+   - Supply the signature and timestamp in the `X-Webhook-Signature` header:
+     `X-Webhook-Signature: t=1774090800,v1=9f86d081884c7d659a2feaa0c55ad015a3bf4f1b2b0b822cd15d6c15b0f00a08`
+3. **Replay Attack Defense**:
+   - Consumers verify signature over `${timestamp}.${rawBody}`.
+   - Reject webhooks whose timestamp deviates by $> 300$ seconds (5 minutes) from current system time.
+4. **Retry Schedule & Dead-Letter Delivery**:
+   - Retry failed deliveries (non-2xx responses or network timeouts) with exponential jitter: 1m, 5m, 30m, 2h, 24h.
+   - After maximum retries, persist the event to a failed webhook ledger and alert the tenant.
+
+### 3. The Tolerant Reader Pattern
+- API clients must be implemented as **Tolerant Readers**: parse only the fields required for execution and ignore unrecognized fields.
+- Servers may add new optional fields or hypermedia links without triggering major version bumps.
+

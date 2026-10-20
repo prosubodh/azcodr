@@ -4,7 +4,7 @@
  * Table-driven: every boolean flag is one Map entry, so adding a flag cannot
  * raise the complexity of the parser itself.
  */
-export type CliCommand = 'scaffold' | 'check' | 'boundaries';
+export type CliCommand = 'scaffold' | 'check' | 'boundaries' | 'prompt';
 export interface CliParsedOptions {
     command: CliCommand;
     targetDir: string | null;
@@ -19,6 +19,7 @@ export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent';
 export declare function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'>;
 export declare const CHECK_COMMANDS: Set<string>;
 export declare const BOUNDARY_COMMANDS: Set<string>;
+export declare const PROMPT_COMMANDS: Set<string>;
 export declare const BOOLEAN_FLAGS: Map<string, BooleanFlagKey>;
 export interface ArgOutcome {
     terminal: 'help' | 'version' | 'unknown-flag' | 'extra-arg' | null;

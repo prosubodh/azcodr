@@ -67,3 +67,34 @@ Database connections are expensive resources requiring thread stacks and memory 
    );
    ```
 3. **Database Role Separation**: The application connection user must never connect as `postgres` or `superuser`. Create a dedicated least-privilege `app_user` granted only `DML` (`SELECT`, `INSERT`, `UPDATE`, `DELETE`) on application tables.
+
+---
+
+## 5. Advanced Query Optimization & Indexing Economics (Botros & Tinley)
+
+Grounded in Silvia Botros & Jeremy Tinley (*High Performance MySQL*) and *Effective Indexing in Postgres*:
+
+### 5.1. The Leftmost Prefix Rule & Compound Index Ordering
+- **Predicate Priority Order:** When designing compound B-tree indexes, order columns strictly as:
+  $$\text{Compound Index} = [\text{Equality Predicates}] \longrightarrow [\text{Sort Columns}] \longrightarrow [\text{Range Filters}]$$
+  *Example:* For `WHERE tenant_id = ? AND status = 'ACTIVE' AND created_at >= ? ORDER BY created_at DESC`:
+  ```sql
+  CREATE INDEX idx_orders_efficient ON orders (tenant_id, status, created_at DESC);
+  ```
+- **Range Predicate Stopping Invariant:** In a B-tree, any column following a range operator (`>`, `<`, `BETWEEN`, `LIKE 'prefix%'`) cannot be used for index filtering; it can only be used as a row-level filter.
+
+### 5.2. Deep-Offset Latency Elimination (Keyset / Cursor Pagination)
+- **The Offset Trap:** `SELECT * FROM events ORDER BY id LIMIT 50 OFFSET 100000;` forces the storage engine to read, traverse, and discard 100,000 index entries and table pages before returning 50 rows.
+- **Mandatory Keyset (Seek) Pagination:**
+  ```sql
+  -- Correct: Constant-time O(log N) lookup regardless of page depth
+  SELECT * FROM events 
+  WHERE tenant_id = :tenant_id AND id > :last_seen_id 
+  ORDER BY id ASC 
+  LIMIT 50;
+  ```
+
+### 5.3. Query Execution Plan Diagnostics (`EXPLAIN ANALYZE`)
+- **Anti-Pattern Flags:** Reject queries whose execution plan contains `type: ALL` (full table scan on large tables), `Using filesort` (memory/disk-based external merge sort), or `Using temporary` (disk-backed intermediate temporary table).
+- **Covering Index Optimization:** Satisfy read-heavy queries entirely within the B-Tree index structure using PostgreSQL `INCLUDE` or MySQL covering index leaves, reducing disk I/O buffer pool evictions to zero.
+

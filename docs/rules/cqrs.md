@@ -201,3 +201,24 @@ The biggest hazard of asynchronous CQRS is **eventual consistency lag**: a user 
 | **Leaking Entities into Queries** | Hydrating full Domain Aggregates inside Query Handlers causes severe N+1 query cascades and memory bloat. | Query Handlers must bypass entities and return flat, serializable DTOs directly from the database. |
 | **Dual-Write Projections** | Emitting HTTP calls or message queue pushes directly inside mutation services causes silent sync failures. | Write events to a local `outbox` table in the same DB transaction as the aggregate state change. |
 | **CRUD Queries via Aggregate Roots** | Loading an entire Aggregate Root just to read 2 fields creates unnecessary lock contention and memory footprint. | Use direct projection queries (Level 1 CQRS) for read-only flows. |
+
+---
+
+## 7. Projection Evolution & Architectural Trade-offs (Ford & Richards)
+
+In distributed CQRS (Level 3), schema evolution of read projections is governed by strict zero-downtime replay invariants (*Software Architecture: The Hard Parts* - Neal Ford & Mark Richards):
+
+### 1. Dual-Projection Background Replay (Zero-Downtime Migration)
+When evolving a read projection schema (e.g. adding denormalized fields from a new bounded context):
+1. **Never alter live read tables in place** under active production write load.
+2. Create a new versioned projection table: `order_summaries_v2`.
+3. Spin up an asynchronous replay worker reading domain events or outbox entries from the epoch/beginning offset.
+4. Continue routing live query traffic to `order_summaries_v1`.
+5. When the replay worker catches up to real-time (lag $< 100$ms), switch the query handler's database read alias or feature flag pointer to `order_summaries_v2`.
+6. Deprecate and drop `order_summaries_v1` after a 24-hour verification window.
+
+### 2. Projection Lag Monitoring & SLA Circuit Breakers
+- Monitor projection lag continuously via Prometheus / OpenTelemetry: `cqrs_projection_lag_ms`.
+- If projection lag breaches operational SLAs (e.g. lag $> 2000$ms due to a consumer worker backlog), query handlers must trip an automated circuit breaker:
+  - Fall back to synchronous Level 1 direct read queries against the primary write replica.
+  - Emit an alert to prevent returning stale projection data to downstream clients.

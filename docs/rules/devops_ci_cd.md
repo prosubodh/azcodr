@@ -74,3 +74,38 @@ Security checks must be embedded directly into developer workflows and automated
    - `livenessProbe`: Detects deadlocks and restarts unresponsive containers.
    - Graceful Shutdown: Handle `SIGTERM` deterministically by draining in-flight requests within a 30-second termination window.
 3. **Cryptographic Image Signing**: Sign container images with **Cosign** (Sigstore) during CI, and enforce admission controller verification in production clusters.
+
+---
+
+## 5. Pipeline as Code & Progressive Delivery (Labouardy & The DevOps Handbook)
+
+CI/CD automation must be governed as software engineering artifacts (*Pipeline as Code* - Mohamed Labouardy, *The DevOps Handbook* - Gene Kim et al.):
+
+### 1. Declarative, Version-Controlled Pipelines
+- All pipeline configurations (`.github/workflows/ci.yml`, `Jenkinsfile`) must be version-controlled in the repository alongside application source code.
+- Pipeline definitions must be modular, declarative, and subjected to the same linting, code review, and static validation as production code.
+
+### 2. Fast-Fail Pipeline Gate Sequencing
+Pipelines must enforce a strict fail-fast hierarchy to preserve developer feedback cycles and compute resources:
+
+```mermaid
+flowchart LR
+    S1["Stage 1: Static (< 30s)<br/>• Secrets & Linters<br/>• Static Typecheck"] 
+    --> S2["Stage 2: Micro-Tests (< 2m)<br/>• 100% Unit Coverage<br/>• Zero Sleep Suites"]
+    --> S3["Stage 3: Integration (< 5m)<br/>• Contract Tests<br/>• DB Rollback Runs"]
+    --> S4["Stage 4: Package (< 3m)<br/>• Distroless OCI<br/>• Trivy CVE / SBOM"]
+```
+
+- If Stage 1 fails, subsequent resource-intensive stages must be aborted immediately.
+- The entire CI cycle from commit to deployment readiness must complete in under 10 minutes.
+
+### 3. Ephemeral Preview Environments per Pull Request
+- Every PR introducing UI or API mutations must be capable of automatically provisioning an ephemeral, containerized preview environment.
+- Ephemeral environments must be provisioned with seeded test fixtures and destroyed automatically upon PR merge or closure.
+
+### 4. Canary Verification & Automated Metric Rollback
+- Deployments to production must follow progressive canary routing:
+  1. Route 5% of production traffic to the new revision.
+  2. Monitor OpenTelemetry Golden Signals (HTTP 5xx rate, P99 latency) for 10 minutes.
+  3. If error rates exceed 0.5% or P99 latency regresses by $> 20\%$, trigger an immediate automated rollback.
+  4. If healthy, graduate traffic to 25%, 50%, and 100%.

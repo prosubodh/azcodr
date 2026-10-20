@@ -92,3 +92,29 @@ When bootstrapping projects via `/lets-build`, `bootstrap_workspace.mjs` emits t
 | **Java** | `Checkstyle` + `ArchUnit` | `FileLength: max 300` | `MethodLength: max 30` | `CyclomaticComplexity: max 10` | `ParameterNumber: max 3` |
 | **C# / .NET** | `.editorconfig` + Roslyn | `file_length = 300:error` | `method_length = 30:error` | `CA1502: Avoid excessive complexity <= 10` | `CA1501: max 3 params` |
 | **C / C++** | `clang-tidy` | project lint entry (no native check) | `readability-function-size LineThreshold = 30` | `readability-function-cognitive-complexity Threshold = 10` | `readability-function-size ParameterThreshold = 3` |
+
+---
+
+## 6. Deep Modules & Defect Forensics (Ousterhout, Zeller & Tornhill)
+
+Grounded in John Ousterhout (*A Philosophy of Software Design*), Andreas Zeller (*Why Programs Fail*), and Adam Tornhill (*Your Code as a Crime Scene*):
+
+### 6.1. Deep Modules vs. Shallow Modules (John Ousterhout)
+- **Deep Modules Invariant:** The best classes and functions are "deep"—they hide immense internal complexity behind a simple, intuitive public interface:
+  $$\text{Depth Ratio} = \frac{\text{Internal Functionality Provided}}{\text{Surface Interface Complexity}}$$
+- **Eliminate Shallow Modules:** Avoid classes that do almost nothing except pass parameters through to another layer (pass-through methods and anemic wrappers). A class with a 10-method interface that only does 10 lines of work adds cognitive drag with zero architectural leverage.
+- **Define Errors Out of Existence:** Design APIs so abnormal conditions are handled naturally as part of normal behavior rather than throwing exceptions (e.g. range deletions in collections treating out-of-bound indexes as no-ops instead of throwing index errors).
+
+### 6.2. The Cause-Effect Chain & Systematic Debugging (Andreas Zeller)
+- **The Defect Chain:** A bug in code is a **Defect**; execution causes an internal corrupted state (**Infection**); infected state eventually propagates to produce an observable **Failure**:
+  $$\text{Defect (Code)} \longrightarrow \text{Infection (Memory/State)} \longrightarrow \text{Failure (Crash/Output)}$$
+- **Delta Debugging Principle:** When a bug is discovered, isolate the minimal failure-inducing difference using automated binary search:
+  1. Find the smallest input that reproduces the failure.
+  2. Find the minimal commit diff that introduced the defect (`git bisect`).
+  3. Never attempt speculative patches without first reproducing the failure in an automated, failing test assertion.
+
+### 6.3. Code Forensics & Hotspot Analysis (Adam Tornhill)
+- **Hotspot Prioritization:** Technical debt is only dangerous if it sits in code that is frequently modified:
+  $$\text{Refactoring Priority} = \text{Cyclomatic Complexity} \times \text{Git Modification Churn}$$
+  Refactor complex files that are frequently touched by commits; leave complex, cold legacy files that never change alone until business requirements actively demand touching them.
+

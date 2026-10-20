@@ -22,6 +22,7 @@ export interface CliIo {
         warnings: number;
     }>;
     boundaries?: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
+    prompt?: (parsed: CliParsedOptions, io: any) => void | number;
 }
 export interface NormalizedCliIo {
     out: (msg: string) => void;
@@ -42,6 +43,7 @@ export interface NormalizedCliIo {
         warnings: number;
     }>;
     boundariesFn: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
+    promptFn: (parsed: CliParsedOptions, io: any) => void | number;
 }
 export declare function runCli(rawArgs?: string[], io?: CliIo): Promise<void | number>;
 export declare function main(): Promise<void>;

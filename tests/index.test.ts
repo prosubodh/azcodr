@@ -9,6 +9,11 @@ describe('Jest Quality Gate: azcodr public API', () => {
     expect(typeof azcodr.getTemplateDir).toBe('function');
     expect(Array.isArray(azcodr.TEMPLATE_ITEMS)).toBe(true);
     expect(typeof azcodr.ERROR_CODES).toBe('object');
+    expect(typeof azcodr.parsePromptLedger).toBe('function');
+    expect(typeof azcodr.checkPromptLedger).toBe('function');
+    expect(typeof azcodr.resolveLedgerPath).toBe('function');
+    expect(typeof azcodr.inspectPromptCommit).toBe('function');
+    expect(typeof azcodr.handlePromptCommand).toBe('function');
   });
 
   it('provides working getTemplateDir', () => {

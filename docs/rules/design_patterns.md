@@ -106,3 +106,43 @@ Domain services must return explicit Result types, compelling callers to handle 
     - *Use Case:* Base ETL or data import pipelines with fixed steps (Extract ➔ Validate ➔ Transform ➔ Persist) where subclasses define validation.
 23. **Visitor**: Represent an operation to be performed on the elements of an object structure, defining a new operation without changing the classes of the elements.
     - *Use Case:* Document export engines traversing an AST of content blocks to generate HTML, Markdown, or PDF.
+
+---
+
+## 4. Enterprise Application Architecture Patterns (Martin Fowler)
+
+Enterprise applications handling complex business workflows must structure domain and persistence layers according to Fowler's canonical patterns (*Patterns of Enterprise Application Architecture*):
+
+### 1. Domain Logic Sizing: Transaction Script vs. Domain Model
+- **Transaction Script**: Organizes business logic by procedural subroutines where each procedure handles a single request from presentation directly to storage. Acceptable only for simple command-line scripts or trivial CRUD. Degenerates into duplicated validation and unmaintainable branching as business rules grow.
+- **Domain Model**: An object-oriented network of entities and value objects incorporating both data and behavior. Mandatory for systems with complex rules, invariant validation, and multi-step state transitions.
+- **Service Layer**: Defines an application's perimeter boundary with a set of available operations, coordinating transactional workflows, authorization guards, and notifications while delegating business rules strictly to domain entities.
+
+### 2. Data Source Architectural Patterns
+- **Data Mapper vs. Active Record**:
+  - *Active Record:* An object that wraps a database row, encapsulates database access, and adds domain logic. Tightly couples domain code to database tables and ORM schemas. Forbidden in core domain logic; permissible only in simple CRUD utilities or migration scripts.
+  - *Data Mapper:* A layer of mappers that moves data between domain objects and a database while keeping them completely independent of each other and of the mapper itself. Mandatory in Hexagonal and Clean architectures.
+- **Unit of Work**:
+  - Maintains a ledger of objects affected by a business transaction (new, modified, deleted) and coordinates the writing out of changes and concurrency resolution in a single atomic database transaction. Prevents fragmented multi-roundtrip writes.
+- **Identity Map**:
+  - Ensures that each database record is loaded into memory only once per business transaction/unit-of-work. If an entity is queried multiple times in a single request, the Identity Map returns the identical in-memory instance, preventing stale overwrites, split-brain modifications, and redundant queries.
+- **Repository vs. Data Access Object (DAO)**:
+  - A *DAO* is an abstraction over a database table or relational query.
+  - A *Repository* mediates between domain and data mapping layers acting like an in-memory collection of domain Aggregates. Repositories deal with Aggregate Roots (`OrderRepository`), never individual child table rows (`OrderItemDAO`).
+
+---
+
+## 5. Working Effectively with Legacy Code (Michael C. Feathers)
+
+Modifying untested legacy code is high-risk. Follow Feathers' battle-tested refactoring patterns (*Working Effectively with Legacy Code*):
+
+1. **The Legacy Code Dilemma**: To change code safely, tests must be in place. To put tests in place, code often must be changed. Break this paradox using **Seams**.
+2. **The Concept of Seams**: A seam is a place where you can alter program behavior without editing code in that place.
+   - *Object Seams:* Subclassing a collaborator and overriding a method to inject a mock in a test.
+   - *Link / Interface Seams:* Introducing an interface between a consumer and an external SDK so a test double can be swapped at link or compile time.
+3. **Characterization Tests**: When legacy code lacks tests, write tests that preserve and document *current actual behavior* (including known quirks or bugs) before making any code modifications. This creates a safety net against unintended regressions.
+4. **Sprout Method & Sprout Class**:
+   - When adding new functionality to an existing large, untested legacy class, write the new logic as a pristine, unit-tested standalone method (*Sprout Method*) or class (*Sprout Class*).
+   - Call the sprouted component from the legacy location with minimal surface disruption.
+5. **Wrap Method & Wrap Class (Decorator)**:
+   - To execute new pre-conditions or post-conditions around an existing legacy method, wrap the original method with a new method that delegates to it, keeping new concerns cleanly separated from legacy debt.

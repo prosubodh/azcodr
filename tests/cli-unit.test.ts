@@ -278,6 +278,13 @@ async function testMain() {
   }
 }
 
+async function testRunCliPrompt() {
+  const io = createMockIo({ cwd: tmpDir });
+  const code = await runCli(['prompt'], io);
+  assert.strictEqual(code ?? io.exitCode, 0);
+  assert.ok(io.stdoutLogs.some((l) => l.includes('No prompt ledger found')));
+}
+
 describe('CLI Unit: help, version and prompts', () => {
   beforeEach(setUpTmp);
   afterEach(tearDownTmp);
@@ -295,6 +302,7 @@ describe('CLI Unit: runCli flags and TTY', () => {
   test('runCli executes --dry-run and previews actions without modifying disk', testDryRun);
   test('runCli executes with default parameters', testRunCliDefaultParams);
   test('runCli executes with undefined io parameter', testRunCliUndefinedIo);
+  test('runCli executes prompt command', testRunCliPrompt);
   test('promptForTargetDir defaults to dot in non-TTY', testPromptNonTty);
 });
 

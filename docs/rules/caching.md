@@ -67,3 +67,38 @@ For high-throughput cache regeneration, employ the **XFetch algorithm** (probabi
 
 - Generate strong cryptographic `ETag` hashes (e.g. SHA-256 of representation or resource version) for cacheable `GET` endpoints.
 - Return **`304 Not Modified`** with zero payload body when inbound requests present matching `If-None-Match` headers, preserving bandwidth and client CPU.
+
+---
+
+## 5. Advanced In-Memory Primitives & Distributed Mutexes (Redis Essentials)
+
+Grounded in Maxwell Dayvson & Hugo Lopes Tavares (*Redis Essentials*) and *Caching at Scale with Redis*:
+
+### 5.1. Redis Eviction Policies & Memory Pressure Invariants
+- **`maxmemory-policy` Configuration:** In multi-tenant caching layers, never use default `noeviction` (which crashes write mutations with Out-Of-Memory errors). Standardize on `volatile-lru` (evict keys with an explicit TTL) or `allkeys-lru` to maintain steady-state memory bounds.
+- **Data Structure Optimization:**
+  - *Small Entities:* Store structured records using Redis Hashes (`HSET`, `HMGET`) rather than serialized JSON string blobs; Redis memory-optimizes small hashes via ziplists.
+  - *Sliding-Window Rate Limiting:* Use Redis Sorted Sets (`ZSET`) where score is microsecond timestamp:
+    ```
+    ZREMRANGEBYSCORE rate:{key} 0 (now - window)
+    ZCARD rate:{key}
+    ZADD rate:{key} now unique_request_id
+    EXPIRE rate:{key} window_seconds
+    ```
+  - *Cardinality Estimation:* Use `HyperLogLog` (`PFADD`, `PFCOUNT`) for tracking unique visitors/events with 12KB maximum memory footprint regardless of scale ($0.81\%$ standard error).
+
+### 5.2. Distributed Lock Mutex (Thundering Herd Single-Flight Guard)
+When computing expensive materialized views on cache misses:
+- **Atomic Acquisition Invariant:** Prevent multiple concurrent workers from calculating the same missing key simultaneously by acquiring a distributed single-flight mutex:
+  ```
+  SET lock:{key} {unique_uuid} NX PX 5000
+  ```
+- **Safe Release via Lua Script:** Locks must only be released if the caller's unique UUID token matches the lock's current value, preventing accidental deletion of a lock reacquired by another process after a timeout:
+  ```lua
+  if redis.call("get", KEYS[1]) == ARGV[1] then
+    return redis.call("del", KEYS[1])
+  else
+    return 0
+  end
+  ```
+

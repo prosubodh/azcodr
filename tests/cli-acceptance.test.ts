@@ -204,10 +204,41 @@ describe('CLI Acceptance: flags and errors', () => {
   test('CLI fast-fails on unexpected extra argument with exit code 1', testExtraArg);
 });
 
+function testPromptAcceptance() {
+  const outClean = execFileSync(process.execPath, [CLI_PATH, 'prompt', tmpDir], {
+    encoding: 'utf-8'
+  });
+  assert.match(outClean, /No prompt ledger found/);
+
+  const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+  fs.mkdirSync(ledgerDir, { recursive: true });
+  fs.writeFileSync(path.join(ledgerDir, 'pending.md'), '- [ ] Acceptance task\n', 'utf-8');
+
+  let failed = false;
+  try {
+    execFileSync(process.execPath, [CLI_PATH, 'prompt', tmpDir], {
+      encoding: 'utf-8',
+      stdio: ['ignore', 'pipe', 'pipe']
+    });
+  } catch (err: any) {
+    failed = true;
+    assert.strictEqual(err.status, 1);
+    assert.match(err.stderr || err.stdout, /PROMPT DIRECTIVES PENDING/);
+    assert.match(err.stderr || err.stdout, /Acceptance task/);
+  }
+  assert.strictEqual(failed, true, 'azcodr prompt should exit with 1 when directives are pending');
+}
+
 describe('CLI Acceptance: target directory handling', () => {
   beforeEach(setUpTmp);
   afterEach(tearDownTmp);
   test('CLI fails with clear error when target directory is non-empty', testNonEmptyFail);
   test('CLI succeeds on non-empty target directory when --force flag is passed', testForce);
   test('CLI numbers steps starting from 1 when scaffolding into current directory dot', testStepNumbering);
+});
+
+describe('CLI Acceptance: prompt subcommand', () => {
+  beforeEach(setUpTmp);
+  afterEach(tearDownTmp);
+  test('CLI checks prompt ledger integrity and returns code 1 on pending directives', testPromptAcceptance);
 });

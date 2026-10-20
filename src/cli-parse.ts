@@ -5,7 +5,7 @@
  * raise the complexity of the parser itself.
  */
 
-export type CliCommand = 'scaffold' | 'check' | 'boundaries';
+export type CliCommand = 'scaffold' | 'check' | 'boundaries' | 'prompt';
 
 export interface CliParsedOptions {
   command: CliCommand;
@@ -33,6 +33,7 @@ export function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'> {
 
 export const CHECK_COMMANDS = new Set(['check', 'validate', 'audit']);
 export const BOUNDARY_COMMANDS = new Set(['boundaries', 'boundary', 'cycles']);
+export const PROMPT_COMMANDS = new Set(['prompt', 'ledger']);
 
 export const BOOLEAN_FLAGS = new Map<string, BooleanFlagKey>([
   ['-f', 'force'],
@@ -66,6 +67,10 @@ function checkCommandKeyword(
   }
   if (BOUNDARY_COMMANDS.has(arg)) {
     state.command = 'boundaries';
+    return true;
+  }
+  if (PROMPT_COMMANDS.has(arg)) {
+    state.command = 'prompt';
     return true;
   }
   return false;

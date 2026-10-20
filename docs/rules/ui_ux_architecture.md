@@ -1,150 +1,118 @@
-# UI/UX Architecture, Design Triage & Role-Based Navigation System
+# UI/UX Architecture, Design Triage & Navigation Systems
 
-> **Core Mandate:** Enforce mandatory upfront Design Architecture Triage before writing UI code, a strict dual-experience model separating Enterprise Operator Workspaces from Consumer / Member Self-Service Portals, a persistent application shell with collapsible sidebar navigation, bidirectional URL state synchronization, and strict decoupling of developer demo personas from production authentication.
+> **Core Mandate:** Enforce mandatory upfront Design Architecture Triage before writing UI code, persistent shell and viewport separation adapted to application topology, bidirectional URL state synchronization, accessible design tokens (WCAG 2.2 AA), and strict decoupling of developer test harnesses from production authentication.
 
 ---
 
 ## 1. The Design Architecture Triage Gate
 
-A catastrophic software defect occurs when design architecture is not triaged upfront—resulting in ad-hoc navigation, mixed-up user roles, toy-like prototypes, and broken user journeys.
+A catastrophic software defect occurs when frontend architecture is built ad-hoc without structural triage—resulting in tangled navigation, broken responsive layouts, inaccessible components, and unsharable view states.
 
-Before a single UI component or view is built, every interface increment must pass the **7-Pillar Design Architecture Triage Gate**:
+Before a single UI component or view is authored, every user interface increment must pass the **7-Pillar Design Architecture Triage Gate**:
 
 ```mermaid
 flowchart TD
-    P1["1. Role & Identity Triage<br/>Who is the user? Operational domain & boundary"]
-    P2["2. Information Architecture<br/>Hierarchy: Persistent Shell vs. Dynamic Canvas"]
-    P3["3. Experience Duality<br/>Operator Enterprise Workspace (dense) vs. Member Consumer Portal (simple)"]
-    P4["4. Navigation & Wayfinding<br/>Collapsible sidebar, breadcrumbs, command palette Cmd+K, mobile drawer"]
-    P5["5. State & URL Synchronization<br/>Deep-linkable search params (?tab=, ?q=, ?page=, ?modal=)"]
-    P6["6. Access & Route Protection<br/>Route guards, role redirection, 403 handling"]
-    P7["7. Accessibility & Feedback<br/>WCAG 2.2 AA, focus trapping, ARIA live regions, zero native alerts"]
+    P1["1. Persona & Task Triage<br/>Who is the user? What is the primary task and operational density?"]
+    P2["2. Layout Topography<br/>Application Topology: Shell + Sidebar, Canvas-first, or Linear Flow"]
+    P3["3. Information Architecture<br/>Hierarchy: Persistent Shell vs. Dynamic Canvas vs. Context Drawers"]
+    P4["4. Navigation & Wayfinding<br/>Primary navigation, breadcrumbs, command search Cmd+K, mobile drawers"]
+    P5["5. State & URL Synchronization<br/>Deep-linkable search params (?tab=, ?q=, ?page=, ?id=)"]
+    P6["6. Access & Route Protection<br/>Route guards, permission checks, unauthenticated redirection, 403 handling"]
+    P7["7. Accessibility & Sensory Feedback<br/>WCAG 2.2 AA, keyboard focus trapping, ARIA live regions, zero native alerts"]
     P1 --> P2 --> P3 --> P4 --> P5 --> P6 --> P7
 ```
 
 ---
 
-## 2. App Shell Architecture: Persistent Shell vs. Dynamic Canvas
+## 2. Layout Topography & Universal Application Topologies
 
-The application interface is strictly divided into two distinct anatomical zones:
+Select the layout topology that directly matches the problem domain and user workflow:
+
+### Topology A: Persistent Navigation Shell (Data & Management Interfaces)
+- **Persistent Global Header / Rail**: Brand anchor, global search (`Cmd + K`), notifications, active workspace/context switcher, and user profile.
+- **Collapsible Navigation (Sidebar or Rail)**: Primary module navigation. Collapses smoothly to an icon rail (`w-16` / 64px) with tooltips to maximize canvas working area on desktop.
+- **Dynamic Viewport Canvas**: Breadcrumbs, view title, primary action CTA, view-level tabs, and data presentation (tables, grids, cards).
+- *Rule:* The outer shell must never re-render across inner route navigations.
+
+### Topology B: Canvas-First & Immersive (Creative, Document & Analytical Tools)
+- Maximizes screen real estate for direct manipulation (editors, canvas boards, media players, notebooks).
+- Toolbars and inspectors are contextual, floating, or docking drawers that can be hidden to prevent cognitive overload.
+
+### Topology C: Focused Sequential Flows (Onboarding, Wizards & Multi-Step Forms)
+- Minimalist distraction-free layout with persistent step progress indicators.
+- Global navigation is hidden or restricted to prevent abandonment and state corruption during multi-step atomic sequences.
+
+---
+
+## 3. Asymmetric Information Density & Multi-Persona Architecture
+
+When an application serves user personas with fundamentally different operational requirements (e.g. administrative operators needing high-density data tables and bulk actions vs. casual end-users needing simplified card views and touch ergonomics):
 
 ```mermaid
 flowchart TD
-    subgraph PersistentAppShell["Persistent Application Shell"]
-        Header["Persistent Global Header<br/>[Brand / Logo] | [Org Switcher] | [Command Palette Cmd+K] | [Alerts] | [User Profile]"]
-        
-        subgraph BodyLayout["Viewport Split"]
-            Sidebar["Persistent Operator Sidebar<br/>(Collapsible to 64px Icon Rail)<br/>• Overview (Dashboard)<br/>• Operations (Catalogs, Resources)<br/>• Transactions (Orders, Invoices)<br/>• Financials (Ledger, Settlements)<br/>• Services (Requests, Tickets)<br/>• Settings (Team, Roles, Org)<br/>• Collapse / Expand Toggle"]
-            
-            subgraph DynamicCanvas["Dynamic Viewport Canvas"]
-                Breadcrumb["1. Contextual Breadcrumbs<br/>Home > Resources > Details"]
-                PageHeader["2. Page Header & Primary Action CTA<br/>[Page Title] [Filter] [+ Primary Action CTA]"]
-                Tabs["3. URL-Synchronized Tabs & Search Bar<br/>[Active (12)] [Draft (2)] [Archived (0)] [Search...]"]
-                Content["4. Data Presentation Canvas<br/>(Data Tables, Metric Grids, Detail Drawers, Dialogs)"]
-                Breadcrumb --> PageHeader --> Tabs --> Content
-            end
-            Sidebar ~~~ DynamicCanvas
-        end
-        
-        Footer["Persistent Status / Footer (System Context, Active Role Indicator, Accessible Live Regions)"]
-        
-        Header --> BodyLayout --> Footer
+    subgraph MultiRoleDesign["Asymmetric Density Architecture"]
+        R1["Identify Persona Densities<br/>• High Density: Dense tables, multi-filters, bulk actions<br/>• Streamlined: Touch-friendly cards, simplified forms"]
+        R2["Isolate Route Hierarchies<br/>Separate route subtrees (e.g. /admin/* vs /app/*)<br/>Zero nested role-conditional switches in single components"]
+        R3["Shared Design System Primitives<br/>Both experiences share identical atomic tokens and headless primitives"]
+        R1 --> R2 --> R3
     end
 ```
 
-### 2.1. The Persistent Shell (Never Re-rendered Across Page Navigations)
-- **Top Header**:
-  - **Brand Anchor**: Visual identity and immediate home navigation.
-  - **Organization Context Switcher**: Dropdown selector allowing operators to switch multi-tenant organization contexts (`organizationId`) with automatic data re-fetching.
-  - **Command Palette (`Cmd + K` / `Ctrl + K`)**: Global keyboard-first navigation and entity search.
-  - **Notification Center**: Bell icon with unread count badge displaying critical alerts (approvals, overdue items, system events).
-  - **User Profile & Account Menu**: User avatar, full name, role badge, account settings, and secure sign-out.
-- **Collapsible Sidebar (Desktop Operator View)**:
-  - Default expanded (`w-64` / 256px) with categorized section headings and labels.
-  - Collapses smoothly into a slim icon-only rail (`w-16` / 64px) with hover tooltips and active indicator pills.
-  - Collapse state is persisted in `localStorage` (`app_sidebar_collapsed`).
-  - Mobile view collapses into a slide-over off-canvas sheet triggered by a hamburger button.
-- **Accessible Feedback Layer**:
-  - Floating toast container and ARIA live regions for mutation confirmations (`role="status"`) and errors (`role="alert"`).
-
-### 2.2. The Dynamic Canvas (Contextual to Active Route & User Role)
-- **Primary Action Buttons (CTAs)**: Operator sees "+ Create Resource" or "Approve Transaction"; Member sees "Submit Request" or "Make Payment".
-- **Data Table Columns**: Operators see customer contact info, financial amounts, and audit fields (`createdBy`); Members see only their own personal records.
-- **Metric Widgets & Dashboards**: Operators see organization cash flow, throughput, and review queues; Members see personal account status and open request progress.
+### Invariants:
+1. **Zero Conditional Component Spaghetti:** Never place deeply nested `if (user.role === 'admin')` checks inside individual presentation components to render entirely different screens. Split distinct experiences into dedicated, decoupled page components mounted on separate route subtrees.
+2. **Unified Design System Foundation:** Distinct personas must share the same foundational design tokens (colors, typography, spacing, border radii) to preserve visual consistency across the organization.
 
 ---
 
-## 3. Dual-Experience Model: Operator Workspace vs. Consumer / Member Portal
-
-To prevent confusing operators with consumer simplicity and overwhelming consumers with enterprise complexity, applications enforce **Two Completely Distinct Experiences**:
-
-| Architectural Dimension | Enterprise Operator Workspace | Consumer / Member Portal (`/portal`) | Public Catalog / Landing (`/catalog`) |
-|---|---|---|---|
-| **Target Roles** | `ADMIN`, `OPERATOR`, `MANAGER`, `AUDITOR` | `MEMBER`, `CONSUMER`, `CUSTOMER` | Unauthenticated Visitors, Prospective Users |
-| **Route Prefix** | `/` (e.g. `/resources`, `/orders`, `/analytics`) | `/portal` (e.g. `/portal`, `/portal/orders`, `/portal/support`) | `/catalog`, `/onboarding` |
-| **Navigation Pattern** | Collapsible left sidebar with categorized sections | Clean top navigation bar + mobile bottom navigation bar | Simple landing header with "Sign In" CTA |
-| **Information Density** | High density, tabular grids, advanced multi-filters | Low-to-medium density, card-centric, touch ergonomics | Visual cards, featured items, search badges |
-| **Data Scope** | Organization-wide (all entities, transactions, ledgers) | Member-scoped (strictly own entities, orders, requests) | Public records with status `AVAILABLE` / `ACTIVE` |
-| **Primary Goal** | Operational throughput, oversight, compliance, auditing | Self-service autonomy, rapid actions, account visibility | Resource discovery and user onboarding |
-
----
-
-## 4. Production Authentication UX vs. Developer Persona Harness
+## 4. Production Authentication vs. Developer Test Harness Hygiene
 
 ### 4.1. Strict Decoupling Mandate
-- **NEVER** embed test personas ("Admin Alice", "Operator Bob", "Member Charlie") into production sign-in forms or modals. Conflating demo personas with actual authentication makes the application feel like a toy prototype and creates severe security/UX confusion.
+- **Never embed hardcoded demo personas or mock user switcher buttons into production authentication forms.** Conflating test credentials with actual authentication introduces severe security vulnerabilities and destroys production UX integrity.
 - **Production Sign-In (`/login`)**:
-  - Clean, dedicated sign-in page or clean modal.
-  - Email address and password inputs with real-time Zod schema validation.
-  - Accessible error alerts (`role="alert"`).
-  - Clear "Remember me" option and "Forgot password?" recovery link.
-  - Dedicated registration tab or `/register` route for onboarding new tenant organizations.
-- **Developer / Demo Persona Test Harness**:
-  - Must be **100% decoupled** from the production sign-in form.
-  - Rendered strictly via a dedicated **Dev Floating Toolbar** or bottom-right drawer:
+  - Clean, dedicated sign-in form with real-time schema validation.
+  - Accessible error alerts (`role="alert"`) and clear recovery flows.
+- **Developer Test Persona Harness**:
+  - Must be **100% decoupled** from production forms and gated strictly behind development environment flags:
     ```tsx
-    // Only rendered in development / preview mode
+    // Rendered exclusively in development / preview mode
     if (import.meta.env.DEV) {
-      return <DevPersonaToolbar />;
+      return <DevPersonaToolbar onSwitchUser={handleDevUserSwitch} />;
     }
     ```
-  - Visibly labeled: `[DEV ENVIRONMENT: Switch Persona]`.
-  - Switching personas clears active query caches, updates auth context, and triggers role-appropriate post-login redirection.
+  - Visibly labeled as a development tool. Switching personas must clear active query caches and reload ambient session state cleanly.
 
 ---
 
-## 5. Role-Based Access Control & Route Guarding
+## 5. Declarative Route Guarding & Access Control
 
-- **Defense in Depth**:
-  - Hiding a button via `<Can permission="...">` is an ergonomic convenience, **never security**.
-  - All routes must be protected by declarative route guards:
+- **Defense in Depth**: Hiding a UI button or menu item based on user role is an ergonomic convenience, **never security**. Every sensitive operation must be guarded by backend authorization policies.
+- **Declarative Route Guards**:
+  - Protect route subtrees using declarative wrapper components:
     ```tsx
-    <Route element={<ProtectedRoute requiredRoles={['ADMIN', 'OPERATOR']} />}>
-      <Route path="/resources" element={<ResourcesPage />} />
-      <Route path="/transactions" element={<TransactionsPage />} />
+    <Route element={<ProtectedRoute requiredPermissions={['manage:resources']} />}>
+      <Route path="/resources" element={<ResourceListPage />} />
+      <Route path="/resources/:id" element={<ResourceDetailPage />} />
     </Route>
     ```
-- **Automatic Post-Login Role Routing**:
-  - When a user logs in:
-    - Roles `ADMIN`, `OPERATOR`, `MANAGER` ➔ Redirect to `/` (Operator Executive Dashboard).
-    - Role `MEMBER`, `CONSUMER` ➔ Redirect to `/portal` (Self-Service Portal Home).
-    - Unauthenticated users attempting to access protected routes ➔ Redirect to `/login?returnTo=...`.
-    - Authenticated users accessing routes without permission ➔ Display an accessible 403 Forbidden screen with a "Return to Home" button.
+  - Unauthenticated access attempts must redirect to `/login?returnTo=<encoded-path>`.
+  - Authenticated requests lacking required permissions must render an accessible `403 Forbidden` screen with clear navigation back to authorized zones.
 
 ---
 
 ## 6. Bidirectional URL State Synchronization
 
-Per [`docs/rules/frontend_architecture.md`](./frontend_architecture.md), all view state that represents navigation, active tab, filtering, sorting, pagination, or search query must synchronize bidirectionally with URL search parameters (`useSearchParams`):
-1. **Tabs**: `?tab=active`, `?tab=draft`, `?tab=archived`
-2. **Filters**: `?status=ACTIVE&category=cloud`
-3. **Search Queries**: `?q=alpha`
-4. **Pagination**: `?page=2&pageSize=25`
-5. **Drawers / Modals**: `?drawer=resource-102` or `?modal=create-order`
+Per [`docs/rules/frontend_architecture.md`](./frontend_architecture.md), all view state that represents navigation, active tab, filtering, sorting, pagination, search queries, or active detail selection must synchronize bidirectionally with URL search parameters:
+- **Tabs & Views:** `?tab=overview`, `?tab=history`
+- **Filters & Search:** `?status=active&category=core`, `?q=search_term`
+- **Pagination & Sorting:** `?page=2&pageSize=25&sort=-createdAt`
+- **Active Selection / Drawers:** `?selectedId=res_123`
+- *Invariant:* Pasting a URL into a new browser tab must reconstruct the exact same view state without requiring manual re-navigation.
+
+---
 
 ## 7. Production UI Hygiene & Resilience Standards
 
-- **Multi-Tab State Synchronization**: Synchronize authentication and tenant selection across browser tabs using native `window.addEventListener('storage')`.
-- **Fault-Tolerant Error Boundaries**: Wrap complex widgets, charts, and page outlets in accessible `<ErrorBoundary>` components to prevent runtime render exceptions from crashing the persistent application shell.
-- **Strict Decoupling of Diagnostics & Telemetry**: Never expose internal architectural diagnostics (port health, connection badges, active role indicators) in production user-facing screens; gate diagnostic widgets strictly behind `import.meta.env.DEV`.
-- **Centralized UI Copy (`UI_STRINGS`)**: Centralize all user interface copy, status labels, error notifications, and action button labels into configuration constants (`UI_STRINGS`) rather than scattering hardcoded strings across templates.
+1. **Fault-Tolerant Error Boundaries:** Wrap route outlets, complex widgets, and third-party embeds in accessible `<ErrorBoundary>` components. A render exception in one widget must never crash the entire application shell.
+2. **Centralized UI Copy (`UI_STRINGS`):** Centralize user-facing copy, labels, validation messages, and action button text in structured constants or localization dictionaries rather than scattering hardcoded strings across presentation templates.
+3. **Multi-Tab State Synchronization:** Synchronize cross-tab session mutations (e.g. sign-out, workspace switch) using native `window.addEventListener('storage')`.
+4. **Accessible Feedback Layer:** Trigger accessible toast notifications (`role="status"`) and inline alerts (`role="alert"`). Never use blocking native browser dialogs (`window.alert`, `window.confirm`).

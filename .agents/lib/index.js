@@ -28,6 +28,11 @@ export { runValidation, parseArgs, main, createReporter, walkMarkdown, readTextO
 export { validate } from './validate.js';
 export { createSilentReporter } from './validator/io.js';
 export { scaffold, validateTarget, copyTemplate, ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, initGit, isInsideGitWorkTree, runGit, assertInside, isProtectedTarget, getTemplateDir, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES } from './scaffold.js';
+/**
+ * Prompt Ledger & Zero-Unattended-Prompt Invariant enforcement.
+ */
+export { parsePromptLedger, checkPromptLedger, resolveLedgerPath, inspectPromptCommit } from './prompt-ledger.js';
+export { handlePromptCommand } from './cli-prompt.js';
 import scaffoldModule from './scaffold.js';
 /** Default export: the scaffolding surface, for `import azcodr from '@azcodr/azcodr'`. */
 export default scaffoldModule;

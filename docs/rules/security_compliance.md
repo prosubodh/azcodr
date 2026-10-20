@@ -58,3 +58,44 @@ All systems handling sensitive, customer, or enterprise data must satisfy fundam
 4. **The 3 Foundational Legal Artifacts & 90-Day Review Cadence**:
    - Production systems must maintain data-flow-grounded legal documents (Privacy Policy disclosing exact data inventory, Terms of Service, and GDPR Art 28 Data Processing Agreements for third-party sub-processors).
    - Maintain a quarterly (90-day) compliance review calendar auditing regulatory shifts, cookie consent mechanics, sub-processor changes, and data residency invariants.
+
+---
+
+## 4. Web Application Exploitation Countermeasures (Andrew Hoffman)
+
+Eliminate application attack vectors using systematic defense-in-depth countermeasures (*Web Application Security* - Andrew Hoffman):
+
+### 1. Cross-Site Request Forgery (CSRF) Defense
+- Enforce `SameSite=Strict` on authentication and session cookies for top-tier security; use `SameSite=Lax` only for smooth external link navigation.
+- Mandate Synchronizer Token Pattern or custom anti-CSRF request headers (`X-CSRF-Token`, `X-Requested-With`) on all state-changing HTTP methods (`POST`, `PUT`, `PATCH`, `DELETE`).
+- Demand user re-authentication (or WebAuthn passkey step-up) before executing critical actions (password change, email mutation, billing changes).
+
+### 2. Constant-Time Secret Verification (Timing Attack Defense)
+- Standard equality checks (`a === b`) terminate on the first mismatched byte, leaking microsecond timing signals that allow remote attackers to brute-force secrets.
+- Always compare password hashes, HMAC signatures, API tokens, and webhook signatures using constant-time comparison functions:
+  ```typescript
+  import { timingSafeEqual } from 'node:crypto';
+
+  export function verifySignature(provided: Buffer, expected: Buffer): boolean {
+    if (provided.length !== expected.length) return false;
+    return timingSafeEqual(provided, expected);
+  }
+  ```
+
+### 3. Strict Nonce-Based Content Security Policy (CSP)
+- Prohibit `'unsafe-inline'` and `'unsafe-eval'` in production headers.
+- Generate a cryptographically random, per-request nonce on the server and bind it to script tags:
+  ```http
+  Content-Security-Policy: default-src 'self'; script-src 'self' 'nonce-rAnd0m123'; object-src 'none'; base-uri 'none';
+  ```
+
+### 4. Prototype Pollution & Safe Deserialization
+- Never use dynamic language deserialization (Python `pickle`, Java `ObjectInputStream`, PHP `unserialize`) on untrusted client data.
+- Defend against JavaScript Prototype Pollution by validating payloads against strict schemas, stripping `__proto__`, `constructor`, and `prototype` keys, and utilizing `Object.create(null)` for dynamic dictionaries.
+
+### 5. Subresource Integrity (SRI)
+- All third-party client assets loaded from CDNs must include cryptographic hash verification:
+  ```html
+  <script src="https://cdn.example.com/lib.js" integrity="sha384-..." crossorigin="anonymous"></script>
+  ```
+

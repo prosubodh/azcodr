@@ -5,6 +5,7 @@ import { inspectFileWrite } from './agent-guard-file.js';
 import type { FileCheckResult } from './agent-guard-file.js';
 import { inspectTddRequirement, readTddState, writeTddState } from './agent-guard-tdd.js';
 import type { SessionTddState, TddEnforcement, TddCheckResult, PathMatcher } from './agent-guard-tdd.js';
+import { inspectPromptCommit } from './prompt-ledger.js';
 
 /**
  * Verdict returned by agent-runtime inspection guards.
@@ -78,9 +79,11 @@ function extractCommand(input: Record<string, unknown>): string | undefined {
   return extractKey(input, ['commandLine', 'command', 'cmd']);
 }
 
-function inspectPreCommand(cmd: string): GuardDecision {
+function inspectPreCommand(cmd: string, workspaceRoot?: string): GuardDecision {
   const violation = inspectCommand(cmd);
   if (violation.blocked) return { allowed: false, reason: violation.reason, source: 'command' };
+  const promptViolation = inspectPromptCommit(cmd, workspaceRoot);
+  if (promptViolation.blocked) return { allowed: false, reason: promptViolation.reason, source: 'command' };
   return { allowed: true };
 }
 
@@ -146,14 +149,14 @@ export function inspectPreTool(rawInput: string, options: GuardOptions = {}): Gu
   if (env && typeof env === 'object') {
     const record = extractPayload(env as Record<string, unknown>);
     const cmd = extractCommand(record);
-    if (cmd) return inspectPreCommand(cmd);
+    if (cmd) return inspectPreCommand(cmd, options.workspaceRoot);
 
     const targetFile = extractFilePath(record);
     if (targetFile) return inspectPreFile(targetFile, record, options);
     return { allowed: true };
   }
 
-  return inspectPreCommand(rawInput);
+  return inspectPreCommand(rawInput, options.workspaceRoot);
 }
 
 export { inspectCommand, inspectFileWrite, inspectTddRequirement, readTddState, writeTddState };

@@ -158,6 +158,18 @@ sequenceDiagram
   - Client Errors: `400 Bad Request`, `401 Unauthorized`, `403 Forbidden`, `404 Not Found`, `409 Conflict`, `422 Unprocessable Entity`, `429 Too Many Requests`
   - Server Failures: `500 Internal Server Error`, `503 Service Unavailable`
 - **UI Interaction States & Edge Cases**: Fully assert all presentation states (loading spinners, disabled controls, error banners, success feedback, empty states) across suites.
+- **The 4 Pillars of a Good Unit Test (Vladimir Khorikov)**:
+  1. *Protection Against Regressions:* Exercise complex business logic, domain boundaries, and edge cases to catch defects early.
+  2. *Resistance to Refactoring (The Golden Pillar):* Tests must verify observable outcomes (return values and state), never private methods or internal collaborator wiring. False positives during refactoring destroy developer trust.
+  3. *Fast Feedback:* Unit suites must execute in milliseconds without I/O or sleep pauses.
+  4. *Maintainability:* Clear intention, minimal fixture boilerplate, and evident test data relationships.
+- **Mocks vs. Stubs Hygiene (Khorikov)**:
+  - *Stubs (Inbound Queries):* Provide test data to the system under test (`userRepo.findById` returning a stub user). **Never assert calls or interaction counts on stubs** (creates brittle tests that fail on refactoring).
+  - *Mocks (Outbound Commands):* Verify observable side-effects leaving the domain boundary (`paymentGateway.charge`, `outbox.stageEvent`).
+- **Unit of Work & Canonical Test Naming (Roy Osherove - *The Art of Unit Testing*)**:
+  - A *Unit of Work* spans from the invocation of a public entry point to a noticeable outcome (a return value, state mutation, or external adapter call).
+  - Name test cases expressively using Osherove's standard: `[UnitOfWork]_[StateUnderTest]_[ExpectedBehavior]` (e.g. `submitOrder_withEmptyCart_returnsValidationError`, `charge_withInsufficientFunds_recordsFailedAuditLog`).
+
 
 ---
 
@@ -208,3 +220,15 @@ flowchart TD
 - For critical user journeys (authentication, checkout, resource creation):
   - Run headless Chromium in CLI/CI: `npx playwright test`.
   - Configure automated forensic captures on failure: screenshots, trace files, and videos saved to `test-results/` for immediate agent inspection.
+
+---
+
+## 9. Hermetic Test Isolation & Ephemeral Container Runners
+
+- **The Beyoncé Rule (*Software Engineering at Google*):** *"If you liked it, you should have put a test on it."* Never refactor, migrate, or expand functionality that lacks automated test coverage. Author characterization tests before altering legacy code.
+- **Hermetic Container Runners:** When the target language runtime, toolchain, or database is missing or incompatible on the host operating system, execute test runners in ephemeral, throwaway container isolates:
+  ```bash
+  docker run --rm -v "${PWD}:/app" -w /app <language-image> <test-command>
+  ```
+- **Zero Flakiness:** All tests must be deterministic, isolated from host OS state, and independently executable in any environment.
+

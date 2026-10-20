@@ -145,6 +145,23 @@ export type {
   ScaffoldErrorCode
 } from './scaffold.js';
 
+/**
+ * Prompt Ledger & Zero-Unattended-Prompt Invariant enforcement.
+ */
+export {
+  parsePromptLedger,
+  checkPromptLedger,
+  resolveLedgerPath,
+  inspectPromptCommit
+} from './prompt-ledger.js';
+export type {
+  PromptDirective,
+  PromptLedgerStatus,
+  PromptCommitInspection
+} from './prompt-ledger.js';
+export { handlePromptCommand } from './cli-prompt.js';
+export type { PromptIo } from './cli-prompt.js';
+
 import scaffoldModule from './scaffold.js';
 
 /** Default export: the scaffolding surface, for `import azcodr from '@azcodr/azcodr'`. */

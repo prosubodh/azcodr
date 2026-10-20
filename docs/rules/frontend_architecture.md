@@ -155,3 +155,21 @@ Never dump all application state into a single global state container. Enforce s
 
 - **Symmetric Design Tokens**: Ensure foundational CSS variables (`--background`, `--foreground`, `--card`, `--border`, `--popover`) are symmetrically declared across `:root` and `.dark`. Omitted root tokens in `.dark` result in unstyled backgrounds and illegible text when switching themes.
 - **System Preference Detection & Reactive Synchronization**: `ThemeProvider` implementations must listen to `window.matchMedia('(prefers-color-scheme: dark)')` with dynamic event listeners so OS appearance toggles seamlessly propagate in real-time, and synchronize `document.documentElement.style.colorScheme = resolvedTheme` to ensure browser-native elements (scrollbars, input widgets) match the active theme.
+
+---
+
+## 8. Functional Parity Specification & UI Migration Parity Gate
+
+Client-side rewrites, design system refactoring, and framework swaps (e.g. vanilla JS to React/Vite/shadcn) represent the highest regression-risk activity in frontend engineering. 
+
+### The Migration Parity Invariants:
+1. **Zero Destructive Rewrites Without Parity Audit:** It is strictly prohibited to delete or replace legacy templates, pages, or components without first authoring a formal **Functional Parity Specification (FPS)** matrix.
+2. **Capability Audit Matrix:** Catalog 100% of existing user touchpoints before touching code:
+   - Every input field, label, placeholder, and validation error.
+   - Every interactive trigger, modal, button, and hotkey.
+   - Every outbound API request, payload structure, and response handler.
+   - Every empty, loading, error, and success state.
+3. **Verified Functional Parity:** Every item in the parity matrix must have a corresponding, passing integration or component test in the replacement interface.
+4. **Immediate Reversion on Regression:** If any previously working user flow is missing or regressed in the new client interface (e.g., missing action flow, broken modal, unlinked API action), the replacement commit must be immediately reverted (`git revert`) before proceeding with realignment.
+
+

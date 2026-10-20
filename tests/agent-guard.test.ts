@@ -204,6 +204,29 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     assert.strictEqual(allowed.allowed, true);
   });
 
+  test('inspectPreTool blocks git commit when prompt directives are pending', () => {
+    const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+    fs.mkdirSync(ledgerDir, { recursive: true });
+    fs.writeFileSync(path.join(ledgerDir, 'pending.md'), '- [ ] Open prompt item\n', 'utf-8');
+
+    const blocked = inspectPreTool(JSON.stringify({
+      tool_name: 'run_command',
+      tool_input: { command: 'git commit -m "feat: unfinished"' }
+    }), { workspaceRoot: tmpDir });
+
+    assert.strictEqual(blocked.allowed, false);
+    assert.strictEqual(blocked.source, 'command');
+    assert.match(blocked.reason ?? '', /Zero-Unattended-Prompt Invariant/);
+
+    // After ticking the box, commit is allowed
+    fs.writeFileSync(path.join(ledgerDir, 'pending.md'), '- [x] Open prompt item\n', 'utf-8');
+    const allowed = inspectPreTool(JSON.stringify({
+      tool_name: 'run_command',
+      tool_input: { command: 'git commit -m "feat: finished"' }
+    }), { workspaceRoot: tmpDir });
+    assert.strictEqual(allowed.allowed, true);
+  });
+
   test('inspectPreTool handles JSON envelopes for file write tools', () => {
     const huge = Array(350).fill('const x = 1;').join('\n');
     const blocked = inspectPreTool(JSON.stringify({

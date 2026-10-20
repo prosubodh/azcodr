@@ -1,0 +1,72 @@
+import fs from 'node:fs';
+import path from 'node:path';
+const CHECKBOX_REGEX = /^\s*-\s*\[([ xX])\]\s*(.+)$/gm;
+export function parsePromptLedger(markdownContent) {
+    const pendingDirectives = [];
+    const completedDirectives = [];
+    for (const match of markdownContent.matchAll(CHECKBOX_REGEX)) {
+        const mark = match[1];
+        const text = match[2].trim();
+        const isCompleted = mark.toLowerCase() === 'x';
+        const item = { text, completed: isCompleted };
+        if (isCompleted) {
+            completedDirectives.push(item);
+        }
+        else {
+            pendingDirectives.push(item);
+        }
+    }
+    return {
+        exists: true,
+        clean: pendingDirectives.length === 0,
+        pendingCount: pendingDirectives.length,
+        completedCount: completedDirectives.length,
+        pendingDirectives,
+        completedDirectives
+    };
+}
+export function resolveLedgerPath(targetDirOrFile) {
+    try {
+        const stat = fs.statSync(targetDirOrFile);
+        if (stat.isDirectory()) {
+            return path.join(targetDirOrFile, '.agents', 'ledger', 'pending.md');
+        }
+        return targetDirOrFile;
+    }
+    catch {
+        return targetDirOrFile;
+    }
+}
+export function checkPromptLedger(targetDirOrFile) {
+    const filePath = resolveLedgerPath(targetDirOrFile);
+    if (!fs.existsSync(filePath)) {
+        return {
+            exists: false,
+            clean: true,
+            pendingCount: 0,
+            completedCount: 0,
+            pendingDirectives: [],
+            completedDirectives: []
+        };
+    }
+    const content = fs.readFileSync(filePath, 'utf-8');
+    return parsePromptLedger(content);
+}
+const GIT_COMMIT_REGEX = /\bgit\s+commit\b/i;
+export function inspectPromptCommit(command, workspaceRoot = process.cwd()) {
+    if (!GIT_COMMIT_REGEX.test(command)) {
+        return { blocked: false };
+    }
+    const status = checkPromptLedger(workspaceRoot);
+    if (!status.exists || status.clean) {
+        return { blocked: false };
+    }
+    const itemsList = status.pendingDirectives.map((d) => `  - ${d.text}`).join('\n');
+    const reason = `BLOCKED by Zero-Unattended-Prompt Invariant: Cannot commit while ${status.pendingCount} prompt directive(s) remain pending in .agents/ledger/pending.md:\n` +
+        itemsList;
+    return {
+        blocked: true,
+        reason
+    };
+}
+//# sourceMappingURL=prompt-ledger.js.map
