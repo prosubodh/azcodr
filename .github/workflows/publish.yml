@@ -197,7 +197,10 @@ jobs:
     name: Publish to JSR
     needs: verify
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 30
+    permissions:
+      contents: read
+      id-token: write
     steps:
       - name: Checkout Repository
         uses: actions/checkout@v7
@@ -209,8 +212,8 @@ jobs:
 
       - name: Publish to JSR (dry run)
         if: inputs.dry-run == true
-        run: npx jsr publish --dry-run
+        run: deno publish --dry-run
 
       - name: Publish to JSR
         if: inputs.dry-run != true
-        run: npx jsr publish
+        run: deno publish
