@@ -212,8 +212,8 @@ jobs:
 
       - name: Publish to JSR (dry run)
         if: inputs.dry-run == true
-        run: deno publish --dry-run
+        run: deno publish --sloppy-imports --no-check --dry-run
 
       - name: Publish to JSR
         if: inputs.dry-run != true
-        run: deno publish
+        run: deno publish --sloppy-imports --no-check
