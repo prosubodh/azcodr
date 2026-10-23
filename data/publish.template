@@ -1,0 +1,89 @@
+name: Publish
+
+on:
+  release:
+    types: [ published ]
+  workflow_dispatch:
+    inputs:
+      dry-run:
+        description: "Verify the publishable tarball without uploading"
+        type: boolean
+        default: true
+
+# Least privilege: read contents and request id-token for provenance attestation.
+permissions:
+  contents: read
+  id-token: write
+
+concurrency:
+  group: publish-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  verify:
+    name: Verify Release Quality Gate
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          fi
+
+      - name: Architecture Governance Check
+        run: npx azcodr check
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Test Suite
+        run: npm test --if-present
+
+      - name: Inspect Publishable Tarball
+        run: npm pack --dry-run
+
+  publish:
+    name: Publish to Registry
+    needs: verify
+    if: github.event_name == 'release' || github.event.inputs.dry-run == 'false'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22.x
+          registry-url: https://registry.npmjs.org
+
+      - name: Install dependencies
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          elif [ -f package.json ]; then
+            npm install
+          fi
+
+      - name: Build
+        run: npm run build --if-present
+
+      - name: Publish Package with Provenance
+        run: npm publish --provenance --access public
+        env:
+          NODE_AUTH_TOKEN: ${{ secrets.NPM_TOKEN }}

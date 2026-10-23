@@ -13,6 +13,7 @@ export interface CapabilityPack {
 }
 export interface InstallPackOptions {
     dryRun?: boolean;
+    force?: boolean;
 }
 export interface InstallPackResult {
     packName: string;

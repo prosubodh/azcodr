@@ -42,7 +42,10 @@ export function handleAddCommand(
     : io.cwd;
 
   try {
-    const result = installPack(targetDir, parsed.packName, { dryRun: parsed.dryRun });
+    const result = installPack(targetDir, parsed.packName, {
+      dryRun: parsed.dryRun,
+      force: parsed.force
+    });
     if (!parsed.silent) {
       printInstallResult(result, parsed, io);
     }

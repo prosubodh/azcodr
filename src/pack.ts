@@ -3,6 +3,7 @@ import path from 'node:path';
 import { CONFIG_FILE_NAMES } from './harness-config.js';
 import type { Methodology } from './harness-config.js';
 import { installPrePushHook } from './repo.js';
+import { installWorkflowTemplate } from './workflow.js';
 
 export interface PackCheckDefinition {
   id: string;
@@ -20,6 +21,7 @@ export interface CapabilityPack {
 
 export interface InstallPackOptions {
   dryRun?: boolean;
+  force?: boolean;
 }
 
 export interface InstallPackResult {
@@ -69,6 +71,14 @@ const CANONICAL_PACKS: Record<string, CapabilityPack> = {
     name: 'pre-push',
     description: 'Git pre-push hook preventing direct push to protected branches',
     checks: [{ id: 'protected-branches', enabled: true, severity: 'error', params: { branches: ['main', 'master'] } }]
+  },
+  ci: {
+    name: 'ci',
+    description: 'Continuous Integration GitHub Actions workflow with governance and test gates'
+  },
+  'publish-workflow': {
+    name: 'publish-workflow',
+    description: 'Automated GitHub Actions release & publishing workflow with provenance attestations'
   }
 };
 
@@ -81,7 +91,15 @@ const PACK_ALIASES: Record<string, string> = {
   container: 'docker',
   'pre-push-guard': 'pre-push',
   hook: 'pre-push',
-  hooks: 'pre-push'
+  hooks: 'pre-push',
+  'github-ci': 'ci',
+  actions: 'ci',
+  workflows: 'ci',
+  workflow: 'ci',
+  'ci-workflow': 'ci',
+  publish: 'publish-workflow',
+  'publish-action': 'publish-workflow',
+  'release-workflow': 'publish-workflow'
 };
 
 export const KNOWN_PACK_NAMES: readonly string[] = Object.keys(CANONICAL_PACKS);
@@ -185,6 +203,25 @@ function updateExistingYaml(content: string, pack: CapabilityPack): { updated: s
   return { updated, actions };
 }
 
+function executePackSideEffects(
+  targetDir: string,
+  packName: string,
+  options: InstallPackOptions
+): string[] {
+  const actions: string[] = [];
+  if (packName === 'pre-push') {
+    const hookResult = installPrePushHook(targetDir, { dryRun: options.dryRun, force: options.force });
+    if (hookResult.action) actions.push(hookResult.action);
+  } else if (packName === 'ci') {
+    const wfResult = installWorkflowTemplate(targetDir, 'ci', { dryRun: options.dryRun, force: options.force });
+    if (wfResult.action) actions.push(wfResult.action);
+  } else if (packName === 'publish-workflow') {
+    const wfResult = installWorkflowTemplate(targetDir, 'publish', { dryRun: options.dryRun, force: options.force });
+    if (wfResult.action) actions.push(wfResult.action);
+  }
+  return actions;
+}
+
 export function installPack(
   targetDir: string,
   packName: string,
@@ -200,10 +237,8 @@ export function installPack(
     if (pack.checks) {
       actions.push(...pack.checks.map((c) => `enable check: ${c.id}`));
     }
-    if (pack.name === 'pre-push') {
-      const hookResult = installPrePushHook(targetDir, { dryRun: options.dryRun });
-      if (hookResult.action) actions.push(hookResult.action);
-    }
+    const sideEffects = executePackSideEffects(targetDir, pack.name, options);
+    actions.push(...sideEffects);
     if (!options.dryRun) {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(configPath, yaml, 'utf-8');
@@ -217,14 +252,16 @@ export function installPack(
     new RegExp(`\\[[^\\]]*\\b${pack.name}\\b[^\\]]*\\]`).test(existingContent);
 
   if (alreadyHas) {
+    if (options.force) {
+      const sideEffects = executePackSideEffects(targetDir, pack.name, options);
+      return { packName: pack.name, configPath, alreadyInstalled: false, actions: sideEffects };
+    }
     return { packName: pack.name, configPath, alreadyInstalled: true, actions: [] };
   }
 
   const { updated, actions } = updateExistingYaml(existingContent, pack);
-  if (pack.name === 'pre-push') {
-    const hookResult = installPrePushHook(targetDir, { dryRun: options.dryRun });
-    if (hookResult.action) actions.push(hookResult.action);
-  }
+  const sideEffects = executePackSideEffects(targetDir, pack.name, options);
+  actions.push(...sideEffects);
   if (!options.dryRun) {
     fs.writeFileSync(configPath, updated, 'utf-8');
   }
