@@ -8,8 +8,8 @@ import { assertInside, isProtectedTarget, getTemplateDir } from './guards.js';
 import { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile } from './links.js';
 import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
-import { isInsideGitWorkTree, initGit } from './repo.js';
-import type { InitGitOptions } from './repo.js';
+import { isInsideGitWorkTree, initGit, installPrePushHook } from './repo.js';
+import type { InitGitOptions, InstallHookOptions, InstallHookResult } from './repo.js';
 
 export { getTemplateDir };
 
@@ -246,16 +246,20 @@ export function scaffold(options: ScaffoldOptions = {}): ScaffoldResult {
   validateTarget(resolvedTarget, { templateDir, force, dryRun });
   const actions = copyTemplate(resolvedTarget, templateDir, { dryRun });
   const gitInitialized = initGit(resolvedTarget, { noGit, dryRun });
-  if (gitInitialized) actions.push('git: initialize repository');
+  if (gitInitialized) {
+    actions.push('git: initialize repository');
+    const hookResult = installPrePushHook(resolvedTarget, { dryRun });
+    if (hookResult.action) actions.push(hookResult.action);
+  }
   return { success: true, targetDir: resolvedTarget, gitInitialized, dryRun, actions };
 }
 
 export {
   ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile,
-  makeScriptsExecutable, isInsideGitWorkTree, initGit, runGit,
+  makeScriptsExecutable, isInsideGitWorkTree, initGit, installPrePushHook, runGit,
   assertInside, ScaffoldError, ERROR_CODES, isProtectedTarget
 };
-export type { EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorCode, ScaffoldErrorShape };
+export type { EnsureSymlinkOptions, InitGitOptions, InstallHookOptions, InstallHookResult, ScaffoldErrorCode, ScaffoldErrorShape };
 
 /**
  * Unified azcodr scaffolding functions, guards, utilities, and constants module.
@@ -263,6 +267,6 @@ export type { EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorCode, ScaffoldE
 export default {
   scaffold, validateTarget, copyTemplate, ensureSymlink,
   ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable,
-  isInsideGitWorkTree, initGit, getTemplateDir, runGit,
+  isInsideGitWorkTree, initGit, installPrePushHook, getTemplateDir, runGit,
   assertInside, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES, isProtectedTarget
 };

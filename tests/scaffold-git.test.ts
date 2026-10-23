@@ -6,6 +6,8 @@ import childProcess from 'node:child_process';
 import {
   isInsideGitWorkTree,
   initGit,
+  installPrePushHook,
+  scaffold,
   getTemplateDir,
   runGit,
   assertInside
@@ -189,5 +191,65 @@ describe('runGit delegation and assertInside boundaries', () => {
 
   test('assertInside honors custom message', () => {
     assert.throws(() => assertInside(tmpDir, '../escape.txt', 'custom boundary'), /custom boundary/);
+  });
+});
+
+describe('installPrePushHook: automated branch protection hook installation', () => {
+  test('returns installed: false when no .git directory exists', () => {
+    const res = installPrePushHook(tmpDir);
+    assert.strictEqual(res.installed, false);
+    assert.match(res.reason ?? '', /No \.git directory found/);
+  });
+
+  test('installs pre-push hook into .git/hooks/pre-push when .git exists', () => {
+    fs.mkdirSync(path.join(tmpDir, '.git'));
+    const res = installPrePushHook(tmpDir);
+    assert.strictEqual(res.installed, true);
+    assert.ok(res.action?.includes('install: .git/hooks/pre-push'));
+
+    const hookFile = path.join(tmpDir, '.git', 'hooks', 'pre-push');
+    assert.ok(fs.existsSync(hookFile));
+    const content = fs.readFileSync(hookFile, 'utf-8');
+    assert.ok(content.includes('azcodr generic law'));
+  });
+
+  test('dryRun records action without creating file on disk', () => {
+    fs.mkdirSync(path.join(tmpDir, '.git'));
+    const res = installPrePushHook(tmpDir, { dryRun: true });
+    assert.strictEqual(res.installed, true);
+    assert.ok(res.action?.includes('install: .git/hooks/pre-push'));
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.git', 'hooks', 'pre-push')), false);
+  });
+
+  test('skips overwrite of custom pre-push hook unless force is true', () => {
+    const hooksDir = path.join(tmpDir, '.git', 'hooks');
+    fs.mkdirSync(hooksDir, { recursive: true });
+    const hookFile = path.join(hooksDir, 'pre-push');
+    fs.writeFileSync(hookFile, '#!/bin/sh\necho "custom"\n', 'utf-8');
+
+    const res = installPrePushHook(tmpDir, { force: false });
+    assert.strictEqual(res.installed, false);
+    assert.match(res.reason ?? '', /Custom pre-push hook already exists/);
+    assert.strictEqual(fs.readFileSync(hookFile, 'utf-8'), '#!/bin/sh\necho "custom"\n');
+
+    const forceRes = installPrePushHook(tmpDir, { force: true });
+    assert.strictEqual(forceRes.installed, true);
+    assert.ok(fs.readFileSync(hookFile, 'utf-8').includes('azcodr generic law'));
+  });
+
+  test('detects already-installed azcodr pre-push hook without re-installing', () => {
+    fs.mkdirSync(path.join(tmpDir, '.git'));
+    installPrePushHook(tmpDir);
+    const second = installPrePushHook(tmpDir);
+    assert.strictEqual(second.installed, false);
+    assert.match(second.reason ?? '', /azcodr pre-push hook already installed/);
+  });
+
+  test('scaffold automatically installs pre-push hook when git is initialized', () => {
+    const res = scaffold({ targetDir: tmpDir, force: true });
+    assert.strictEqual(res.success, true);
+    assert.strictEqual(res.gitInitialized, true);
+    assert.ok(res.actions.some((a) => a.includes('install: .git/hooks/pre-push')));
+    assert.ok(fs.existsSync(path.join(tmpDir, '.git', 'hooks', 'pre-push')));
   });
 });
