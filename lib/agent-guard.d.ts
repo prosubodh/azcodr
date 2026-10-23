@@ -39,6 +39,8 @@ export interface GuardOptions {
     tdd?: TddEnforcement;
     /** Disables every file-based rule while keeping command safety active. */
     skipFileRules?: boolean;
+    /** Protected branches prohibited from direct push. */
+    protectedBranches?: readonly string[];
 }
 export declare function inspectPreTool(rawInput: string, options?: GuardOptions): GuardDecision;
 export { inspectCommand, inspectFileWrite, inspectTddRequirement, readTddState, writeTddState };

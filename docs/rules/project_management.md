@@ -65,6 +65,28 @@ Autonomous agents frequently suffer from "directive drop"—fulfilling one part 
 3. **Zero Early Exits:** An agent is **STRICTLY FORBIDDEN** from declaring a task complete, transitioning to another prompt, or ending its turn while any raw user directive or sub-item remains in `PENDING` state.
 4. **Verified Handling Gate:** An item may only be marked handled or removed when concrete, verified evidence (test assertion output, terminal verification, code diff, or explicit answers) proves that specific directive has been fulfilled.
 
+### 4.2. Mandatory Confusion Resolution & Prioritization Protocol
+When an agent encounters ambiguity, conflicting directives, multi-task backlogs, partial implementation states, or operational confusion, the agent **MUST prioritize all pending ledger items before executing** any code or mutating workspace files:
+1. **P0 (Audit & Ledger Trail):** Parse and log raw prompts and discrete atomic directives into the active ledger (`.agents/ledger/pending.md`) immediately upon receipt.
+2. **P1 (Build & Type Hygiene):** Resolve existing broken compilation, syntax errors, and typecheck gates to re-establish a reliable baseline.
+3. **P2 (Architecture & Invariant Framing):** Align on domain truth, invariant rules, and architectural contracts before writing functional code.
+4. **P3 (Core Functional Implementation):** Implement core functional capabilities via strict Outside-In TDD nano-cycles respecting WIP=1.
+5. **P4 (User Communication & Explanations):** Provide comprehensive, verifiable answers to conceptual or architectural inquiries.
+6. **P5 (Deterministic Verification & Quality Gates):** Verify with full test suite (100% coverage), zero linter errors, zero type errors, and zero validator warnings; resolve pending ledger items only upon verified proof.
+
+### 4.3. Branch Naming & Pull Request Governance
+Direct pushes to protected trunk branches (`main`, `master`, `staging`, `prod`) risk breaking shared environments and are strictly prohibited under `azcodr` governance:
+1. **Generic Law of Trunk Protection:** All code modifications must originate on an isolated topic branch and arrive in protected branches strictly through reviewed, verified Pull Requests. Direct `git push` targeting protected branches is intercepted and blocked by both `agent-guard` and workstation `pre-push` hooks.
+2. **Branch Naming Conventions (Unopinionated by Default):** Teams configure their desired branch naming schema declaratively in `harness.yaml`. Common industry standards supported include:
+   - *Owner-Prefixed Semantic:* `<developer>/<type>/<kebab-desc>` (e.g. `subodh.paudel/feat/branch-guard`, `jane.doe/fix/cli-timeout`).
+   - *Conventional Semantic:* `<type>/<kebab-desc>` (e.g. `feat/branch-guard`, `fix/cli-parser`, `chore/bump-deps`).
+   - *Issue / Ticket-Bound:* `<type>/<ticket-id>-<kebab-desc>` (e.g. `feat/AZ-101-branch-guard`).
+3. **Pull Request Quality Standards:**
+   - *Standard Template:* Every PR must adhere to the standardized `.github/pull_request_template.md`.
+   - *Atomic Sizing:* Non-generated diffs should observe the $\le 300$ lines envelope to ensure thorough peer reviewability.
+   - *Mandatory Test Evidence:* Real shell commands and passing terminal outputs (`npm test`, `npm run lint`, `npm run validate`) must be quoted in the PR body.
+   - *Linear Trunk Integrity:* Merges must use squash-and-merge or fast-forward rebase to maintain a clean, bisectable history.
+
 ---
 
 ## 5. Decomposing Stories into SMART Developer Tasks

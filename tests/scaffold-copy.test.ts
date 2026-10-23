@@ -25,17 +25,22 @@ describe('copyTemplate copies essential template files', () => {
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'AGENTS.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'memory.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'README.md')), true);
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'docs', 'rules')), true);
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'skills')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.gitignore')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, '.editorconfig')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'LICENSE')), true);
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github', 'copilot-instructions.md')), true);
     assert.strictEqual(fs.existsSync(path.join(tmpDir, 'package.json')), true);
 
     const mem = fs.readFileSync(path.join(tmpDir, 'memory.md'), 'utf-8');
     assert.match(mem, /No decisions recorded yet/);
     assert.doesNotMatch(mem, /ADR-015/);
+  });
+
+  test('copyTemplate does not ship opinionated content (docs, .agents, .github) by default', () => {
+    copyTemplate(tmpDir);
+
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'docs')), false);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents')), false);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github')), false);
   });
 
   test('copyTemplate skips template items that do not exist in template directory', () => {
@@ -63,12 +68,6 @@ describe('copyTemplate dry run and ignore-file fallback', () => {
     assert.strictEqual(actions.some(a => a.includes('copy: AGENTS.md')), true);
     assert.strictEqual(actions.some(a => a.includes('copy: .editorconfig')), true);
     assert.strictEqual(actions.some(a => a.includes('copy: LICENSE')), true);
-    assert.strictEqual(actions.some(a => a.includes('symlink: CLAUDE.md')), true);
-    assert.strictEqual(actions.some(a => a.includes('symlink: agents.md')), true);
-    assert.strictEqual(actions.some(a => a.includes('symlink: GEMINI.md')), true);
-    assert.strictEqual(actions.some(a => a.includes('symlink: .cursorrules')), true);
-    assert.strictEqual(actions.some(a => a.includes('symlink: .windsurfrules')), true);
-    assert.strictEqual(actions.some(a => a.includes('symlink: .github/copilot-instructions.md')), true);
     assert.strictEqual(actions.some(a => a.includes('create: package.json')), true);
   });
 
@@ -85,60 +84,11 @@ describe('copyTemplate dry run and ignore-file fallback', () => {
   });
 });
 
-describe('copyTemplate creates valid agent symlinks', () => {
-  test('copyTemplate creates valid symlinks for CLAUDE.md, agents.md, GEMINI.md, .cursorrules, and .windsurfrules', () => {
+describe('copyTemplate does not ship shell scripts', () => {
+  test('copyTemplate does not create .agents/skills directory', () => {
     copyTemplate(tmpDir, templateDir);
 
-    const claudePath = path.join(tmpDir, 'CLAUDE.md');
-    const agentsLowerPath = path.join(tmpDir, 'agents.md');
-    const geminiPath = path.join(tmpDir, 'GEMINI.md');
-    const cursorPath = path.join(tmpDir, '.cursorrules');
-    const windsurfPath = path.join(tmpDir, '.windsurfrules');
-
-    assert.strictEqual(fs.existsSync(claudePath), true);
-    assert.strictEqual(fs.existsSync(agentsLowerPath), true);
-    assert.strictEqual(fs.existsSync(geminiPath), true);
-    assert.strictEqual(fs.existsSync(cursorPath), true);
-    assert.strictEqual(fs.existsSync(windsurfPath), true);
-
-    const claudeStat = fs.lstatSync(claudePath);
-    const agentsLowerStat = fs.lstatSync(agentsLowerPath);
-    const geminiStat = fs.lstatSync(geminiPath);
-    const cursorStat = fs.lstatSync(cursorPath);
-    const windsurfStat = fs.lstatSync(windsurfPath);
-
-    if (agentsLowerStat.isSymbolicLink()) assert.strictEqual(fs.readlinkSync(agentsLowerPath), 'AGENTS.md');
-    if (claudeStat.isSymbolicLink()) assert.strictEqual(fs.readlinkSync(claudePath), 'AGENTS.md');
-    if (geminiStat.isSymbolicLink()) assert.strictEqual(fs.readlinkSync(geminiPath), 'AGENTS.md');
-    if (cursorStat.isSymbolicLink()) assert.strictEqual(fs.readlinkSync(cursorPath), 'AGENTS.md');
-    if (windsurfStat.isSymbolicLink()) assert.strictEqual(fs.readlinkSync(windsurfPath), 'AGENTS.md');
-  });
-});
-
-describe('copyTemplate makes shell scripts executable', () => {
-  test('copyTemplate sets executable permissions on all shell scripts', () => {
-    copyTemplate(tmpDir, templateDir);
-
-    const skillsDir = path.join(tmpDir, '.agents', 'skills');
-    const skillFolders = fs.readdirSync(skillsDir);
-
-    let scriptChecked = false;
-    for (const folder of skillFolders) {
-      const scriptDir = path.join(skillsDir, folder, 'scripts');
-      if (fs.existsSync(scriptDir)) {
-        const scripts = fs.readdirSync(scriptDir).filter(f => f.endsWith('.sh'));
-        for (const script of scripts) {
-          const scriptPath = path.join(scriptDir, script);
-          const stat = fs.statSync(scriptPath);
-          if (process.platform !== 'win32') {
-            const isExecutable = (stat.mode & 0o111) !== 0;
-            assert.strictEqual(isExecutable, true, `Script ${scriptPath} must be executable`);
-          }
-          scriptChecked = true;
-        }
-      }
-    }
-    assert.strictEqual(scriptChecked, true, 'At least one shell script must be validated');
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents')), false);
   });
 });
 
@@ -193,7 +143,5 @@ describe('index.js public API surface', () => {
     assert.strictEqual(Array.isArray(api.TEMPLATE_ITEMS), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('.editorconfig'), true);
     assert.strictEqual(api.TEMPLATE_ITEMS.includes('LICENSE'), true);
-    assert.strictEqual(api.TEMPLATE_ITEMS.includes('.agents'), true);
-    assert.strictEqual(api.TEMPLATE_ITEMS.includes('.github'), true);
   });
 });

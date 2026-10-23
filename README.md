@@ -1,242 +1,113 @@
-# azcodr: Architecture governance toolkit, with an optional starter
+# azcodr: Architecture Governance Toolkit
 
 [![npm version](https://img.shields.io/npm/v/azcodr.svg?color=cb3837)](https://www.npmjs.com/package/azcodr)
 [![JSR Package](https://jsr.io/badges/@azcodr/azcodr)](https://jsr.io/@azcodr/azcodr)
 [![CI Status](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml/badge.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
-[![Coverage](https://img.shields.io/badge/coverage-100%25-brightgreen.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
-[![Clean Code](https://img.shields.io/badge/clean%20code-100%25%20passing-brightgreen.svg)](https://github.com/prosubodh/azcodr/actions/workflows/ci.yml)
 [![Dependencies](https://img.shields.io/badge/dependencies-0-success.svg)](https://www.npmjs.com/package/azcodr)
 [![License: MIT](https://img.shields.io/badge/license-MIT-blue.svg)](./LICENSE)
 
-> CI-enforced 100% gate (lines / branches / functions / statements); the public report is the `coverage-report` artifact on every CI run.
+# azcodr: Architecture Governance Toolkit
 
-> **Production-oriented architecture governance and topology-scoped scaffolding for AI-assisted development (early release).**  
-> *AI agents move fast. Architecture drifts. Azcodr turns architectural intent into executable constraints your agent cannot skip.*
+Azcodr is an architecture governance toolkit for software engineering. It provides executable checks that help teams maintain architectural integrity, but **it does not impose any methodology, architecture, language, or stack**.
 
----
+## What It Does
 
-## 🌟 Architectural Pillars
+azcodr provides a set of optional, configurable checks:
 
-1. **Problem-First & Topology Alignment**: Architecture emerges strictly from problem constraints and execution targets (Problem-First; zero preemptive tool bias). Architectural styles match the problem topology: Hexagonal for enterprise backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Command Pipeline for CLIs, and Game Loop for canvas games.
-2. **Systemic Atomicity**: Every rule, skill, database transaction, and code unit adheres to the Single Responsibility Principle (SRP)—indivisible, self-contained, orthogonal, and composable with zero conjunction naming.
-3. **Evolutionary Architecture & Refactor-Before-Add**: To catch AI-accelerated architectural drift, code graduates across 5 deterministic tipping points. Refactor structure first under existing green tests before implementing new features. Never append code into rotting files.
-4. **True Incremental TDD & Nano-Cycles**: Prohibit batch-test dumps ("Test-First Waterfall"). Follow Uncle Bob's Three Laws: write one micro-assertion at a time, verify RED failure output, write minimal code to turn GREEN, and refactor under green with Ping-Pong pair programming.
-5. **100% Open-Source & Open Standards**: Standardized exclusively on open-source solutions and vendor-neutral specifications (OpenTelemetry, OPA, OpenFGA, Protocol Buffers, OpenAPI 3.1, JSON Schema Draft 2020-12, CloudEvents, Semgrep, Trivy, Gitleaks, Cosign).
-6. **Zero-Assumption Framework**: Ground truth is established solely through workspace configurations, code evidence, or direct user confirmation.
-7. **Hardened Multi-Tenancy (When Applicable)**: 4 interchangeable isolation models (AST query interceptor filtering, schema-per-tenant, database-per-tenant, transparent storage proxy) backed by transaction-scoped session context.
-8. **Dynamic Extensibility Without Code Branching**:
-   - Custom tables and columns via hybrid core relational/document models and validated JSON Schema.
-   - Pluggable business logic via Common Expression Language (CEL), GoF Strategy registries, and WebAssembly (Wasm) micro-sandboxes.
-   - Tenant lifecycles via durable workflows (Temporal / BPMN 2.0 / statecharts).
-   - Server-Driven UI (SDUI) component registries and W3C Design Tokens Community Group (DTCG) theming.
-9. **Resilient Database Architecture**: Full ACID atomicity, Transactional Outbox pattern eliminating dual-writes, declarative expand-contract zero-downtime migrations, and continuous Point-In-Time Recovery (PITR).
-10. **Workspace Knowledge Hub & Token Economy**: In-workspace system knowledge graphs and Lightweight Architectural Decision Records (ADRs) to eliminate repetitive token-expensive discovery loops.
+- **Boundary & cycle detection** - Detect circular imports and prohibited layer imports
+- **Destructive command safety** - Block destructive filesystem and git commands
+- **Protected targets** - Refuse to scaffold into `/`, `$HOME`, or drive roots
+- **ADR ledger integrity** - Verify decision ledger consistency
+- **Markdown link integrity** - Verify all internal links resolve
 
----
+Nothing is mandatory. A project opts into checks via `harness.yaml`. Without a config file, `azcodr check` runs no optional checks.
 
-## ⚡ 60-Second Demo: See Drift Prevention in Action
+## What It Does Not Do
 
-Azcodr turns architectural philosophy into machine-checked constraints. In a fresh scaffold the runtime hooks ship **enabled by default**, and the boundary engine runs in CI, so drift is caught both while the agent edits and after it commits.
+- **Does not mandate TDD** - Test-first development is optional
+- **Does not mandate any architecture** - Hexagonal, layered, monolith, microservices - your choice
+- **Does not mandate any language** - Works with any stack
+- **Does not enforce line counts, function sizes, or coverage thresholds** - These are team decisions
+- **Does not require multi-tenancy, CQRS, outbox, or any other pattern** - Use what fits your domain
+- **Does not enforce symlinks, ADRs, or glossaries** - Optional features
 
-### 1. Standalone Architectural Check
-Run the validator on any repository without scaffolding:
+## Installation
+
 ```bash
-npx azcodr check
-```
-```text
-🔍 Validating Architecture & Agent Invariants in: ./
---------------------------------------------------------------
-1. Root Config & Symlinks        -> PASS
-2. Progressive Disclosure Rules  -> PASS (28 rules verified)
-3. Specialized Skills (.agents)  -> PASS (6 skills active)
-4. Markdown Cross-References    -> PASS (0 broken links)
-5. Memory & ADR Ledger           -> PASS (16 ADRs verified)
-6. ADR Index Consistency         -> PASS
-🎉 SUCCESS: All architectural invariants are healthy! (0 warnings)
+npm install -g azcodr
+# or
+npx azcodr <project-directory>
 ```
 
-### 2. Real-Time PreToolUse Guard: Refactor-Before-Add
-When an AI coding agent attempts to dump new logic into a file already exceeding 300 lines, Azcodr's agent hook intercepts the tool call at runtime before it touches the disk:
-```text
-🚨 TOOL USE BLOCKED: Refactor-Before-Add Violation
-   File 'src/auth.ts' has 315 lines (limit: 300).
-   Mutations that add code are blocked.
-   Extract strategy classes or helper modules to reduce file size before adding new features.
-```
+## Quick Start
 
-### 3. Zero-Dependency Boundary & Cycle Enforcement
-Inspect dependency cycles and layer boundaries on demand without third-party linters. The same engine is vendored into every scaffolded project (`.agents/scripts/boundary_guard.js`) and runs in the generated CI:
-```bash
-npx azcodr boundaries [directory]
-```
-```text
-🔍 Inspecting Architectural Boundaries in: ./src
---------------------------------------------------------------
-🚨 ARCHITECTURAL VIOLATIONS DETECTED (2):
-   - Circular Dependency: src/billing.ts -> src/tenant.ts -> src/billing.ts
-   - Layer Boundary Breach: src/domain/payment.ts illegally imports src/infrastructure/db.ts (domain -> infrastructure)
-   Action Required: Invert dependencies via Ports or extract shared modules.
-```
+Initialize a new project:
 
-### 4. Declarative Project Governance (`harness.yaml`)
-Azcodr is a genuinely neutral harness: it enforces project-declared standards rather than imposing arbitrary archetypes. Projects declare their runtime languages, testing methodologies (`tdd`, `bdd`, `contract-first`, `property-based`, `none`), line budgets, and layer boundaries in `harness.yaml`:
-```yaml
-version: 1
-methodology: tdd
-packs:
-  - clean-architecture
-checks:
-  - id: max-file-lines
-    params:
-      max: 300
-  - id: layer-boundaries
-    layers:
-      domain: ["infrastructure", "application"]
-```
-Core safety invariants (`destructive-commands`, `protected-targets`, `dependency-cycles`) remain non-negotiably enforced, while methodology and tooling rules dynamically adapt to project facts.
-
----
-
-## 🗂️ Workspace Architecture
-
-```
-.
-├── .agents/
-│   └── skills/                       # Specialized on-demand agentic workflows
-│       ├── agentic-architect/        # Authoring & auditing agent configurations
-│       ├── clean-code-refactor/      # Refactoring code smells with GoF & Clean Code
-│       ├── compliance-audit/         # SOC 2, ISO 27001 & OWASP open-source audits
-│       ├── lets-build/               # Architecture interview & project bootstrapper
-│       ├── product-analyst/          # INVEST user stories & Gherkin criteria
-│       └── relentless-questioner/    # Context-aware dynamic interrogation loop
-├── docs/
-│   ├── knowledge/                    # Institutional knowledge & domain contracts
-│   │   └── ubiquitous_language.md    # Living Ubiquitous Language glossary template
-│   └── rules/                        # 28 cohesive single-responsibility domain rules
-├── AGENTS.md                         # Lean root agentic configuration (< 120 lines)
-├── CLAUDE.md -> AGENTS.md            # Filesystem symlink for harness parity (Claude Code)
-├── agents.md -> AGENTS.md            # Filesystem symlink for harness parity (Codex / Standard)
-├── GEMINI.md -> AGENTS.md            # Filesystem symlink for harness parity (Antigravity / Gemini)
-├── .cursorrules -> AGENTS.md         # Filesystem symlink for harness parity (Cursor)
-├── .windsurfrules -> AGENTS.md       # Filesystem symlink for harness parity (Windsurf)
-├── memory.md                         # Master memory hub & Lightweight ADR ledger
-└── README.md                         # Project documentation
-```
-
----
-
-## 📋 Progressive Disclosure Rules Catalog (`docs/rules/`)
-
-The architecture enforces 28 cohesive, single-responsibility domain rules. Read on demand to prevent prompt context bloat:
-
-| Domain | Rule Reference File | Key Focus & Invariants |
-|---|---|---|
-| **TDD & Isolation** | [`test_driven_development.md`](./docs/rules/test_driven_development.md) | Outside-In TDD, Uncle Bob's 3 Laws, 100% coverage on all metrics + mutation gate, test isolation & DB rollback. |
-| **Clean Code** | [`clean_code.md`](./docs/rules/clean_code.md) | Naming, small functions, CQS, SLAP, DRY, DbC, zero side-effects. |
-| **Design Patterns** | [`design_patterns.md`](./docs/rules/design_patterns.md) | Adapter, Factory, Strategy, Result `<T, E>`, and GoF pattern catalog. |
-| **Type Safety** | [`type_safety.md`](./docs/rules/type_safety.md) | Compiler strictness, branded nominal types, type discriminators across polyglot languages. |
-| **Authentication** | [`authentication.md`](./docs/rules/authentication.md) | In-memory access tokens, refresh token rotation (RTR), WebAuthn passkeys. |
-| **Authorization** | [`authorization.md`](./docs/rules/authorization.md) | CASL, OPA Rego policy engines, OpenFGA ReBAC, server guards. |
-| **Multi-Tenancy** | [`multitenancy_architecture.md`](./docs/rules/multitenancy_architecture.md) | Tenant context, 4 isolation models, RLS, dynamic schemas, pluggable logic & YAGNI gates. |
-| **API Architecture** | [`api_architecture.md`](./docs/rules/api_architecture.md) | HTTP status codes, sync vs async (202), `_actions`, idempotency keys, cursor pagination, OCC, versioning. |
-| **Server-Driven UI** | [`server_driven_ui.md`](./docs/rules/server_driven_ui.md) | Backend-driven layout schemas, multi-renderer component registries, DTCG tokens & YAGNI gate. |
-| **Database Design** | [`database_design.md`](./docs/rules/database_design.md) | Relational integrity, FKs, CHECK constraints, Canonical 6 audit fields, ACID transactions, Outbox CDC. |
-| **Database Operations** | [`database_operations.md`](./docs/rules/database_operations.md) | Zero-downtime expand-contract migrations, N+1 elimination, DataLoader, indexing, pooling, PITR. |
-| **Caching** | [`caching.md`](./docs/rules/caching.md) | Cache Port semantics, Cache-Aside, jittered TTLs, XFetch stampede defense & YAGNI gate. |
-| **Security & Compliance** | [`security_compliance.md`](./docs/rules/security_compliance.md) | OWASP Top 10 defenses, rate limiting, crypto, SOC 2 Type II, ISO 27001, GDPR data erasure. |
-| **DevOps & CI/CD** | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) | Shift-left trunk-based CI, OCI distroless containers, Secretlint/Trivy DevSecOps, zero-downtime CD. |
-| **Cloud-Native 12-Factor** | [`cloud_native.md`](./docs/rules/cloud_native.md) | 12-Factor (2026 Edition), OpenTelemetry (OTel), stateless isolates. |
-| **Error Architecture** | [`error_handling.md`](./docs/rules/error_handling.md) | Fail-fast schema validation, structured OTel/Pino tracing, RFC 9457 envelopes. |
-| **Feature Flags** | [`feature_flags.md`](./docs/rules/feature_flags.md) | OpenFeature standard, Flipt/Unleash backends, targeting, kill switches & YAGNI gate. |
-| **Transactional Email** | [`transactional_email.md`](./docs/rules/transactional_email.md) | Declarative templates (MJML/JSON), safe interpolation, SMTP integration testing. |
-| **UI/UX Architecture** | [`ui_ux_architecture.md`](./docs/rules/ui_ux_architecture.md) | Design triage gate, persistent app shell, collapsible sidebar, dual-experience portals, dev persona. |
-| **Frontend Architecture** | [`frontend_architecture.md`](./docs/rules/frontend_architecture.md) | Accessible headless primitives, WCAG 2.2 AA, server cache sync, form validation, 5-tier state, URL navigation. |
-| **Requirements Engineering** | [`requirements_engineering.md`](./docs/rules/requirements_engineering.md) | User stories vs requirements, 3 C's, INVEST vertical cake slicing, Gherkin. |
-| **Product Ownership** | [`product_ownership.md`](./docs/rules/product_ownership.md) | Product Backlog Management, OKRs, Kano/MoSCoW/RICE, Product Value, empiricism. |
-| **Project Management** | [`project_management.md`](./docs/rules/project_management.md) | Work-In-Progress limits (WIP = 1), SMART developer tasks, Definition of Done. |
-| **Domain-Driven Design** | [`domain_driven_design.md`](./docs/rules/domain_driven_design.md) | Ubiquitous Language, Bounded Contexts, Aggregates, Capability Mapping. |
-| **CQRS & Projections** | [`cqrs.md`](./docs/rules/cqrs.md) | Evolutionary CQRS spectrum, YAGNI defense, read projections, outbox CDC. |
-| **Workflow State Machines** | [`workflow_state_machines.md`](./docs/rules/workflow_state_machines.md) | Configurable workflows, in-aggregate invariant FSMs, transition guards & audit logs & YAGNI gate. |
-| **Agentic Governance** | [`agentic_configuration.md`](./docs/rules/agentic_configuration.md) | Progressive disclosure, ADR ledger, workspace sovereignty, continuous learning, YAGNI gate triad. |
-| **Relentless Questioning** | [`relentless_questioning.md`](./docs/rules/relentless_questioning.md) | Dynamic context-aware interrogation loops, adaptive decision trees. |
-
----
-
-## 🛠️ Specialized Skills Catalog (`.agents/skills/`)
-
-- [`agentic-architect`](.agents/skills/agentic-architect/SKILL.md): Authoring, auditing, and modularizing agent configurations and skills.
-- [`clean-code-refactor`](.agents/skills/clean-code-refactor/SKILL.md): Refactoring code smells with Clean Code, SOLID, and modern design patterns.
-- [`compliance-audit`](.agents/skills/compliance-audit/SKILL.md): Conducting SOC 2, ISO 27001, and OWASP audits using open-source scanners.
-- [`lets-build`](.agents/skills/lets-build/SKILL.md): Conducting architecture interviews to finalize stack, frameworks, package managers, and bootstrapping projects.
-- [`product-analyst`](.agents/skills/product-analyst/SKILL.md): Aligning OKRs, backlog ordering (Kano/MoSCoW/RICE), INVEST stories, and Gherkin criteria.
-- [`relentless-questioner`](.agents/skills/relentless-questioner/SKILL.md): Dynamic context-aware interrogation loops before planning and coding.
-
----
-
-## 🚀 Starting a New Project with `/lets-build`
-
-This repository serves as an **architecture governance toolkit, with an optional starter**. When beginning a new software project:
-
-### Step 1: Initialize Workspace with npx
-Pull and scaffold the complete architecture governance toolkit into your project directory using `npx`:
 ```bash
 npx azcodr my-new-project
 cd my-new-project
 ```
-*(Or run `npx azcodr` directly inside your target directory).*
 
-### Step 2: Invoke the `/lets-build` Skill
-In your AI coding assistant (Google Antigravity, Claude Code, Cursor, or OpenHands), trigger the workflow:
+Or add governance to an existing project:
+
+```bash
+cd my-project
+npx azcodr check
 ```
-/lets-build
+
+## Configuration
+
+Create a `harness.yaml` to declare which checks to enable:
+
+```yaml
+version: 1
+checks:
+  - id: destructive-commands    # Always on by default
+  - id: protected-targets       # Always on by default
+  - id: dependency-cycles       # Always on by default
+  - id: max-file-lines
+    params:
+      max: 500
+    applies_when:
+      paths: ["src/**"]
+  - id: layer-boundaries
+    layers:
+      domain: [infrastructure, adapters]
 ```
-*(Or simply prompt: "Let's build a new project from this template.")*
 
-### Step 3: The Problem-First Architectural Interview
-The agent will execute a deep research loop and systematically derive your technical stack strictly from problem constraints (with zero preemptive tool bias) across 5 tiered dimensions:
+Available checks:
+- `destructive-commands` - Blocks destructive filesystem/git commands
+- `protected-targets` - Blocks scaffolding into root, home, or drive roots
+- `dependency-cycles` - Detects circular imports
+- `max-file-lines` - Checks file line budgets
+- `layer-boundaries` - Checks layer import rules
+- `coverage-floor` - Checks test coverage floors
+- `markdown-links` - Checks internal markdown links
+- `adr-envelope` - Checks ADR ledger format
 
-1. **Problem Space & Topology Classification**: What real-world problem is being solved? What data moves and transforms? Classifies the system topology:
-   - *Topology A: Web SaaS / Cloud Microservices*
-   - *Topology B: Browser Extension (Manifest V3)*
-   - *Topology C: Game Engine / High-Performance Simulator (Bare metal, GPU)*
-   - *Topology D: Browser / Canvas Game (HTML5 Canvas / WebGL / WebGPU)*
-   - *Topology E: Desktop Application / CLI Utility (Native POSIX/Windows)*
-   - *Topology F: Systems / Embedded / Cryptographic Library*
-2. **Physical & Operational Constraints**: Latency budget (hard real-time <16.6ms frame loop vs interactive low-latency vs batch), memory model & GC tolerance (zero-GC pause tolerance vs managed throughput GC vs single-threaded event loop), and concurrency topology.
-3. **Architectural Style Derivation**: Matches style strictly to topology (Hexagonal for enterprise backends, Platform Scripting for extensions, Data-Oriented Design for game engines, Game Loop for canvas games, Command Pipeline for CLIs).
-4. **Emergent Stack & Toolchain**: Derives the optimal language (C, Rust, TypeScript, Go, Java, C#, Python), package manager, and build system strictly from the verified constraints.
-5. **Targeted Invariants (Strictly Topology-Scoped)**: Inquires *only* into the dimensions relevant to the selected topology (e.g. database migrations for web backends, content script isolation for extensions, CLI flags for CLIs; zero Docker, Kubernetes, or OpenAPI bloat for non-backend projects).
+## CLI Commands
 
-### Step 4: Blueprint Synthesis & Explicit Approval
-The agent consolidates all your choices into a formal **Architectural Specification & Technology Blueprint** and records a formal ADR in [`memory.md`](./memory.md).  
-**The agent will stop and ask for your explicit confirmation before generating any code.**
+| Command | Description |
+|---|---|
+| `azcodr [dir]` | Scaffold azcodr into a directory |
+| `azcodr check [dir]` | Run governance checks |
+| `azcodr boundaries [dir]` | Inspect dependency cycles and layer boundaries |
+| `azcodr prompt [dir]` | Check prompt ledger integrity |
 
-### Step 5: Deterministic Topology Scaffolding (Strict YAGNI)
-Once confirmed, the agent automatically executes:
-1. Topology-aware directory scaffolding via `bootstrap_workspace.mjs . <topology> <language>`, generating **0 speculative folders** (e.g. extensions get no Kubernetes or OpenAPI specs; CLIs get no Dockerfiles).
-2. Targeted contract and entrypoint generation matching the derived topology.
-3. Build manifests, strict linter/formatter configurations, and boundary smoke test (`scripts/smoke_test.mjs`).
-4. **Project-Specific README Generation**: Completely replaces the starter template `README.md` with clean, project-specific documentation (mission, stack highlights, quickstart setup, build/test commands, and directory structure), preserving links to `docs/rules/`.
-5. Deterministic validation via `validate_agentic_configs.sh` and initial smoke test execution.
-6. **Handover Gate to Domain Analysis**: Halts technical scaffolding and instructs the user to invoke `product-analyst` and `relentless-questioner` for domain modeling.
+## Philosophy
 
----
+azcodr is deliberately minimal. It does not:
 
-## 🏛️ Workspace Memory & Knowledge Hub
+- Mandate TDD, BDD, or any testing methodology
+- Mandate Clean Architecture, hexagonal architecture, DDD, or any other pattern
+- Mandate multi-tenancy, CQRS, event sourcing, or any other pattern
+- Mandate TypeScript, JavaScript, Go, Rust, Python, or any language
+- Enforce file size limits, function size limits, or parameter counts
+- Enforce coverage thresholds
+- Require specific tools (Jest, ESLint, etc.)
 
-- 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative domain vocabulary contract.
-- 📜 **[Lightweight ADR Ledger](./memory.md)**: Formal Architectural Decision Records and governing rules.
+Teams adopt only the checks they want, via `harness.yaml`.
 
----
+## License
 
-## 🔒 Security & Supply-Chain Notes (Socket)
-
-The scaffolder declares two expected capabilities:
-
-- **Shell access (SUPPLY CHAIN RISK):** limited to `git` via `runGit()` using `execFileSync('git', argv, { shell: false })` with an allowlist of `rev-parse, init, branch, add, commit`. No shell strings, no network, `cwd` scoped to the scaffold target. Enforced by architecture tests that fail the build if `execSync`/`exec(` ever appear, if an `execFileSync` call omits `shell: false`, or if a mutating subcommand (`push`, `clone`, `reset`, `clean`) enters the allowlist.
-- **Filesystem access (SUPPLY CHAIN RISK):** scoped to `templateDir -> targetDir` via `assertInside()`. Template allowlist is `TEMPLATE_ITEMS`; symlinks and `package.json` creation stay inside the target.
-- **Protected targets:** the scaffolder refuses to write into the filesystem root (`/`, `C:\`), the user's home directory, the home directory's parent (e.g. `/home`, `C:\Users`), ancestors of the template itself, and symlinks resolving to any of those — even with `--force`. `--force` means "overwrite files in a project directory", not "overwrite my home directory". The CLI fails fast before prompting; the library throws `E_TARGET_IS_PROTECTED` (programmatic callers can pass `allowProtected: true`). The `lets-build` bootstrap script enforces the same rule (exit 2, `AZCODR_ALLOW_PROTECTED=1` to bypass).
-
-Failures carry stable machine-readable codes (`E_TARGET_NOT_EMPTY`, `E_GIT_BLOCKED`, `E_PATH_ESCAPE`, ...). Branch on `err.code`, never on message text — see the exported `ERROR_CODES` map and `ScaffoldError` type.
-
-Initial-commit fallback identity is `azcodr[bot] <bot@azcodr.internal>` via `GIT_AUTHOR_*` / `GIT_COMMITTER_*` env (no `git -c` shell flags).
+MIT

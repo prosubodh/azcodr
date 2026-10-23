@@ -211,16 +211,10 @@ describe('Architecture: validator governance guarantees', () => {
     assert.deepStrictEqual(broken, []);
   });
 
-  test('README rule count matches the actual rules directory', () => {
-    const actual = fs.readdirSync(path.join(ROOT, 'docs', 'rules')).filter((f) => f.endsWith('.md')).length;
+  test('README does not claim a specific rule count', () => {
     const readme = fs.readFileSync(path.join(ROOT, 'README.md'), 'utf-8');
-    // Every stated rule count must agree with reality; a drifting catalog is
-    // exactly the silent documentation rot this suite exists to prevent.
     const claims = [...readme.matchAll(/\b(\d+)\b[^.\n]{0,45}?\bdomain rules\b/gi)].map((m) => Number(m[1]));
-    assert.ok(claims.length > 0, 'README should state a rule count');
-    for (const claimed of claims) {
-      assert.strictEqual(claimed, actual, `README claims ${claimed} rules, ${actual} exist`);
-    }
+    assert.strictEqual(claims.length, 0, 'README should not state a rule count');
   });
 });
 
@@ -250,7 +244,7 @@ describe('Architecture: rules and ledger hygiene', () => {
     const withoutComments = mem.replace(/<!--[\s\S]*?-->/g, '');
     const ids = [...withoutComments.matchAll(/^#### ADR-(\d+)/gm)].map((m) => Number(m[1]));
     for (const id of ids) {
-      assert.ok(id >= 1 && id <= 29, `ADR-${id} looks like leaked template numbering`);
+      assert.ok(id >= 1 && id <= 33, `ADR-${id} looks like leaked template numbering`);
     }
   });
 

@@ -1,7 +1,7 @@
 {
   "name": "azcodr",
   "version": "2.10.0",
-  "description": "Architecture governance toolkit, with an optional starter (early release)",
+  "description": "Architecture governance toolkit: zero-dependency boundary & cycle detection, fail-closed validation, and declarative configuration via harness.yaml",
   "type": "module",
   "bin": {
     "azcodr": "bin/azcodr.js"
@@ -20,12 +20,9 @@
     "lib",
     "src",
     "data",
-    ".github",
     "AGENTS.md",
     "memory.md",
     "README.md",
-    "docs",
-    ".agents",
     ".gitignore",
     ".editorconfig",
     "LICENSE",
@@ -34,11 +31,10 @@
     "CODE_OF_CONDUCT.md"
   ],
   "keywords": [
-    "starter-template",
-    "agentic",
-    "multi-tenant",
-    "enterprise-architecture",
-    "scaffolding",
+    "architecture-governance",
+    "boundary-detection",
+    "cycle-detection",
+    "validate",
     "ai-coding",
     "agents",
     "npx"

@@ -36,6 +36,7 @@ Thumbs.db
 .tmp-scratch/
 opencode.json
 .agents/.agents/
+conversation-history*.md
 
 # Case-insensitive filesystem parity (agents.md is generated/symlinked on Linux, native on macOS/Windows)
 agents.md

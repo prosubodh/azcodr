@@ -22,6 +22,13 @@ export interface DenylistRule {
     reason: string;
 }
 export declare const DESTRUCTIVE_RULES: readonly DenylistRule[];
+export declare const DEFAULT_PROTECTED_BRANCHES: readonly string[];
+export interface InspectCommandOptions {
+    protectedBranches?: readonly string[];
+    currentBranch?: string;
+}
+export declare function isBranchProtected(branch: string, patterns: readonly string[]): boolean;
+export declare function extractPushTargetBranches(command: string): string[];
 /**
  * Collapses multi-line strings and extra whitespace into a single normalized shell command string.
  *
@@ -33,12 +40,16 @@ export declare function normalizeCommand(raw: string): string;
  * Checks a command string against the safety denylist.
  *
  * @param command - Raw shell command string.
+ * @param options - Optional inspection options (e.g. protectedBranches, currentBranch).
  * @returns Violation details if blocked, or clean outcome.
  */
-export declare function inspectCommand(command: string): CommandViolation;
+export declare function inspectCommand(command: string, options?: InspectCommandOptions): CommandViolation;
 declare const _default: {
     DESTRUCTIVE_RULES: readonly DenylistRule[];
+    DEFAULT_PROTECTED_BRANCHES: readonly string[];
     normalizeCommand: typeof normalizeCommand;
+    isBranchProtected: typeof isBranchProtected;
+    extractPushTargetBranches: typeof extractPushTargetBranches;
     inspectCommand: typeof inspectCommand;
 };
 export default _default;

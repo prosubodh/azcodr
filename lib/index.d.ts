@@ -41,6 +41,18 @@ export { parsePromptLedger, checkPromptLedger, resolveLedgerPath, inspectPromptC
 export type { PromptDirective, PromptLedgerStatus, PromptCommitInspection } from './prompt-ledger.js';
 export { handlePromptCommand } from './cli-prompt.js';
 export type { PromptIo } from './cli-prompt.js';
+/**
+ * Capability pack installation and governance definitions.
+ */
+export { installPack, getPackDefinition, KNOWN_PACK_NAMES } from './pack.js';
+export type { CapabilityPack, InstallPackOptions, InstallPackResult, PackCheckDefinition } from './pack.js';
+export { handleAddCommand } from './cli-add.js';
+export type { AddIo } from './cli-add.js';
+/**
+ * Multi-provider conversation memory exporter.
+ */
+export { parseTranscriptJsonl, formatTranscriptToMarkdown, exportConversationToFile } from './conversation-export.js';
+export type { TranscriptStep, ToolCallInfo, FormatOptions, ExportResult } from './conversation-export.js';
 import scaffoldModule from './scaffold.js';
 /** Default export: the scaffolding surface, for `import azcodr from '@azcodr/azcodr'`. */
 export default scaffoldModule;

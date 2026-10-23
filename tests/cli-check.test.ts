@@ -148,7 +148,7 @@ describe('CLI Check & Validate Command (Track 1)', () => {
     test('executes validation on current workspace successfully with default args', async () => {
       const result = await validate();
       assert.strictEqual(result.errors, 0);
-      assert.strictEqual(result.validatedRules, 28);
+      assert.strictEqual(result.validatedRules, 31);
     });
 
     test('executes validation on current workspace successfully with custom reporter', async () => {
@@ -162,7 +162,7 @@ describe('CLI Check & Validate Command (Track 1)', () => {
       };
       const result = await validate(REPO_ROOT, reporter);
       assert.strictEqual(result.errors, 0);
-      assert.strictEqual(result.validatedRules, 28);
+      assert.strictEqual(result.validatedRules, 31);
       assert.strictEqual(result.validatedSkills, 6);
       assert.ok(passedLogs.length > 0);
     });

@@ -7,6 +7,7 @@ import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
 import { validate, createSilentReporter } from './validate.js';
 import { handleBoundariesCommand } from './cli-boundaries.js';
 import { handlePromptCommand } from './cli-prompt.js';
+import { handleAddCommand } from './cli-add.js';
 import { parseArgs } from './cli-parse.js';
 import type { CliParsedOptions } from './cli-parse.js';
 import { askQuestion, resolveTargetDir, ensureWritableTarget } from './cli-target.js';
@@ -25,18 +26,21 @@ const pkg: PackageJsonShape = JSON.parse(
 export function printHelp(out: (msg: string) => void = console.log): void {
   out(`
 azcodr v${pkg.version}
-Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
+Architecture governance toolkit: boundary & cycle detection, fail-closed validation
 
 Usage:
   npx azcodr [directory] [options]
   npx azcodr check [directory] [options]
   npx azcodr boundaries [directory] [options]
+  npx azcodr prompt [directory] [options]
+  npx azcodr add <pack> [directory]
 
 Commands:
-  [directory]            Scaffold azcodr template into directory (default: current directory)
+  [directory]            Scaffold azcodr into directory (default: current directory)
   check [directory]      Validate architecture and governance rules (alias: validate, audit)
   boundaries [directory] Inspect dependency cycles and layer boundaries (alias: boundary, cycles)
   prompt [directory]     Check prompt ledger integrity (alias: ledger)
+  add <pack>             Install a governance capability pack (TDD, boundaries, coverage, etc.)
 
 Options:
   -d, --dry-run   Simulate scaffolding without modifying filesystem
@@ -52,6 +56,8 @@ Examples:
   npx azcodr boundaries ./src
   npx azcodr check ./existing-repo
   npx azcodr . --dry-run
+  npx azcodr add tdd
+  npx azcodr add boundary-guard ./src
 `);
 }
 
@@ -71,6 +77,7 @@ export interface CliIo {
   validate?: (workspaceRoot: string, reporter?: any) => { errors: number; warnings: number } | Promise<{ errors: number; warnings: number }>;
   boundaries?: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
   prompt?: (parsed: CliParsedOptions, io: any) => void | number;
+  add?: (parsed: CliParsedOptions, io: any) => void | number;
 }
 
 export interface NormalizedCliIo {
@@ -85,6 +92,7 @@ export interface NormalizedCliIo {
   validateFn: (workspaceRoot: string, reporter?: any) => { errors: number; warnings: number } | Promise<{ errors: number; warnings: number }>;
   boundariesFn: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
   promptFn: (parsed: CliParsedOptions, io: any) => void | number;
+  addFn: (parsed: CliParsedOptions, io: any) => void | number;
 }
 
 function defaultStreams(io: CliIo) {
@@ -106,12 +114,13 @@ function normalizeIo(io: CliIo): NormalizedCliIo {
     scaffoldFn: io.scaffold ?? scaffold,
     validateFn: io.validate ?? validate,
     boundariesFn: io.boundaries ?? handleBoundariesCommand,
-    promptFn: io.prompt ?? handlePromptCommand
+    promptFn: io.prompt ?? handlePromptCommand,
+    addFn: io.add ?? handleAddCommand
   };
 }
 
 function outBanner(fullIo: NormalizedCliIo): void {
-  fullIo.out('\n🚀 azcodr - Enterprise Multi-Tenant Architecture & Agentic Engineering\n');
+  fullIo.out('\n🚀 azcodr - Architecture governance toolkit\n');
 }
 
 function handleTerminal(parsed: CliParsedOptions, io: NormalizedCliIo): void | number {
@@ -152,12 +161,12 @@ function reportDryRun(result: ScaffoldResult, out: (msg: string) => void): void 
 }
 
 function reportSuccess(result: ScaffoldResult, targetDir: string | null, out: (msg: string) => void): void {
-  out('  ✅ Progressive disclosure rules copied (docs/rules/)');
-  out('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
-  out('  ✅ Specialized agentic skills copied (.agents/skills/)');
-  out('  ✅ Editor formatting standards initialized (.editorconfig)');
-  out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md, GEMINI.md, .cursorrules, .windsurfrules, .github/copilot-instructions.md)');
-  out('  ✅ Project configuration initialized (package.json)');
+  out('  ✅ AGENTS.md — neutral root agent contract');
+  out('  ✅ memory.md — architecture decision record log');
+  out('  ✅ README.md — project documentation starter');
+  out('  ✅ .gitignore — version control ignore rules');
+  out('  ✅ .editorconfig — editor formatting standards');
+  out('  ✅ LICENSE — project license');
   if (result.gitInitialized) {
     out('  ✅ Git repository initialized');
   }
@@ -167,8 +176,9 @@ function reportSuccess(result: ScaffoldResult, targetDir: string | null, out: (m
   if (targetDir !== '.' && targetDir !== './') {
     out(`  ${step++}. cd ${targetDir}`);
   }
-  out(`  ${step++}. Open the project in your AI coding assistant (Antigravity, Claude Code, Cursor, OpenHands)`);
-  out(`  ${step++}. Run /lets-build to start the architectural interview and scaffold your application stack!\n`);
+  out(`  ${step++}. Open the project in your AI coding assistant`);
+  out(`  ${step++}. Run /lets-build to start the requirements interview (needs drive tools, not the other way around)`);
+  out(`  ${step++}. Run azcodr add <pack> to install governance capabilities as your needs evolve\n`);
 }
 
 function runScaffold(resolvedTarget: string, parsed: CliParsedOptions, io: NormalizedCliIo): void | number {
@@ -251,6 +261,10 @@ export async function runCli(
   }
   if (parsed.command === 'prompt') {
     return fullIo.promptFn(parsed, fullIo);
+  }
+
+  if (parsed.command === 'add') {
+    return fullIo.addFn(parsed, fullIo);
   }
 
   if (!parsed.silent) {

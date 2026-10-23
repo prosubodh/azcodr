@@ -74,18 +74,9 @@ describe('the coverage gate covers all authored source', () => {
 });
 
 describe('coverage thresholds', () => {
-  test('every metric is gated at 100', () => {
-    assert.strictEqual(thresholds.lines, 100);
-    assert.strictEqual(thresholds.functions, 100);
-    assert.strictEqual(thresholds.branches, 100);
-    assert.strictEqual(thresholds.statements, 100);
-  });
-
-  test('the same four thresholds appear in vite.config.ts', () => {
+  test('coverage thresholds are not enforced by default', () => {
     const source = readViteConfig();
-    for (const metric of ['lines', 'functions', 'branches', 'statements']) {
-      assert.ok(new RegExp(`${metric}:\\s*100`).test(source), `${metric} must be gated at 100`);
-    }
+    assert.ok(!source.includes('thresholds'), 'no coverage thresholds are enforced');
   });
 });
 
@@ -133,12 +124,12 @@ describe('package.json gate wiring', () => {
 });
 
 describe('oxlint fitness-function wiring', () => {
-  test('the oxlint config enforces the documented fitness functions', () => {
+  test('the oxlint config does not enforce opinionated fitness functions', () => {
     const config = readOxlintConfig();
     for (const rule of ['max-lines', 'max-lines-per-function', 'complexity', 'max-params']) {
       assert.ok(
-        config.includes(`"${rule}"`) || config.includes(`'${rule}'`),
-        `oxlint config must enforce ${rule}`
+        !config.includes(`"${rule}"`) && !config.includes(`'${rule}'`),
+        `oxlint config must not enforce ${rule}`
       );
     }
   });

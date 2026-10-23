@@ -9,6 +9,7 @@ const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const CLI_PATH = path.resolve(__dirname, '..', 'bin', 'azcodr.js');
 const PKG_PATH = path.resolve(__dirname, '..', 'package.json');
 import { runCli, askQuestion, printHelp, printVersion, main } from '../src/cli.js';
+import { parseArgs } from '../src/cli-parse.js';
 import { promptForTargetDir } from '../src/cli-target.js';
 import { getTemplateDir } from '../src/scaffold.js';
 
@@ -38,7 +39,7 @@ function testHelpVersionCallbacks() {
   const helpLogs: string[] = [];
   printHelp((msg: string) => helpLogs.push(msg));
   assert.strictEqual(helpLogs.length, 1);
-  assert.match(helpLogs[0]!, /Enterprise Multi-Tenant/);
+  assert.match(helpLogs[0]!, /Architecture governance/);
   const versionLogs: string[] = [];
   printVersion((msg: string) => versionLogs.push(msg));
   assert.strictEqual(versionLogs.length, 1);
@@ -234,6 +235,20 @@ async function testScaffoldFailure() {
   assert.match(io.stderrLogs[0]!, /Scaffolding failed: Disk write failure/);
 }
 
+async function testRunCliAdd() {
+  const io = createMockIo({ cwd: tmpDir });
+  await runCli(['add', 'tdd'], io);
+  assert.strictEqual(io.exitCode, 0);
+  assert.ok(fs.existsSync(path.join(tmpDir, 'harness.yaml')));
+}
+
+function testParseArgsAdd() {
+  const parsed = parseArgs(['add', 'tdd', './sub-dir']);
+  assert.strictEqual(parsed.command, 'add');
+  assert.strictEqual(parsed.packName, 'tdd');
+  assert.strictEqual(parsed.targetDir, './sub-dir');
+}
+
 function testDefaultConsole() {
   const origLog = console.log;
   const logged: string[] = [];
@@ -330,6 +345,8 @@ describe('CLI Unit: failures and entry point', () => {
   test('runCli fails when extra positional arguments are provided', testExtraArgs);
   test('runCli fails on unknown flag with clear message', testUnknownFlag);
   test('runCli handles scaffolding failure gracefully', testScaffoldFailure);
+  test('runCli dispatches add command successfully', testRunCliAdd);
+  test('parseArgs parses add with packName and targetDir', testParseArgsAdd);
   test('printHelp and printVersion work with default console.log', testDefaultConsole);
   test('main executes runCli successfully and catches unexpected errors', testMain);
 });

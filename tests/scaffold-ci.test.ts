@@ -1,8 +1,8 @@
 /**
  * Starter-CI regression tests (ADR-021).
- * Locks the scaffolder's deterministic governance wiring: a Node-only starter
- * CI replaces azcodr's own dev workflows, the vendored boundary guard ships,
- * and the starter package.json exposes `boundaries` / `validate` scripts.
+ *
+ * The scaffold no longer ships CI workflows or the vendored boundary guard.
+ * These tests verify that no CI or guard artifacts are scaffolded by default.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -23,69 +23,41 @@ afterEach(() => {
   }
 });
 
-describe('Starter CI replaces azcodr dev workflows in generated projects', () => {
-  test('copyTemplate writes a Node-only starter CI and drops dev workflows', () => {
+describe('Scaffolded project does not ship CI or guards', () => {
+  test('copyTemplate does not scaffold .github directory', () => {
     copyTemplate(tmpDir, templateDir);
 
-    const ciPath = path.join(tmpDir, '.github', 'workflows', 'ci.yml');
-    assert.strictEqual(fs.existsSync(ciPath), true);
-    const ci = fs.readFileSync(ciPath, 'utf-8');
-
-    // Runs workspace check via the azcodr toolkit CLI
-    assert.match(ci, /azcodr check/);
-    // ...and nothing that only azcodr's own repo has.
-    assert.doesNotMatch(ci, /benchmark\/run-benchmark\.js/);
-    assert.doesNotMatch(ci, /test:mutation/);
-    assert.doesNotMatch(ci, /npm ci/);
-    assert.doesNotMatch(ci, /npm run build/);
-
-    // azcodr's publish workflow must never leak into a generated project.
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github', 'workflows', 'publish.yml')), false);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github')), false);
   });
 
-  test('the vendored boundary guard ships inside the scaffold, not the dev lib/', () => {
+  test('copyTemplate does not scaffold .agents directory', () => {
     copyTemplate(tmpDir, templateDir);
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'scripts', 'boundary_guard.js')), true);
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'lib', 'boundaries.js')), true);
-    // lib/ is the repo's build output directory; it is not a template item.
-    assert.strictEqual(fs.existsSync(path.join(tmpDir, 'lib')), false);
+
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents')), false);
   });
 
-  test('dry run records the starter-CI action without writing anything', () => {
-    const dest = path.join(tmpDir, 'nonexistent-dest');
-    const actions = copyTemplate(dest, templateDir, { dryRun: true });
-    assert.strictEqual(fs.existsSync(dest), false);
-    assert.strictEqual(
-      actions.some((a) => a.includes('generate: .github/workflows/ci.yml')),
-      true
-    );
+  test('copyTemplate does not ship vendor boundary guard scripts', () => {
+    copyTemplate(tmpDir, templateDir);
+
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'scripts', 'boundary_guard.js')), false);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.agents', 'lib', 'boundaries.js')), false);
   });
 
-  test('starter package.json wires boundaries, smoke and validate scripts', () => {
+  test('starter package.json wires only check and validate scripts', () => {
     copyTemplate(tmpDir, templateDir);
     const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf-8'));
-    assert.strictEqual(pkg.scripts.boundaries, 'node .agents/scripts/boundary_guard.js');
-    assert.strictEqual(pkg.scripts.smoke, 'node .agents/scripts/smoke_test.js');
+    assert.strictEqual(pkg.scripts.check, 'npx azcodr check');
     assert.strictEqual(pkg.scripts.validate, 'npx azcodr check');
+    assert.strictEqual(pkg.scripts.boundaries, undefined);
+    assert.strictEqual(pkg.scripts.smoke, undefined);
   });
 
-  test('starter CI is written even when the target already has a package.json', () => {
+  test('starter CI is not written when target already has a package.json', () => {
     fs.writeFileSync(path.join(tmpDir, 'package.json'), JSON.stringify({ name: 'existing-app' }, null, 2));
     copyTemplate(tmpDir, templateDir);
 
-    const ci = fs.readFileSync(path.join(tmpDir, '.github', 'workflows', 'ci.yml'), 'utf-8');
-    assert.match(ci, /azcodr check/);
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github', 'workflows')), false);
     const pkg = JSON.parse(fs.readFileSync(path.join(tmpDir, 'package.json'), 'utf-8'));
     assert.strictEqual(pkg.name, 'existing-app');
-  });
-
-  test('bootstrap smoke test executes the vendored boundary guard', () => {
-    const script = fs.readFileSync(
-      path.join(templateDir, '.agents', 'skills', 'lets-build', 'scripts', 'bootstrap_workspace.mjs'),
-      'utf-8'
-    );
-    assert.match(script, /Running boundary smoke verification/);
-    assert.match(script, /boundary_guard\.js/);
-    assert.match(script, /spawnSync\(process\.execPath, \[guard, path\.join\(root, "src"\)\]/);
   });
 });

@@ -99,6 +99,98 @@ export const DESTRUCTIVE_RULES: readonly DenylistRule[] = [
   }
 ];
 
+export const DEFAULT_PROTECTED_BRANCHES: readonly string[] = ['main', 'master'];
+
+export interface InspectCommandOptions {
+  protectedBranches?: readonly string[];
+  currentBranch?: string;
+}
+
+export function isBranchProtected(branch: string, patterns: readonly string[]): boolean {
+  const normalized = branch.trim();
+  for (const pattern of patterns) {
+    const p = pattern.trim();
+    if (!p) continue;
+    if (p.includes('*')) {
+      const escaped = p.replace(/[.+^${}()|[\]\\]/g, '\\$&').replace(/\*/g, '.*');
+      if (new RegExp(`^${escaped}$`, 'i').test(normalized)) return true;
+    } else if (normalized.toLowerCase() === p.toLowerCase()) {
+      return true;
+    }
+  }
+  return false;
+}
+
+function resolveProtectedBranches(options?: InspectCommandOptions): readonly string[] {
+  if (options?.protectedBranches && options.protectedBranches.length > 0) {
+    return options.protectedBranches;
+  }
+  const env = process.env.AZCODR_PROTECTED_BRANCHES;
+  if (env && env.trim().length > 0) {
+    return env.split(',').map((s) => s.trim()).filter((s) => s.length > 0);
+  }
+  return DEFAULT_PROTECTED_BRANCHES;
+}
+
+export function extractPushTargetBranches(command: string): string[] {
+  const norm = normalizeCommand(command);
+  const match = norm.match(/\bgit\s+push\b(.*)$/i);
+  if (!match || !match[1]) return [];
+
+  const rawArgs = match[1].trim().split(/\s+/).filter(Boolean);
+  if (rawArgs.some((a) => a === '--all')) return ['*'];
+
+  const nonFlagArgs = rawArgs.filter((a) => !a.startsWith('-'));
+  if (nonFlagArgs.length === 0) return [];
+
+  const targets: string[] = [];
+  const refspecs = nonFlagArgs.length >= 2 ? nonFlagArgs.slice(1) : nonFlagArgs;
+
+  for (const ref of refspecs) {
+    if (ref === 'origin' || ref === 'upstream') continue;
+    let target = ref;
+    if (target.includes(':')) {
+      target = target.split(':').pop() ?? target;
+    }
+    target = target.replace(/^\+/, '').replace(/^refs\/heads\//, '').trim();
+    if (target.length > 0) targets.push(target);
+  }
+  return targets;
+}
+
+function checkProtectedBranchPush(
+  normalized: string,
+  options?: InspectCommandOptions
+): CommandViolation | null {
+  if (!/\bgit\s+push\b/i.test(normalized)) return null;
+
+  const protectedBranches = resolveProtectedBranches(options);
+  const targets = extractPushTargetBranches(normalized);
+
+  if (targets.length === 0 && options?.currentBranch) {
+    if (isBranchProtected(options.currentBranch, protectedBranches)) {
+      return {
+        blocked: true,
+        reason: `direct push from protected branch ('${options.currentBranch}') is forbidden; use feature branches and pull requests`,
+        command: normalized.slice(0, 300)
+      };
+    }
+    return null;
+  }
+
+  for (const target of targets) {
+    if (target === '*' || isBranchProtected(target, protectedBranches)) {
+      return {
+        blocked: true,
+        reason: `direct push to protected branch ('${target}') is forbidden; use feature branches and pull requests`,
+        command: normalized.slice(0, 300)
+      };
+    }
+  }
+
+  return null;
+}
+
 /**
  * Collapses multi-line strings and extra whitespace into a single normalized shell command string.
  *
@@ -113,9 +205,13 @@ export function normalizeCommand(raw: string): string {
  * Checks a command string against the safety denylist.
  *
  * @param command - Raw shell command string.
+ * @param options - Optional inspection options (e.g. protectedBranches, currentBranch).
  * @returns Violation details if blocked, or clean outcome.
  */
-export function inspectCommand(command: string): CommandViolation {
+export function inspectCommand(
+  command: string,
+  options?: InspectCommandOptions
+): CommandViolation {
   const normalized = normalizeCommand(command);
   if (!normalized) return { blocked: false };
 
@@ -129,7 +225,17 @@ export function inspectCommand(command: string): CommandViolation {
     }
   }
 
+  const branchViolation = checkProtectedBranchPush(normalized, options);
+  if (branchViolation) return branchViolation;
+
   return { blocked: false, command: normalized };
 }
 
-export default { DESTRUCTIVE_RULES, normalizeCommand, inspectCommand };
+export default {
+  DESTRUCTIVE_RULES,
+  DEFAULT_PROTECTED_BRANCHES,
+  normalizeCommand,
+  isBranchProtected,
+  extractPushTargetBranches,
+  inspectCommand
+};

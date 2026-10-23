@@ -167,7 +167,10 @@ function visitEntry(entry: fs.Dirent, full: string, ctx: ValidationContext): voi
     followSymlinkEntry(full, ctx);
     return;
   }
-  if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) checkFile(full, ctx);
+  if (entry.isFile() && entry.name.toLowerCase().endsWith('.md')) {
+    if (entry.name.toLowerCase().startsWith('conversation-history')) return;
+    checkFile(full, ctx);
+  }
 }
 
 function walk(dir: string, ctx: ValidationContext): void {
@@ -179,7 +182,13 @@ function walk(dir: string, ctx: ValidationContext): void {
     return;
   }
   for (const entry of entries) {
-    if (entry.name === '.git' || entry.name === 'node_modules') continue;
+    if (
+      entry.name === '.git' ||
+      entry.name === 'node_modules' ||
+      entry.name === '.tmp' ||
+      entry.name === '.tmp-scratch' ||
+      entry.name === 'coverage'
+    ) continue;
     visitEntry(entry, path.join(dir, entry.name), ctx);
   }
 }
