@@ -7,7 +7,8 @@ import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit, installPrePushHook } from './repo.js';
 import type { InitGitOptions, InstallHookOptions, InstallHookResult } from './repo.js';
-export { getTemplateDir };
+import { purgeAzcodrTests } from './purge-tests.js';
+export { getTemplateDir, purgeAzcodrTests };
 /**
  * Canonical list of template files and directories copied into a new workspace.
  *
@@ -123,6 +124,7 @@ declare const _default: {
         readonly E_PATH_ESCAPE: "Path escapes allowed root";
     };
     isProtectedTarget: typeof isProtectedTarget;
+    purgeAzcodrTests: typeof purgeAzcodrTests;
 };
 export default _default;
 //# sourceMappingURL=scaffold.d.ts.map

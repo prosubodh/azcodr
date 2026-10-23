@@ -1,70 +1,17 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
 import { scaffold, getTemplateDir } from './scaffold.js';
 import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
 import { validate, createSilentReporter } from './validate.js';
 import { handleBoundariesCommand } from './cli-boundaries.js';
 import { handlePromptCommand } from './cli-prompt.js';
 import { handleAddCommand } from './cli-add.js';
+import { printHelp, printVersion } from './cli-help.js';
+import { isScriptCommand, handleScriptCommand } from './cli-scripts.js';
 import { parseArgs } from './cli-parse.js';
 import type { CliParsedOptions } from './cli-parse.js';
 import { askQuestion, resolveTargetDir, ensureWritableTarget } from './cli-target.js';
-
-interface PackageJsonShape {
-  version: string;
-}
-
-const pkg: PackageJsonShape = JSON.parse(
-  fs.readFileSync(
-    path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'),
-    'utf-8'
-  )
-);
-
-export function printHelp(out: (msg: string) => void = console.log): void {
-  out(`
-azcodr v${pkg.version}
-Architecture governance toolkit: boundary & cycle detection, fail-closed validation
-
-Usage:
-  npx azcodr [directory] [options]
-  npx azcodr check [directory] [options]
-  npx azcodr boundaries [directory] [options]
-  npx azcodr prompt [directory] [options]
-  npx azcodr add <pack> [directory]
-
-Commands:
-  [directory]            Scaffold azcodr into directory (default: current directory)
-  check [directory]      Validate architecture and governance rules (alias: validate, audit)
-  boundaries [directory] Inspect dependency cycles and layer boundaries (alias: boundary, cycles)
-  prompt [prune] [dir]   Check prompt ledger integrity or delete completed ledger (alias: ledger)
-  add <pack>             Install a governance capability pack (TDD, boundaries, coverage, etc.)
-
-Options:
-  -d, --dry-run   Simulate scaffolding without modifying filesystem
-  -s, --silent    Suppress console output messages
-  -f, --force     Overwrite existing files in target directory without confirmation
-  --no-git        Do not initialize a git repository
-  --prune         Delete prompt ledger if all directives are completed
-  -v, --version   Display version number
-  -h, --help      Display this help message
-
-Examples:
-  npx azcodr my-project
-  npx azcodr check
-  npx azcodr boundaries ./src
-  npx azcodr check ./existing-repo
-  npx azcodr . --dry-run
-  npx azcodr add tdd
-  npx azcodr add boundary-guard ./src
-`);
-}
-
-export function printVersion(out: (msg: string) => void = console.log): void {
-  out(pkg.version);
-}
 
 export interface CliIo {
   out?: (msg: string) => void;
@@ -79,6 +26,7 @@ export interface CliIo {
   boundaries?: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
   prompt?: (parsed: CliParsedOptions, io: any) => void | number;
   add?: (parsed: CliParsedOptions, io: any) => void | number;
+  script?: (parsed: CliParsedOptions, io: any) => void | number;
 }
 
 export interface NormalizedCliIo {
@@ -94,6 +42,7 @@ export interface NormalizedCliIo {
   boundariesFn: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
   promptFn: (parsed: CliParsedOptions, io: any) => void | number;
   addFn: (parsed: CliParsedOptions, io: any) => void | number;
+  scriptFn: (parsed: CliParsedOptions, io: any) => void | number;
 }
 
 function defaultStreams(io: CliIo) {
@@ -116,7 +65,8 @@ function normalizeIo(io: CliIo): NormalizedCliIo {
     validateFn: io.validate ?? validate,
     boundariesFn: io.boundaries ?? handleBoundariesCommand,
     promptFn: io.prompt ?? handlePromptCommand,
-    addFn: io.add ?? handleAddCommand
+    addFn: io.add ?? handleAddCommand,
+    scriptFn: io.script ?? handleScriptCommand
   };
 }
 
@@ -263,9 +213,11 @@ export async function runCli(
   if (parsed.command === 'prompt') {
     return fullIo.promptFn(parsed, fullIo);
   }
-
   if (parsed.command === 'add') {
     return fullIo.addFn(parsed, fullIo);
+  }
+  if (isScriptCommand(parsed.command)) {
+    return fullIo.scriptFn(parsed, fullIo);
   }
 
   if (!parsed.silent) {
@@ -294,7 +246,7 @@ export async function main(): Promise<void> {
   }
 }
 
-export { askQuestion };
+export { printHelp, printVersion, askQuestion };
 
 export default {
   runCli,
