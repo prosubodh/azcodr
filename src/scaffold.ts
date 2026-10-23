@@ -11,8 +11,9 @@ import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit, installPrePushHook } from './repo.js';
 import type { InitGitOptions, InstallHookOptions, InstallHookResult } from './repo.js';
 import { purgeAzcodrTests } from './purge-tests.js';
+import { bootstrapWorkspace } from './topology.js';
 
-export { getTemplateDir, purgeAzcodrTests };
+export { getTemplateDir, purgeAzcodrTests, bootstrapWorkspace };
 
 /**
  * Canonical list of template files and directories copied into a new workspace.
@@ -46,6 +47,10 @@ export interface ScaffoldOptions {
   dryRun?: boolean;
   /** Suppress non-error console output. */
   silent?: boolean;
+  /** Optional target architecture topology (e.g. emergent, backend, fullstack). */
+  topology?: string;
+  /** Optional target language profile (e.g. typescript, python, rust). */
+  language?: string;
 }
 
 /**
@@ -253,6 +258,15 @@ export function scaffold(options: ScaffoldOptions = {}): ScaffoldResult {
     actions.push('git: initialize repository');
     const hookResult = installPrePushHook(resolvedTarget, { dryRun });
     if (hookResult.action) actions.push(hookResult.action);
+  }
+  if (options.topology || options.language) {
+    const bootResult = bootstrapWorkspace(resolvedTarget, {
+      topology: options.topology,
+      language: options.language,
+      dryRun,
+      allowProtected: Boolean(process.env.AZCODR_ALLOW_PROTECTED === '1')
+    });
+    actions.push(...bootResult.actions);
   }
   return { success: true, targetDir: resolvedTarget, gitInitialized, dryRun, actions };
 }

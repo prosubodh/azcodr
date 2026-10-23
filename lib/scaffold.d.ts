@@ -8,7 +8,8 @@ import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit, installPrePushHook } from './repo.js';
 import type { InitGitOptions, InstallHookOptions, InstallHookResult } from './repo.js';
 import { purgeAzcodrTests } from './purge-tests.js';
-export { getTemplateDir, purgeAzcodrTests };
+import { bootstrapWorkspace } from './topology.js';
+export { getTemplateDir, purgeAzcodrTests, bootstrapWorkspace };
 /**
  * Canonical list of template files and directories copied into a new workspace.
  *
@@ -33,6 +34,10 @@ export interface ScaffoldOptions {
     dryRun?: boolean;
     /** Suppress non-error console output. */
     silent?: boolean;
+    /** Optional target architecture topology (e.g. emergent, backend, fullstack). */
+    topology?: string;
+    /** Optional target language profile (e.g. typescript, python, rust). */
+    language?: string;
 }
 /**
  * Result object returned upon completion of a scaffold operation.
