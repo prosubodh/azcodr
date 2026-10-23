@@ -136,4 +136,4 @@ When an agent operates within a downstream repository governed by `azcodr`, the 
 2. **Deterministic Logging of Governance Issues:** If a defect, edge case, false positive, or limitation in `azcodr` is encountered during development:
    - **Do not derail the project:** Never abandon or pause the user's primary feature request to rewrite or patch `azcodr` within the downstream workspace.
    - **Record with comprehensive context:** Note the issue in full detail (command invoked, exact error text, steps to reproduce, expected vs. actual behavior).
-   - **Deliver inline on demand:** Present the findings inline in clean Markdown only when the user explicitly asks for a report on `azcodr` issues.
+   - **Deliver inline on demand (suppress otherwise):** Suppress all reporting during normal task execution. Present the findings inline in clean Markdown only and strictly when the user explicitly asks for a report on `azcodr` issues.

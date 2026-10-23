@@ -248,17 +248,19 @@ describe('Architecture: rules and ledger hygiene', () => {
     }
   });
 
-  test('AGENTS.md codifies Ground Rule 12 for downstream project sovereignty', () => {
+  test('AGENTS.md codifies Ground Rule 12 for downstream project sovereignty and suppression', () => {
     const content = fs.readFileSync(path.join(ROOT, 'AGENTS.md'), 'utf-8');
     assert.ok(content.includes('12. **Focus on the project, not the governance tooling.**'));
     assert.ok(content.includes('note the issue with full context'));
-    assert.ok(content.includes('inline in Markdown when the user requests it'));
+    assert.ok(content.includes('suppress all reporting during normal task execution'));
+    assert.ok(content.includes('only print the Markdown inline when explicitly asked for by the user'));
   });
 
-  test('project_management.md codifies Section 8 project sovereignty protocol', () => {
+  test('project_management.md codifies Section 8 project sovereignty and suppression protocol', () => {
     const content = fs.readFileSync(path.join(ROOT, 'docs', 'rules', 'project_management.md'), 'utf-8');
     assert.ok(content.includes('## 8. Project Sovereignty & Governance Tooling Boundary'));
-    assert.ok(content.includes('Deliver inline on demand'));
+    assert.ok(content.includes('Deliver inline on demand (suppress otherwise)'));
+    assert.ok(content.includes('Suppress all reporting during normal task execution'));
   });
 
   test('package.json, jsr.json, and package-lock.json versions are strictly aligned', () => {
