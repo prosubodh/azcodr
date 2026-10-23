@@ -32,7 +32,7 @@ export type { BoundaryRule, BoundaryViolation, BoundaryReport, ScanOptions } fro
 export { runValidation, parseArgs, main, createReporter, walkMarkdown, readTextOrFail, readSkillFolders, parseAdrLedger, checkAdrIndexConsistency, checkGlossaryPopulated, evaluateParityTarget, isValidAgentsTarget, createLowercaseParityLink, checkFile, normalizeLinkTarget, phaseLinks, phaseRootConfig, checkHarnessParity, phaseRules, checkOneRule, phaseSkills, checkOneSkill, extractSkillDescription, frontMatterBlock, phaseToolchain, readProfileLanguage, expectedToolchainFiles, TOOLCHAIN_FILES, stripHtmlComments, stripFencedCode } from './validator/run.js';
 export { validate } from './validate.js';
 export { createSilentReporter } from './validator/io.js';
-export { scaffold, validateTarget, copyTemplate, ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, initGit, installPrePushHook, isInsideGitWorkTree, runGit, assertInside, isProtectedTarget, getTemplateDir, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES } from './scaffold.js';
+export { scaffold, validateTarget, copyTemplate, ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, initGit, installPrePushHook, isInsideGitWorkTree, runGit, assertInside, isProtectedTarget, getTemplateDir, purgeAzcodrTests, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES } from './scaffold.js';
 export type { ScaffoldOptions, ScaffoldResult, ValidateTargetOptions, CopyTemplateOptions, EnsureSymlinkOptions, InitGitOptions, InstallHookOptions, InstallHookResult, ScaffoldErrorShape, ScaffoldErrorCode } from './scaffold.js';
 /**
  * Prompt Ledger & Zero-Unattended-Prompt Invariant enforcement.

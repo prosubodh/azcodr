@@ -115,4 +115,19 @@ describe('bootstrap language: reflected in output', () => {
     const r = runBootstrap(root, { topology: 'backend', language: 'rust' });
     assert.match(r.out, /rust/i, 'the language argument must be reflected in output');
   });
+
+  test('purges azcodr tests from tests/ during bootstrap', () => {
+    const testsDir = path.join(root, 'tests');
+    fs.mkdirSync(testsDir, { recursive: true });
+    const azcodrTest = path.join(testsDir, 'architecture.test.ts');
+    fs.writeFileSync(azcodrTest, 'import * as rt from "../src/index.js";\n', 'utf-8');
+    const domainTest = path.join(testsDir, 'app.test.ts');
+    fs.writeFileSync(domainTest, 'describe("App", () => {});\n', 'utf-8');
+
+    const r = runBootstrap(root, { topology: 'backend', language: 'typescript' });
+    assert.strictEqual(r.code, 0, r.out);
+    assert.strictEqual(fs.existsSync(azcodrTest), false, 'azcodr test must be purged');
+    assert.strictEqual(fs.existsSync(domainTest), true, 'domain test must be preserved');
+    assert.ok(fs.existsSync(path.join(testsDir, 'unit')), 'unit test folder must be scaffolded');
+  });
 });

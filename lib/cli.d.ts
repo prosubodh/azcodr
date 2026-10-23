@@ -1,8 +1,7 @@
 import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
+import { printHelp, printVersion } from './cli-help.js';
 import type { CliParsedOptions } from './cli-parse.js';
 import { askQuestion } from './cli-target.js';
-export declare function printHelp(out?: (msg: string) => void): void;
-export declare function printVersion(out?: (msg: string) => void): void;
 export interface CliIo {
     out?: (msg: string) => void;
     err?: (msg: string) => void;
@@ -24,6 +23,7 @@ export interface CliIo {
     boundaries?: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
     prompt?: (parsed: CliParsedOptions, io: any) => void | number;
     add?: (parsed: CliParsedOptions, io: any) => void | number;
+    script?: (parsed: CliParsedOptions, io: any) => void | number;
 }
 export interface NormalizedCliIo {
     out: (msg: string) => void;
@@ -46,10 +46,11 @@ export interface NormalizedCliIo {
     boundariesFn: (parsed: CliParsedOptions, io: any) => Promise<void | number>;
     promptFn: (parsed: CliParsedOptions, io: any) => void | number;
     addFn: (parsed: CliParsedOptions, io: any) => void | number;
+    scriptFn: (parsed: CliParsedOptions, io: any) => void | number;
 }
 export declare function runCli(rawArgs?: string[], io?: CliIo): Promise<void | number>;
 export declare function main(): Promise<void>;
-export { askQuestion };
+export { printHelp, printVersion, askQuestion };
 declare const _default: {
     runCli: typeof runCli;
     main: typeof main;

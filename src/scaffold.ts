@@ -10,8 +10,9 @@ import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit, installPrePushHook } from './repo.js';
 import type { InitGitOptions, InstallHookOptions, InstallHookResult } from './repo.js';
+import { purgeAzcodrTests } from './purge-tests.js';
 
-export { getTemplateDir };
+export { getTemplateDir, purgeAzcodrTests };
 
 /**
  * Canonical list of template files and directories copied into a new workspace.
@@ -245,6 +246,8 @@ export function scaffold(options: ScaffoldOptions = {}): ScaffoldResult {
   const resolvedTarget = path.resolve(targetDir);
   validateTarget(resolvedTarget, { templateDir, force, dryRun });
   const actions = copyTemplate(resolvedTarget, templateDir, { dryRun });
+  const purgeActions = purgeAzcodrTests(resolvedTarget, dryRun);
+  actions.push(...purgeActions);
   const gitInitialized = initGit(resolvedTarget, { noGit, dryRun });
   if (gitInitialized) {
     actions.push('git: initialize repository');
@@ -268,5 +271,6 @@ export default {
   scaffold, validateTarget, copyTemplate, ensureSymlink,
   ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable,
   isInsideGitWorkTree, initGit, installPrePushHook, getTemplateDir, runGit,
-  assertInside, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES, isProtectedTarget
+  assertInside, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES, isProtectedTarget,
+  purgeAzcodrTests
 };

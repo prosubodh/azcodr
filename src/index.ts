@@ -130,6 +130,7 @@ export {
   assertInside,
   isProtectedTarget,
   getTemplateDir,
+  purgeAzcodrTests,
   TEMPLATE_ITEMS,
   ScaffoldError,
   ERROR_CODES

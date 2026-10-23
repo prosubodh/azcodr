@@ -160,6 +160,48 @@ const TOKENS_JSON = `{
 
 const R = (...parts) => path.join(WORKSPACE_ROOT, ...parts);
 
+const AZCODR_MARKERS = [
+  'azcodr',
+  '.agents',
+  '../src/',
+  '../lib/',
+  '../bin/',
+  '../scripts/',
+  'scripts/pre-push',
+  './support/'
+];
+
+function isAzcodrTest(fileName, filePath) {
+  if (!/\.(test|spec)\.[cm]?[jt]sx?$/.test(fileName)) return false;
+  if (/^(agent-guard|architecture|bootstrap-|boundaries|boundary-guard|cli-|conversation-export|coverage-config|desktop-doctor|error-codes|example-project|guard-config|harness-|hooks-default|index|pack|pre-push-hook|prompt-ledger|protected-target|purge-tests|safety-guard|scaffold-|shell-scripts|smoke-test|supply-chain|validate|workflow|yaml-subset)/.test(fileName)) return true;
+  try {
+    const head = fs.readFileSync(filePath, "utf8").slice(0, 1500);
+    return AZCODR_MARKERS.some((m) => head.includes(m));
+  } catch {
+    return false;
+  }
+}
+
+function cleanAzcodrTests() {
+  const testsDir = R("tests");
+  if (!fs.existsSync(testsDir)) return;
+  const entries = fs.readdirSync(testsDir, { withFileTypes: true });
+  let count = 0;
+  for (const entry of entries) {
+    const full = path.join(testsDir, entry.name);
+    if (entry.isFile() && isAzcodrTest(entry.name, full)) {
+      fs.rmSync(full, { force: true });
+      count += 1;
+    } else if (entry.isDirectory() && entry.name === "support") {
+      fs.rmSync(full, { recursive: true, force: true });
+      count += 1;
+    }
+  }
+  if (count > 0) {
+    console.log(`🧹 Removed ${count} azcodr internal test artifact(s) from tests/ to prevent domain collision.`);
+  }
+}
+
 function scaffoldTopology() {
   switch (TOPOLOGY) {
     case "extension":
@@ -332,6 +374,7 @@ function writeTokensIfAbsent() {
   if (!isFile(target)) fs.writeFileSync(target, TOKENS_JSON);
 }
 
+cleanAzcodrTests();
 scaffoldTopology();
 
 // ------------------------------------------------------------------------------

@@ -91,6 +91,22 @@ describe('scaffold orchestration', () => {
     }
   });
 
+  test('scaffold purges azcodr tests from target directory during initialization', () => {
+    const target = path.join(tmpDir, 'target-with-azcodr-tests');
+    const testsDir = path.join(target, 'tests');
+    fs.mkdirSync(testsDir, { recursive: true });
+    const azcodrTest = path.join(testsDir, 'architecture.test.ts');
+    fs.writeFileSync(azcodrTest, 'import * as rt from "../src/index.js";\n', 'utf-8');
+    const domainTest = path.join(testsDir, 'calculator.test.ts');
+    fs.writeFileSync(domainTest, 'describe("Calculator", () => {});\n', 'utf-8');
+
+    const result = scaffold({ targetDir: target, force: true, noGit: true });
+    assert.strictEqual(result.success, true);
+    assert.ok(result.actions.some((a) => a.includes('remove: tests/architecture.test.ts')));
+    assert.strictEqual(fs.existsSync(azcodrTest), false);
+    assert.strictEqual(fs.existsSync(domainTest), true);
+  });
+
   test('askQuestion resolves input with default parameters', async () => {
     const p = askQuestion('Query: ');
     process.stdin.emit('data', 'test-answer\n');

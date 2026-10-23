@@ -20,6 +20,8 @@
     "lib",
     "src",
     "data",
+    "scripts",
+    ".agents",
     "AGENTS.md",
     "memory.md",
     "README.md",
