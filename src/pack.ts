@@ -2,6 +2,7 @@ import fs from 'node:fs';
 import path from 'node:path';
 import { CONFIG_FILE_NAMES } from './harness-config.js';
 import type { Methodology } from './harness-config.js';
+import { installPrePushHook } from './repo.js';
 
 export interface PackCheckDefinition {
   id: string;
@@ -63,6 +64,11 @@ const CANONICAL_PACKS: Record<string, CapabilityPack> = {
     name: 'links',
     description: 'Internal Markdown link and reference integrity verification',
     checks: [{ id: 'markdown-links', enabled: true, severity: 'error' }]
+  },
+  'pre-push': {
+    name: 'pre-push',
+    description: 'Git pre-push hook preventing direct push to protected branches',
+    checks: [{ id: 'protected-branches', enabled: true, severity: 'error', params: { branches: ['main', 'master'] } }]
   }
 };
 
@@ -72,7 +78,10 @@ const PACK_ALIASES: Record<string, string> = {
   cycles: 'boundaries',
   'coverage-floor': 'coverage',
   cleancode: 'clean-code',
-  container: 'docker'
+  container: 'docker',
+  'pre-push-guard': 'pre-push',
+  hook: 'pre-push',
+  hooks: 'pre-push'
 };
 
 export const KNOWN_PACK_NAMES: readonly string[] = Object.keys(CANONICAL_PACKS);
@@ -191,6 +200,10 @@ export function installPack(
     if (pack.checks) {
       actions.push(...pack.checks.map((c) => `enable check: ${c.id}`));
     }
+    if (pack.name === 'pre-push') {
+      const hookResult = installPrePushHook(targetDir, { dryRun: options.dryRun });
+      if (hookResult.action) actions.push(hookResult.action);
+    }
     if (!options.dryRun) {
       fs.mkdirSync(path.dirname(configPath), { recursive: true });
       fs.writeFileSync(configPath, yaml, 'utf-8');
@@ -208,6 +221,10 @@ export function installPack(
   }
 
   const { updated, actions } = updateExistingYaml(existingContent, pack);
+  if (pack.name === 'pre-push') {
+    const hookResult = installPrePushHook(targetDir, { dryRun: options.dryRun });
+    if (hookResult.action) actions.push(hookResult.action);
+  }
   if (!options.dryRun) {
     fs.writeFileSync(configPath, updated, 'utf-8');
   }

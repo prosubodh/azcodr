@@ -24,6 +24,14 @@ describe('Capability pack definitions', () => {
   test('normalizes aliases to canonical names', () => {
     assert.strictEqual(getPackDefinition('test-driven').name, 'tdd');
     assert.strictEqual(getPackDefinition('boundary-guard').name, 'boundaries');
+    assert.strictEqual(getPackDefinition('pre-push-guard').name, 'pre-push');
+    assert.strictEqual(getPackDefinition('hook').name, 'pre-push');
+  });
+
+  test('returns pre-push pack with protected-branches check', () => {
+    const pack = getPackDefinition('pre-push');
+    assert.strictEqual(pack.name, 'pre-push');
+    assert.ok(pack.checks?.some((c) => c.id === 'protected-branches'));
   });
 
   test('returns a custom pack definition for unrecognized names', () => {
@@ -150,6 +158,24 @@ describe('installPack execution', () => {
     assert.ok(res.actions.some((a) => a.includes('set methodology: tdd')));
     const cfg = parseHarnessConfig(fs.readFileSync(configPath, 'utf-8'));
     assert.strictEqual(cfg.methodology, 'tdd');
+  });
+
+  test('installs pre-push pack and writes .git/hooks/pre-push when git exists', () => {
+    const gitHooksDir = path.join(tmpDir, '.git', 'hooks');
+    fs.mkdirSync(gitHooksDir, { recursive: true });
+
+    const res = installPack(tmpDir, 'pre-push');
+    assert.ok(res.actions.some((a) => a.includes('install: .git/hooks/pre-push')));
+    const hookFile = path.join(gitHooksDir, 'pre-push');
+    assert.ok(fs.existsSync(hookFile));
+    const content = fs.readFileSync(hookFile, 'utf-8');
+    assert.ok(content.includes('azcodr'));
+  });
+
+  test('installs pre-push pack into harness without crashing when no .git exists', () => {
+    const res = installPack(tmpDir, 'pre-push');
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(fs.existsSync(res.configPath));
   });
 });
 

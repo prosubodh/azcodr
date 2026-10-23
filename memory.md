@@ -51,6 +51,7 @@
 | [ADR-032](./memory.md#adr-032-continuous-delivery-canon-deployment-pipeline-architecture-and-environment-parity) | Continuous Delivery Canon, Deployment Pipeline Architecture, and Environment Parity | 2026-10-23 | ACCEPTED | [`continuous_delivery.md`](./docs/rules/continuous_delivery.md) |
 | [ADR-033](./memory.md#adr-033-continuous-integration-canon-dora-key-metrics-and-empirical-devops-science) | Continuous Integration Canon, DORA Key Metrics, and Empirical DevOps Science | 2026-10-23 | ACCEPTED | [`continuous_integration.md`](./docs/rules/continuous_integration.md) |
 | [ADR-034](./memory.md#adr-034-ephemeral-prompt-ledger-lifecycle-deletion-of-completed-ledgers) | Ephemeral Prompt Ledger Lifecycle: Deletion of Completed Ledgers | 2026-10-23 | ACCEPTED | [`project_management.md`](./docs/rules/project_management.md) |
+| [ADR-035](./memory.md#adr-035-automated-git-pre-push-hook-wiring-in-scaffolding-and-capability-packs) | Automated Git Pre-Push Hook Wiring in Scaffolding and Capability Packs | 2026-10-23 | ACCEPTED | [`devops_ci_cd.md`](./docs/rules/devops_ci_cd.md) |
 
 ---
 
@@ -202,6 +203,14 @@
 - **Decision:** (1) Codify the prompt ledger as an ephemeral execution buffer with an explicit deletion lifecycle: `PENDING ──► IN_PROGRESS ──► VERIFIED ──► PRUNED/DELETED`. (2) Implement `pruneCompletedLedger()` in `src/prompt-ledger.ts` and CLI command `azcodr prompt prune` (or `--prune`). The pruning routine fails closed: if any directive remains uncompleted, deletion is rejected with exit code 1. When all items are verified, the ledger file is unlinked. (3) Update Ground Rule 11 in `AGENTS.md` and Section 4.1 in `docs/rules/project_management.md`.
 - **Consequences:** ✅ Historical ledger accumulation eliminated; workspaces remain clean. ✅ Fail-closed safety ensures uncompleted directives cannot be prematurely deleted. ✅ `azcodr prompt` exits 0 both when no ledger exists and when an active ledger is 100% completed. ⚠️ Agents must recreate `.agents/ledger/pending.md` afresh when a new multi-step request arrives.
 - **Enforced In:** `src/prompt-ledger.ts`, `src/cli-prompt.ts`, `src/cli-parse.ts`, `src/cli.ts`, `src/index.ts`, `docs/rules/project_management.md`, `AGENTS.md`, `tests/prompt-ledger.test.ts`, `tests/cli-prompt.test.ts`, `tests/architecture.test.ts`
+
+#### ADR-035: Automated Git Pre-Push Hook Wiring in Scaffolding and Capability Packs
+- **Date:** 2026-10-23 | **Status:** ACCEPTED
+- **Context:** ADR-031 established the generic law of trunk protection, blocking direct pushes to `main`, `master`, and protected branches via `agent-guard` and `scripts/pre-push.js`. However, in newly scaffolded repositories or existing projects adopting governance, the `.git/hooks/pre-push` hook had to be manually copied by the user.
+- **Decision:** (1) Implement `installPrePushHook(targetDir, options)` in `src/repo.ts` (exported via `src/scaffold.ts` and `src/index.ts`) that writes `data/pre-push.template` into `.git/hooks/pre-push` with executable permissions (`chmod 0o755`), failing safe and never overwriting custom user hooks unless `force: true`. (2) Automatically invoke `installPrePushHook` inside `scaffold()` whenever git repository initialization succeeds (`gitInitialized === true`). (3) Register `'pre-push'` (aliases: `'pre-push-guard'`, `'hook'`, `'hooks'`) in `src/pack.ts` as a canonical capability pack, enabling existing repositories to run `npx azcodr add pre-push` to wire up both `harness.yaml` and `.git/hooks/pre-push`.
+- **Consequences:** ✅ Greenfield repositories scaffolded with `npx azcodr` receive branch protection out of the box. ✅ Existing repositories can wire up pre-push hooks with `npx azcodr add pre-push`. ✅ Non-destructive: custom git hooks are preserved unless `force: true`.
+- **Enforced In:** `src/repo.ts`, `src/scaffold.ts`, `src/pack.ts`, `src/index.ts`, `memory.md`, `tests/scaffold-git.test.ts`, `tests/pack.test.ts`, `tests/architecture.test.ts`
+
 
 
 

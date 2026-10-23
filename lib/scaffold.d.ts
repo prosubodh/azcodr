@@ -5,8 +5,8 @@ import { assertInside, isProtectedTarget, getTemplateDir } from './guards.js';
 import { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile } from './links.js';
 import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
-import { isInsideGitWorkTree, initGit } from './repo.js';
-import type { InitGitOptions } from './repo.js';
+import { isInsideGitWorkTree, initGit, installPrePushHook } from './repo.js';
+import type { InitGitOptions, InstallHookOptions, InstallHookResult } from './repo.js';
 export { getTemplateDir };
 /**
  * Canonical list of template files and directories copied into a new workspace.
@@ -93,8 +93,8 @@ export declare function copyTemplate(targetDir: string, templateDir?: string, op
  * @returns Result object containing success flag, target directory, and action log.
  */
 export declare function scaffold(options?: ScaffoldOptions): ScaffoldResult;
-export { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, isInsideGitWorkTree, initGit, runGit, assertInside, ScaffoldError, ERROR_CODES, isProtectedTarget };
-export type { EnsureSymlinkOptions, InitGitOptions, ScaffoldErrorCode, ScaffoldErrorShape };
+export { ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, isInsideGitWorkTree, initGit, installPrePushHook, runGit, assertInside, ScaffoldError, ERROR_CODES, isProtectedTarget };
+export type { EnsureSymlinkOptions, InitGitOptions, InstallHookOptions, InstallHookResult, ScaffoldErrorCode, ScaffoldErrorShape };
 /**
  * Unified azcodr scaffolding functions, guards, utilities, and constants module.
  */
@@ -108,6 +108,7 @@ declare const _default: {
     makeScriptsExecutable: typeof makeScriptsExecutable;
     isInsideGitWorkTree: typeof isInsideGitWorkTree;
     initGit: typeof initGit;
+    installPrePushHook: typeof installPrePushHook;
     getTemplateDir: typeof getTemplateDir;
     runGit: typeof runGit;
     assertInside: typeof assertInside;

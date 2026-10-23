@@ -24,9 +24,20 @@ export declare function isInsideGitWorkTree(targetDir: string): boolean;
  * @returns True if repository was initialized and committed, false otherwise.
  */
 export declare function initGit(targetDir: string, options?: InitGitOptions): boolean;
+export interface InstallHookOptions {
+    dryRun?: boolean;
+    force?: boolean;
+}
+export interface InstallHookResult {
+    installed: boolean;
+    action?: string;
+    reason?: string;
+}
+export declare function installPrePushHook(targetDir: string, options?: InstallHookOptions): InstallHookResult;
 declare const _default: {
     isInsideGitWorkTree: typeof isInsideGitWorkTree;
     initGit: typeof initGit;
+    installPrePushHook: typeof installPrePushHook;
 };
 export default _default;
 //# sourceMappingURL=repo.d.ts.map

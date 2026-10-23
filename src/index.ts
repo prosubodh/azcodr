@@ -124,6 +124,7 @@ export {
   isSameCaseInsensitiveFile,
   makeScriptsExecutable,
   initGit,
+  installPrePushHook,
   isInsideGitWorkTree,
   runGit,
   assertInside,
@@ -141,6 +142,8 @@ export type {
   CopyTemplateOptions,
   EnsureSymlinkOptions,
   InitGitOptions,
+  InstallHookOptions,
+  InstallHookResult,
   ScaffoldErrorShape,
   ScaffoldErrorCode
 } from './scaffold.js';
