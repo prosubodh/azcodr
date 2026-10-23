@@ -5,11 +5,12 @@
  * raise the complexity of the parser itself.
  */
 
-export type CliCommand = 'scaffold' | 'check' | 'boundaries' | 'prompt';
+export type CliCommand = 'scaffold' | 'check' | 'boundaries' | 'prompt' | 'add';
 
 export interface CliParsedOptions {
   command: CliCommand;
   targetDir: string | null;
+  packName?: string | null;
   force: boolean;
   noGit: boolean;
   dryRun: boolean;
@@ -24,6 +25,7 @@ export function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'> {
   return {
     command: 'scaffold',
     targetDir: null,
+    packName: null,
     force: false,
     noGit: false,
     dryRun: false,
@@ -34,6 +36,7 @@ export function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'> {
 export const CHECK_COMMANDS = new Set(['check', 'validate', 'audit']);
 export const BOUNDARY_COMMANDS = new Set(['boundaries', 'boundary', 'cycles']);
 export const PROMPT_COMMANDS = new Set(['prompt', 'ledger']);
+export const ADD_COMMANDS = new Set(['add']);
 
 export const BOOLEAN_FLAGS = new Map<string, BooleanFlagKey>([
   ['-f', 'force'],
@@ -60,7 +63,6 @@ function checkCommandKeyword(
   arg: string,
   state: Omit<CliParsedOptions, 'terminal' | 'message'>
 ): boolean {
-  if (state.targetDir !== null || state.command !== 'scaffold') return false;
   if (CHECK_COMMANDS.has(arg)) {
     state.command = 'check';
     return true;
@@ -71,6 +73,10 @@ function checkCommandKeyword(
   }
   if (PROMPT_COMMANDS.has(arg)) {
     state.command = 'prompt';
+    return true;
+  }
+  if (ADD_COMMANDS.has(arg)) {
+    state.command = 'add';
     return true;
   }
   return false;
@@ -94,7 +100,16 @@ export function applyArg(
     };
   }
   if (checkCommandKeyword(arg, state)) return { terminal: null };
-  if (!state.targetDir) {
+  if (state.command === 'add') {
+    if (!state.packName) {
+      state.packName = arg;
+      return { terminal: null };
+    }
+    if (!state.targetDir) {
+      state.targetDir = arg;
+      return { terminal: null };
+    }
+  } else if (!state.targetDir) {
     state.targetDir = arg;
     return { terminal: null };
   }

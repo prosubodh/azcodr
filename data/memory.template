@@ -6,7 +6,7 @@
 
 ## 1. Quick Navigation & Knowledge Repositories
 
-- 📖 **[Living Ubiquitous Language Glossary](./docs/knowledge/ubiquitous_language.md)**: Authoritative, single-name domain vocabulary contract.
+- 📖 **Living Ubiquitous Language Glossary**: Authoritative, single-name domain vocabulary contract.
 - 📜 **[Lightweight ADR Master Index](#adr-master-index)**: Summary of all architectural decisions and direct links to governing rules.
 
 ---
@@ -17,7 +17,7 @@
 
 | ID | Title | Date | Status | Governing Rule / Skill |
 |---|---|---|---|---|
-| *(No decisions recorded yet)* | *Record initial architecture decisions during Phase 3 of /lets-build.* | *YYYY-MM-DD* | *ACCEPTED* | *e.g. [`clean_code.md`](./docs/rules/clean_code.md)* |
+| *(No decisions recorded yet)* | *Record initial architecture decisions during Phase 3 of /lets-build.* | *YYYY-MM-DD* | *ACCEPTED* | *e.g. `clean_code.md`* |
 
 ---
 

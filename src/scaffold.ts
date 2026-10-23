@@ -10,27 +10,20 @@ import type { EnsureSymlinkOptions } from './links.js';
 import { makeScriptsExecutable } from './permissions.js';
 import { isInsideGitWorkTree, initGit } from './repo.js';
 import type { InitGitOptions } from './repo.js';
-import { writeStarterCi } from './starter-ci.js';
 
 export { getTemplateDir };
 
 /**
  * Canonical list of template files and directories copied into a new workspace.
- */
-/**
- * Files and directories copied into a new workspace.
  *
- * The validator ships as a library, not as copied source, so a scaffolded
- * project runs `npx azcodr check` instead of carrying its own copy of the
- * tooling.
+ * Only universally useful, non-opinionated items are included. Opinionated
+ * content (docs/rules, .agents/skills, .github workflows) is not shipped;
+ * projects opt in via `harness.yaml` and the `azcodr check` command.
  */
 export const TEMPLATE_ITEMS: readonly string[] = [
   'AGENTS.md',
   'memory.md',
   'README.md',
-  'docs',
-  '.agents',
-  '.github',
   '.gitignore',
   '.editorconfig',
   'LICENSE'
@@ -171,34 +164,6 @@ function copyTemplateItems(resolvedTarget: string, resolvedTemplate: string, dry
   return actions;
 }
 
-function ensureHarnessParity(resolvedTarget: string, dryRun: boolean): string[] {
-  const links: readonly [string, string][] = [
-    ['CLAUDE.md', 'AGENTS.md'],
-    ['agents.md', 'AGENTS.md'],
-    ['GEMINI.md', 'AGENTS.md'],
-    ['.cursorrules', 'AGENTS.md'],
-    ['.windsurfrules', 'AGENTS.md']
-  ];
-  const actions: string[] = [];
-  for (const [linkName, targetFileName] of links) {
-    actions.push(`symlink: ${linkName} -> ${targetFileName}`);
-    ensureSymlink({ targetDir: resolvedTarget, linkName, targetFileName, dryRun });
-  }
-  return actions;
-}
-
-function ensureCopilotParity(resolvedTarget: string, dryRun: boolean): string[] {
-  const githubDir = path.join(resolvedTarget, '.github');
-  if (!dryRun && !fs.existsSync(githubDir)) fs.mkdirSync(githubDir, { recursive: true });
-  ensureSymlinkOrPointer({
-    targetDir: githubDir,
-    linkName: 'copilot-instructions.md',
-    targetFileName: '../AGENTS.md',
-    dryRun
-  });
-  return ['symlink: .github/copilot-instructions.md -> ../AGENTS.md'];
-}
-
 /**
  * Minimal npm manifest for a Node-ecosystem scaffold.
  *
@@ -216,9 +181,7 @@ function starterPackageJson(resolvedTarget: string): Record<string, unknown> {
     description: 'Project scaffolded with the azcodr workspace toolkit',
     scripts: {
       check: 'npx azcodr check',
-      validate: 'npx azcodr check',
-      boundaries: 'node .agents/scripts/boundary_guard.js',
-      smoke: 'node .agents/scripts/smoke_test.js'
+      validate: 'npx azcodr check'
     }
   };
 }
@@ -262,10 +225,7 @@ export function copyTemplate(
     fs.mkdirSync(resolvedTarget, { recursive: true });
   }
   const actions = copyTemplateItems(resolvedTarget, resolvedTemplate, dryRun);
-  actions.push(...ensureHarnessParity(resolvedTarget, dryRun));
-  actions.push(...ensureCopilotParity(resolvedTarget, dryRun));
   actions.push(...ensureStarterPackageJson(resolvedTarget, dryRun));
-  actions.push(...writeStarterCi(resolvedTarget, dryRun));
   const inspectDir = dryRun ? resolvedTemplate : resolvedTarget;
   actions.push(...chmodTemplateScripts(inspectDir, dryRun));
   return actions;

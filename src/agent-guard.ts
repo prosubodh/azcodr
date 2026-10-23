@@ -44,6 +44,8 @@ export interface GuardOptions {
   tdd?: TddEnforcement;
   /** Disables every file-based rule while keeping command safety active. */
   skipFileRules?: boolean;
+  /** Protected branches prohibited from direct push. */
+  protectedBranches?: readonly string[];
 }
 
 function parseEnvelope(raw: string): ToolEnvelope | null {
@@ -79,10 +81,10 @@ function extractCommand(input: Record<string, unknown>): string | undefined {
   return extractKey(input, ['commandLine', 'command', 'cmd']);
 }
 
-function inspectPreCommand(cmd: string, workspaceRoot?: string): GuardDecision {
-  const violation = inspectCommand(cmd);
+function inspectPreCommand(cmd: string, options?: GuardOptions): GuardDecision {
+  const violation = inspectCommand(cmd, { protectedBranches: options?.protectedBranches });
   if (violation.blocked) return { allowed: false, reason: violation.reason, source: 'command' };
-  const promptViolation = inspectPromptCommit(cmd, workspaceRoot);
+  const promptViolation = inspectPromptCommit(cmd, options?.workspaceRoot);
   if (promptViolation.blocked) return { allowed: false, reason: promptViolation.reason, source: 'command' };
   return { allowed: true };
 }
@@ -149,14 +151,14 @@ export function inspectPreTool(rawInput: string, options: GuardOptions = {}): Gu
   if (env && typeof env === 'object') {
     const record = extractPayload(env as Record<string, unknown>);
     const cmd = extractCommand(record);
-    if (cmd) return inspectPreCommand(cmd, options.workspaceRoot);
+    if (cmd) return inspectPreCommand(cmd, options);
 
     const targetFile = extractFilePath(record);
     if (targetFile) return inspectPreFile(targetFile, record, options);
     return { allowed: true };
   }
 
-  return inspectPreCommand(rawInput, options.workspaceRoot);
+  return inspectPreCommand(rawInput, options);
 }
 
 export { inspectCommand, inspectFileWrite, inspectTddRequirement, readTddState, writeTddState };

@@ -23,27 +23,9 @@ function tearDownTmp() {
 
 function assertScaffoldedFiles(targetProjectDir: string) {
   assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'AGENTS.md')), true);
-  assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'CLAUDE.md')), true);
-  assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'agents.md')), true);
-  assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'GEMINI.md')), true);
-  assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.cursorrules')), true);
-  assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.windsurfrules')), true);
   assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.editorconfig')), true);
   assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'LICENSE')), true);
-  assert.strictEqual(fs.existsSync(path.join(targetProjectDir, '.github', 'copilot-instructions.md')), true);
   assert.strictEqual(fs.existsSync(path.join(targetProjectDir, 'package.json')), true);
-}
-
-function assertValidatorScript(targetProjectDir: string) {
-  const validatorScript = path.join(
-    targetProjectDir,
-    '.agents',
-    'skills',
-    'agentic-architect',
-    'scripts',
-    'validate_agentic_configs.sh'
-  );
-  assert.strictEqual(fs.existsSync(validatorScript), true);
 }
 
 function testVersion() {
@@ -79,9 +61,8 @@ function testScaffold() {
   });
   assert.match(output, /initialized successfully/i);
   assertScaffoldedFiles(targetProjectDir);
-  assertValidatorScript(targetProjectDir);
-  const npmOut = execSync('npm run validate', { cwd: targetProjectDir, encoding: 'utf-8' });
-  assert.match(npmOut, /SUCCESS: All agentic configurations are valid and healthy!/);
+  const checkOut = execFileSync(process.execPath, [CLI_PATH, 'check', targetProjectDir], { encoding: 'utf-8' });
+  assert.match(checkOut, /SUCCESS: All agentic configurations are valid and healthy!/);
 }
 
 function testDryRun() {
@@ -229,6 +210,19 @@ function testPromptAcceptance() {
   assert.strictEqual(failed, true, 'azcodr prompt should exit with 1 when directives are pending');
 }
 
+function testAddAcceptance() {
+  const output = execFileSync(process.execPath, [CLI_PATH, 'add', 'tdd', tmpDir], {
+    encoding: 'utf-8'
+  });
+  assert.match(output, /Installed capability pack:\s*tdd/i);
+  assert.strictEqual(fs.existsSync(path.join(tmpDir, 'harness.yaml')), true);
+
+  const outSecond = execFileSync(process.execPath, [CLI_PATH, 'add', 'tdd', tmpDir], {
+    encoding: 'utf-8'
+  });
+  assert.match(outSecond, /already installed/i);
+}
+
 describe('CLI Acceptance: target directory handling', () => {
   beforeEach(setUpTmp);
   afterEach(tearDownTmp);
@@ -241,4 +235,10 @@ describe('CLI Acceptance: prompt subcommand', () => {
   beforeEach(setUpTmp);
   afterEach(tearDownTmp);
   test('CLI checks prompt ledger integrity and returns code 1 on pending directives', testPromptAcceptance);
+});
+
+describe('CLI Acceptance: add subcommand', () => {
+  beforeEach(setUpTmp);
+  afterEach(tearDownTmp);
+  test('CLI installs capability pack into harness.yaml and is idempotent', testAddAcceptance);
 });

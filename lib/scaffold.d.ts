@@ -10,13 +10,10 @@ import type { InitGitOptions } from './repo.js';
 export { getTemplateDir };
 /**
  * Canonical list of template files and directories copied into a new workspace.
- */
-/**
- * Files and directories copied into a new workspace.
  *
- * The validator ships as a library, not as copied source, so a scaffolded
- * project runs `npx azcodr check` instead of carrying its own copy of the
- * tooling.
+ * Only universally useful, non-opinionated items are included. Opinionated
+ * content (docs/rules, .agents/skills, .github workflows) is not shipped;
+ * projects opt in via `harness.yaml` and the `azcodr check` command.
  */
 export declare const TEMPLATE_ITEMS: readonly string[];
 /**

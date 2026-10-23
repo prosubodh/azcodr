@@ -1,8 +1,6 @@
 /**
- * Default-on hooks regression tests (ADR-021, amending ADR-020).
- * Locks the claim "cross-harness guards are enabled out of the box": every
- * shipped hook in both hooks.json and hooks.json.example must default to
- * enabled, and every hook command must resolve to a real script.
+ * Default-off hooks regression test.
+ * Hooks are disabled by default; projects opt in via harness.yaml.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -18,24 +16,16 @@ function loadHooks(fileName: string) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, '.agents', fileName), 'utf-8'));
 }
 
-describe('shipped hooks are default-on', () => {
+describe('shipped hooks are default-off', () => {
   for (const fileName of ['hooks.json', 'hooks.json.example']) {
-    test(`${fileName} enables all four guard hooks by default`, () => {
+    test(`${fileName} disables all hooks by default`, () => {
       const hooks = loadHooks(fileName);
       for (const group of EXPECTED_HOOK_GROUPS) {
         assert.ok(hooks[group], `${fileName} must define ${group}`);
-        assert.strictEqual(hooks[group].enabled, true, `${fileName}: ${group} must default to enabled`);
+        assert.strictEqual(hooks[group].enabled, false, `${fileName}: ${group} defaults to disabled`);
       }
     });
   }
-
-function extractScriptRelativePath(command: string): string | null {
-  if (command.startsWith('./.agents/')) {
-    return command.slice(2);
-  }
-  const match = command.match(/^node\s+(\.?\/?\.agents\/[^\s]+)/);
-  return match?.[1] ? match[1].replace(/^\.\//, '') : null;
-}
 
   test('every hook command that references a script resolves to a real file', () => {
     for (const fileName of ['hooks.json', 'hooks.json.example']) {
@@ -65,3 +55,11 @@ function extractScriptRelativePath(command: string): string | null {
     }
   });
 });
+
+function extractScriptRelativePath(command: string): string | null {
+  if (command.startsWith('./.agents/')) {
+    return command.slice(2);
+  }
+  const match = command.match(/^node\s+(\.?\/?\.agents\/[^\s]+)/);
+  return match?.[1] ? match[1].replace(/^\.\//, '') : null;
+}
