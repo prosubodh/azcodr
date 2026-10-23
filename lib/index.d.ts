@@ -49,6 +49,11 @@ export type { CapabilityPack, InstallPackOptions, InstallPackResult, PackCheckDe
 export { handleAddCommand } from './cli-add.js';
 export type { AddIo } from './cli-add.js';
 /**
+ * Workflow template installation for CI/CD pipelines.
+ */
+export { installWorkflowTemplate, WORKFLOW_DESCRIPTORS } from './workflow.js';
+export type { InstallWorkflowOptions, InstallWorkflowResult, WorkflowDescriptor } from './workflow.js';
+/**
  * Multi-provider conversation memory exporter.
  */
 export { parseTranscriptJsonl, formatTranscriptToMarkdown, exportConversationToFile } from './conversation-export.js';

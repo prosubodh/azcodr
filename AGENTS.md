@@ -15,6 +15,7 @@ Azcodr provides executable governance checks: boundary & cycle detection, fail-c
 9. **No dead code.** Delete it or wire it up.
 10. **Say when unsure.** Degraded or ambiguous input is unverified; say so rather than guess.
 11. **Zero unattended requests.** Every user request must be logged and tracked until resolved with concrete evidence (tests, output, or explicit answer). Once all items in the ledger are verified and resolved, delete the completed ledger.
+12. **Focus on the project, not the governance tooling.** Focus strictly on this project's own application code, domain logic, and user requirements. Do not refactor, patch, or alter `azcodr` itself or its internal governance rules from within this project. If an edge case, bug, or limitation in `azcodr` is observed, do not digress to fix it: note the issue with full context (command, reproduction steps, expected vs. actual behavior); suppress all reporting during normal task execution and only print the Markdown inline when explicitly asked for by the user.
 
 ## Commands
 

@@ -26,6 +26,24 @@ describe('Capability pack definitions', () => {
     assert.strictEqual(getPackDefinition('boundary-guard').name, 'boundaries');
     assert.strictEqual(getPackDefinition('pre-push-guard').name, 'pre-push');
     assert.strictEqual(getPackDefinition('hook').name, 'pre-push');
+    assert.strictEqual(getPackDefinition('github-ci').name, 'ci');
+    assert.strictEqual(getPackDefinition('actions').name, 'ci');
+    assert.strictEqual(getPackDefinition('workflows').name, 'ci');
+    assert.strictEqual(getPackDefinition('workflow').name, 'ci');
+    assert.strictEqual(getPackDefinition('ci-workflow').name, 'ci');
+    assert.strictEqual(getPackDefinition('publish').name, 'publish-workflow');
+    assert.strictEqual(getPackDefinition('publish-action').name, 'publish-workflow');
+    assert.strictEqual(getPackDefinition('release-workflow').name, 'publish-workflow');
+  });
+
+  test('returns ci and publish-workflow definitions', () => {
+    const ci = getPackDefinition('ci');
+    assert.strictEqual(ci.name, 'ci');
+    assert.ok(ci.description.toLowerCase().includes('continuous integration'));
+
+    const pub = getPackDefinition('publish-workflow');
+    assert.strictEqual(pub.name, 'publish-workflow');
+    assert.ok(pub.description.toLowerCase().includes('publishing') || pub.description.toLowerCase().includes('release'));
   });
 
   test('returns pre-push pack with protected-branches check', () => {
@@ -176,6 +194,72 @@ describe('installPack execution', () => {
     const res = installPack(tmpDir, 'pre-push');
     assert.strictEqual(res.alreadyInstalled, false);
     assert.ok(fs.existsSync(res.configPath));
+  });
+
+  test('installs ci pack and writes .github/workflows/ci.yml', () => {
+    const res = installPack(tmpDir, 'ci');
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(res.actions.some((a) => a.includes('.github/workflows/ci.yml')));
+
+    const ciFile = path.join(tmpDir, '.github', 'workflows', 'ci.yml');
+    assert.ok(fs.existsSync(ciFile));
+    const content = fs.readFileSync(ciFile, 'utf-8');
+    assert.ok(content.includes('name: CI'));
+    assert.ok(content.includes('azcodr check'));
+
+    const cfg = parseHarnessConfig(fs.readFileSync(res.configPath, 'utf-8'));
+    assert.ok(cfg.packs.includes('ci'));
+  });
+
+  test('installs publish-workflow pack and writes .github/workflows/publish.yml', () => {
+    const res = installPack(tmpDir, 'publish-workflow');
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(res.actions.some((a) => a.includes('.github/workflows/publish.yml')));
+
+    const pubFile = path.join(tmpDir, '.github', 'workflows', 'publish.yml');
+    assert.ok(fs.existsSync(pubFile));
+    const content = fs.readFileSync(pubFile, 'utf-8');
+    assert.ok(content.includes('name: Publish'));
+    assert.ok(content.includes('azcodr check'));
+
+    const cfg = parseHarnessConfig(fs.readFileSync(res.configPath, 'utf-8'));
+    assert.ok(cfg.packs.includes('publish-workflow'));
+  });
+
+  test('skips overwriting existing custom workflow when force is false', () => {
+    const wfDir = path.join(tmpDir, '.github', 'workflows');
+    fs.mkdirSync(wfDir, { recursive: true });
+    const ciFile = path.join(wfDir, 'ci.yml');
+    const customContent = '# My Custom Workflow\nname: CustomCI\n';
+    fs.writeFileSync(ciFile, customContent, 'utf-8');
+
+    const res = installPack(tmpDir, 'ci');
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.strictEqual(fs.readFileSync(ciFile, 'utf-8'), customContent);
+  });
+
+  test('overwrites existing workflow when force is true', () => {
+    const wfDir = path.join(tmpDir, '.github', 'workflows');
+    fs.mkdirSync(wfDir, { recursive: true });
+    const ciFile = path.join(wfDir, 'ci.yml');
+    const customContent = '# My Custom Workflow\nname: CustomCI\n';
+    fs.writeFileSync(ciFile, customContent, 'utf-8');
+
+    const res = installPack(tmpDir, 'ci', { force: true });
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(res.actions.some((a) => a.includes('.github/workflows/ci.yml')));
+    const newContent = fs.readFileSync(ciFile, 'utf-8');
+    assert.ok(newContent.includes('name: CI'));
+  });
+
+  test('supports dry-run mode for ci pack without writing workflow file', () => {
+    const res = installPack(tmpDir, 'ci', { dryRun: true });
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(res.actions.some((a) => a.includes('.github/workflows/ci.yml')));
+
+    const ciFile = path.join(tmpDir, '.github', 'workflows', 'ci.yml');
+    assert.strictEqual(fs.existsSync(ciFile), false);
+    assert.strictEqual(fs.existsSync(res.configPath), false);
   });
 });
 

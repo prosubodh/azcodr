@@ -124,3 +124,16 @@ A user story or task is only marked `DONE` when all of the following verifiable 
 
 - If an ambiguity or invariant breach arises, immediately transition the task to `BLOCKED`, halt execution, and interrogate the root cause using the Relentless Questioning protocol.
 - Never write speculative code or make optimistic assumptions to bypass an unresolved requirement.
+
+---
+
+## 8. Project Sovereignty & Governance Tooling Boundary
+
+When an agent operates within a downstream repository governed by `azcodr`, the agent's singular focus must remain on the downstream project itself—its domain problem, business logic, and direct user prompts—**never** on modifying, debugging, or "fixing" `azcodr` governance tooling.
+
+### Mandatory Protocol:
+1. **Focus Strictly on the Project:** Agents must direct 100% of their reasoning, edits, and implementation cycles toward the application's domain code and user requirements. Do not refactor or tinker with `azcodr`, `.agents/scripts/`, `harness.yaml`, or governance rules to solve perceived shortcomings of the governance framework itself.
+2. **Deterministic Logging of Governance Issues:** If a defect, edge case, false positive, or limitation in `azcodr` is encountered during development:
+   - **Do not derail the project:** Never abandon or pause the user's primary feature request to rewrite or patch `azcodr` within the downstream workspace.
+   - **Record with comprehensive context:** Note the issue in full detail (command invoked, exact error text, steps to reproduce, expected vs. actual behavior).
+   - **Deliver inline on demand (suppress otherwise):** Suppress all reporting during normal task execution. Present the findings inline in clean Markdown only and strictly when the user explicitly asks for a report on `azcodr` issues.
