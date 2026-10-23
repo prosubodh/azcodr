@@ -1,5 +1,5 @@
 import path from 'node:path';
-import { checkPromptLedger } from './prompt-ledger.js';
+import { checkPromptLedger, pruneCompletedLedger } from './prompt-ledger.js';
 import type { CliParsedOptions } from './cli-parse.js';
 
 export interface PromptIo {
@@ -16,6 +16,18 @@ export function handlePromptCommand(
   const targetRoot = parsed.targetDir
     ? path.resolve(io.cwd, parsed.targetDir)
     : io.cwd;
+
+  if (parsed.prune) {
+    const result = pruneCompletedLedger(targetRoot);
+    if (!result.deleted) {
+      io.err(`🚨 ${result.reason || 'Failed to prune prompt ledger.'}`);
+      return io.exit(1);
+    }
+    if (!parsed.silent) {
+      io.out('✅ Completed prompt ledger successfully deleted.');
+    }
+    return io.exit(0);
+  }
 
   const status = checkPromptLedger(targetRoot);
 

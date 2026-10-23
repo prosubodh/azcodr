@@ -37,8 +37,8 @@ export type { ScaffoldOptions, ScaffoldResult, ValidateTargetOptions, CopyTempla
 /**
  * Prompt Ledger & Zero-Unattended-Prompt Invariant enforcement.
  */
-export { parsePromptLedger, checkPromptLedger, resolveLedgerPath, inspectPromptCommit } from './prompt-ledger.js';
-export type { PromptDirective, PromptLedgerStatus, PromptCommitInspection } from './prompt-ledger.js';
+export { parsePromptLedger, checkPromptLedger, resolveLedgerPath, inspectPromptCommit, pruneCompletedLedger } from './prompt-ledger.js';
+export type { PromptDirective, PromptLedgerStatus, PromptCommitInspection, PromptPruneResult } from './prompt-ledger.js';
 export { handlePromptCommand } from './cli-prompt.js';
 export type { PromptIo } from './cli-prompt.js';
 /**

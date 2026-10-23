@@ -39,7 +39,7 @@ Commands:
   [directory]            Scaffold azcodr into directory (default: current directory)
   check [directory]      Validate architecture and governance rules (alias: validate, audit)
   boundaries [directory] Inspect dependency cycles and layer boundaries (alias: boundary, cycles)
-  prompt [directory]     Check prompt ledger integrity (alias: ledger)
+  prompt [prune] [dir]   Check prompt ledger integrity or delete completed ledger (alias: ledger)
   add <pack>             Install a governance capability pack (TDD, boundaries, coverage, etc.)
 
 Options:
@@ -47,6 +47,7 @@ Options:
   -s, --silent    Suppress console output messages
   -f, --force     Overwrite existing files in target directory without confirmation
   --no-git        Do not initialize a git repository
+  --prune         Delete prompt ledger if all directives are completed
   -v, --version   Display version number
   -h, --help      Display this help message
 

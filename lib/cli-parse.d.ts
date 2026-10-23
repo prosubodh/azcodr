@@ -9,6 +9,7 @@ export interface CliParsedOptions {
     command: CliCommand;
     targetDir: string | null;
     packName?: string | null;
+    prune?: boolean;
     force: boolean;
     noGit: boolean;
     dryRun: boolean;
@@ -16,7 +17,7 @@ export interface CliParsedOptions {
     terminal: 'help' | 'version' | 'unknown-flag' | 'extra-arg' | null;
     message?: string;
 }
-export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent';
+export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent' | 'prune';
 export declare function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'>;
 export declare const CHECK_COMMANDS: Set<string>;
 export declare const BOUNDARY_COMMANDS: Set<string>;

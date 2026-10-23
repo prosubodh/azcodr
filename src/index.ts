@@ -152,12 +152,14 @@ export {
   parsePromptLedger,
   checkPromptLedger,
   resolveLedgerPath,
-  inspectPromptCommit
+  inspectPromptCommit,
+  pruneCompletedLedger
 } from './prompt-ledger.js';
 export type {
   PromptDirective,
   PromptLedgerStatus,
-  PromptCommitInspection
+  PromptCommitInspection,
+  PromptPruneResult
 } from './prompt-ledger.js';
 export { handlePromptCommand } from './cli-prompt.js';
 export type { PromptIo } from './cli-prompt.js';

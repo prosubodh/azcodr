@@ -25,4 +25,10 @@ export interface PromptCommitInspection {
     reason?: string;
 }
 export declare function inspectPromptCommit(command: string, workspaceRoot?: string): PromptCommitInspection;
+export interface PromptPruneResult {
+    deleted: boolean;
+    reason?: string;
+    filePath?: string;
+}
+export declare function pruneCompletedLedger(targetDirOrFile?: string): PromptPruneResult;
 //# sourceMappingURL=prompt-ledger.d.ts.map

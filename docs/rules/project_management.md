@@ -55,15 +55,16 @@ Before editing or replacing any frontend shell, layout, or component:
 - **Strict WIP Limit (WIP = 1):** Maintain a Work-In-Progress (WIP) limit of **exactly 1 atomic task** at any given time. Never begin a new task while a previous task is incomplete, untested, or failing.
 - **Vertical Cake Slicing:** Stories must deliver full-stack value across UI, API, Domain, and DB layers (no horizontal layers like "create migration only" or "make UI mock only").
 
-### 4.1. The Zero-Unattended-Prompt Invariant & Raw Request Ledger
+### 4.1. The Zero-Unattended-Prompt Invariant & Ephemeral Prompt Ledger
 Autonomous agents frequently suffer from "directive drop"—fulfilling one part of a multi-clause user prompt while silently abandoning secondary constraints or questions. To guarantee absolute execution fidelity:
-1. **Raw Request Ledger:** Every user prompt must be broken into its atomic request items and recorded in an active Pending Request Ledger upon receipt.
+1. **Raw Request Ledger:** Every user prompt must be broken into its atomic request items and recorded in an active Pending Request Ledger (`.agents/ledger/pending.md`) upon receipt.
 2. **Deterministic Lifecycle:**
    ```
-   [User Prompt] ──► Logged to PENDING ──► IN_PROGRESS (WIP=1) ──► VERIFIED ──► REMOVED/CLEARED
+   [User Prompt] ──► Logged to PENDING ──► IN_PROGRESS (WIP=1) ──► VERIFIED ──► PRUNED/DELETED
    ```
-3. **Zero Early Exits:** An agent is **STRICTLY FORBIDDEN** from declaring a task complete, transitioning to another prompt, or ending its turn while any raw user directive or sub-item remains in `PENDING` state.
-4. **Verified Handling Gate:** An item may only be marked handled or removed when concrete, verified evidence (test assertion output, terminal verification, code diff, or explicit answers) proves that specific directive has been fulfilled.
+3. **Completed Ledger Deletion:** The ledger is an ephemeral, active working scratchpad for the duration of the request. Once 100% of directives in the ledger are verified with concrete evidence and resolved (or committed), the completed ledger must be deleted (`rm .agents/ledger/pending.md` or `npx azcodr prompt prune`) so stale completed items never accumulate into subsequent task contexts.
+4. **Zero Early Exits:** An agent is **STRICTLY FORBIDDEN** from declaring a task complete, transitioning to another prompt, or ending its turn while any raw user directive or sub-item remains in `PENDING` state.
+5. **Verified Handling Gate:** An item may only be marked handled or removed when concrete, verified evidence (test assertion output, terminal verification, code diff, or explicit answers) proves that specific directive has been fulfilled.
 
 ### 4.2. Mandatory Confusion Resolution & Prioritization Protocol
 When an agent encounters ambiguity, conflicting directives, multi-task backlogs, partial implementation states, or operational confusion, the agent **MUST prioritize all pending ledger items before executing** any code or mutating workspace files:

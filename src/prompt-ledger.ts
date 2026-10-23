@@ -110,3 +110,43 @@ export function inspectPromptCommit(
     reason
   };
 }
+
+export interface PromptPruneResult {
+  deleted: boolean;
+  reason?: string;
+  filePath?: string;
+}
+
+export function pruneCompletedLedger(
+  targetDirOrFile: string = process.cwd()
+): PromptPruneResult {
+  const filePath = resolveLedgerPath(targetDirOrFile);
+  if (!fs.existsSync(filePath)) {
+    return {
+      deleted: false,
+      reason: 'No prompt ledger found at target location.'
+    };
+  }
+
+  const status = checkPromptLedger(targetDirOrFile);
+  if (!status.clean) {
+    return {
+      deleted: false,
+      reason: `Cannot delete ledger: ${status.pendingCount} directive(s) are still pending. Complete all items before deleting.`
+    };
+  }
+
+  try {
+    fs.unlinkSync(filePath);
+    return {
+      deleted: true,
+      filePath
+    };
+  } catch (err: unknown) {
+    return {
+      deleted: false,
+      reason: `Failed to delete ledger file: ${err instanceof Error ? err.message : String(err)}`
+    };
+  }
+}
+

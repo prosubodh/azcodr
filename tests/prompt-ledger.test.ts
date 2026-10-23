@@ -3,7 +3,7 @@ import fs from 'node:fs';
 import os from 'node:os';
 import path from 'node:path';
 import { describe, test } from 'vitest';
-import { parsePromptLedger, checkPromptLedger, inspectPromptCommit } from '../src/prompt-ledger.js';
+import { parsePromptLedger, checkPromptLedger, inspectPromptCommit, pruneCompletedLedger } from '../src/prompt-ledger.js';
 
 describe('prompt-ledger: parsing markdown checkbox items', () => {
   test('returns clean: true when markdown has no checkboxes', () => {
@@ -134,6 +134,45 @@ describe('prompt-ledger: inspectPromptCommit interception', () => {
     assert.strictEqual(typeof result.blocked, 'boolean');
   });
 });
+
+describe('prompt-ledger: pruneCompletedLedger', () => {
+  test('returns deleted: false when no ledger exists at target', () => {
+    const result = pruneCompletedLedger('/non/existent/path/for/sure');
+    assert.strictEqual(result.deleted, false);
+    assert.match(result.reason ?? '', /No prompt ledger found/);
+  });
+
+  test('refuses to delete ledger when pending directives exist', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-ledger-prune-'));
+    const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+    fs.mkdirSync(ledgerDir, { recursive: true });
+    const ledgerFile = path.join(ledgerDir, 'pending.md');
+    fs.writeFileSync(ledgerFile, '# Active Ledger\n- [ ] Unfinished task\n', 'utf-8');
+
+    const result = pruneCompletedLedger(tmpDir);
+    assert.strictEqual(result.deleted, false);
+    assert.match(result.reason ?? '', /Cannot delete ledger: 1 directive\(s\) are still pending/);
+    assert.ok(fs.existsSync(ledgerFile));
+
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test('unlinks file and returns deleted: true when all directives are completed', () => {
+    const tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-ledger-prune-'));
+    const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+    fs.mkdirSync(ledgerDir, { recursive: true });
+    const ledgerFile = path.join(ledgerDir, 'pending.md');
+    fs.writeFileSync(ledgerFile, '# Active Ledger\n- [x] Task 1\n- [x] Task 2\n', 'utf-8');
+
+    const result = pruneCompletedLedger(tmpDir);
+    assert.strictEqual(result.deleted, true);
+    assert.strictEqual(result.filePath, ledgerFile);
+    assert.strictEqual(fs.existsSync(ledgerFile), false);
+
+    fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+});
+
 
 
 
