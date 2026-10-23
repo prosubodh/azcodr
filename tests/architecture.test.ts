@@ -244,7 +244,7 @@ describe('Architecture: rules and ledger hygiene', () => {
     const withoutComments = mem.replace(/<!--[\s\S]*?-->/g, '');
     const ids = [...withoutComments.matchAll(/^#### ADR-(\d+)/gm)].map((m) => Number(m[1]));
     for (const id of ids) {
-      assert.ok(id >= 1 && id <= 33, `ADR-${id} looks like leaked template numbering`);
+      assert.ok(id >= 1 && id <= 34, `ADR-${id} looks like leaked template numbering`);
     }
   });
 

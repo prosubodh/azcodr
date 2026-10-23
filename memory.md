@@ -50,6 +50,7 @@
 | [ADR-031](./memory.md#adr-031-dynamic-protected-branch-interception-git-pre-push-guard-and-pull-request-governance) | Dynamic Protected Branch Interception, Git Pre-Push Guard, and Pull Request Governance | 2026-10-23 | ACCEPTED | [`project_management.md`](./docs/rules/project_management.md) |
 | [ADR-032](./memory.md#adr-032-continuous-delivery-canon-deployment-pipeline-architecture-and-environment-parity) | Continuous Delivery Canon, Deployment Pipeline Architecture, and Environment Parity | 2026-10-23 | ACCEPTED | [`continuous_delivery.md`](./docs/rules/continuous_delivery.md) |
 | [ADR-033](./memory.md#adr-033-continuous-integration-canon-dora-key-metrics-and-empirical-devops-science) | Continuous Integration Canon, DORA Key Metrics, and Empirical DevOps Science | 2026-10-23 | ACCEPTED | [`continuous_integration.md`](./docs/rules/continuous_integration.md) |
+| [ADR-034](./memory.md#adr-034-ephemeral-prompt-ledger-lifecycle-deletion-of-completed-ledgers) | Ephemeral Prompt Ledger Lifecycle: Deletion of Completed Ledgers | 2026-10-23 | ACCEPTED | [`project_management.md`](./docs/rules/project_management.md) |
 
 ---
 
@@ -194,6 +195,14 @@
 - **Decision:** (1) Author `docs/rules/continuous_integration.md` codifying Duvall's 7 Core Practices of Continuous Integration (daily integration, private builds before commit, immediate stop-the-line remediation, automated tests, full inspection compliance), Continuous Database Integration (CDBI), and executable fitness functions ($\le 300$ lines/file, $\le 30$ lines/function, $\le 3$ params, complexity $\le 10$, 0 cycles). (2) Author `docs/rules/dora_metrics.md` codifying the 4 DORA Key Metrics (Deployment Frequency, Lead Time for Changes, Change Failure Rate, Time to Restore Service / MTTR), the architectural enablers of high performance (independent deployability and testability), and the Westrum Generative Culture model (high cooperation, shared risk, blameless inquiry).
 - **Consequences:** ✅ Grounded workspace rules in the definitive empirical science of software engineering (Duvall et al., Forsgren et al.). ✅ Eliminates architectural coupling and provides clear metrics for engineering velocity and stability. ✅ Full compliance with 24KB rule token cap and standardized Core Mandate structure.
 - **Enforced In:** `docs/rules/continuous_integration.md`, `docs/rules/dora_metrics.md`, `memory.md`, `tests/architecture.test.ts`
+
+#### ADR-034: Ephemeral Prompt Ledger Lifecycle: Deletion of Completed Ledgers
+- **Date:** 2026-10-23 | **Status:** ACCEPTED
+- **Context:** The active Pending Request Ledger (`.agents/ledger/pending.md`) was introduced to enforce the Zero-Unattended-Prompt Invariant across agent interactions. Over extended sessions, resolved items accumulated indefinitely into a bloated multi-kilobyte file tracking tens of historical prompts. Retaining historical completed items in an active ledger pollutes agent context windows and conflicts with the principle that `git` and `memory.md` serve as immutable archives.
+- **Decision:** (1) Codify the prompt ledger as an ephemeral execution buffer with an explicit deletion lifecycle: `PENDING ──► IN_PROGRESS ──► VERIFIED ──► PRUNED/DELETED`. (2) Implement `pruneCompletedLedger()` in `src/prompt-ledger.ts` and CLI command `azcodr prompt prune` (or `--prune`). The pruning routine fails closed: if any directive remains uncompleted, deletion is rejected with exit code 1. When all items are verified, the ledger file is unlinked. (3) Update Ground Rule 11 in `AGENTS.md` and Section 4.1 in `docs/rules/project_management.md`.
+- **Consequences:** ✅ Historical ledger accumulation eliminated; workspaces remain clean. ✅ Fail-closed safety ensures uncompleted directives cannot be prematurely deleted. ✅ `azcodr prompt` exits 0 both when no ledger exists and when an active ledger is 100% completed. ⚠️ Agents must recreate `.agents/ledger/pending.md` afresh when a new multi-step request arrives.
+- **Enforced In:** `src/prompt-ledger.ts`, `src/cli-prompt.ts`, `src/cli-parse.ts`, `src/cli.ts`, `src/index.ts`, `docs/rules/project_management.md`, `AGENTS.md`, `tests/prompt-ledger.test.ts`, `tests/cli-prompt.test.ts`, `tests/architecture.test.ts`
+
 
 
 

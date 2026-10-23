@@ -11,6 +11,7 @@ export interface CliParsedOptions {
   command: CliCommand;
   targetDir: string | null;
   packName?: string | null;
+  prune?: boolean;
   force: boolean;
   noGit: boolean;
   dryRun: boolean;
@@ -19,13 +20,14 @@ export interface CliParsedOptions {
   message?: string;
 }
 
-export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent';
+export type BooleanFlagKey = 'force' | 'noGit' | 'dryRun' | 'silent' | 'prune';
 
 export function emptyOptions(): Omit<CliParsedOptions, 'terminal' | 'message'> {
   return {
     command: 'scaffold',
     targetDir: null,
     packName: null,
+    prune: false,
     force: false,
     noGit: false,
     dryRun: false,
@@ -45,7 +47,8 @@ export const BOOLEAN_FLAGS = new Map<string, BooleanFlagKey>([
   ['-d', 'dryRun'],
   ['--dry-run', 'dryRun'],
   ['-s', 'silent'],
-  ['--silent', 'silent']
+  ['--silent', 'silent'],
+  ['--prune', 'prune']
 ]);
 
 export interface ArgOutcome {
@@ -100,6 +103,10 @@ export function applyArg(
     };
   }
   if (checkCommandKeyword(arg, state)) return { terminal: null };
+  if (state.command === 'prompt' && (arg === 'prune' || arg === 'clean')) {
+    state.prune = true;
+    return { terminal: null };
+  }
   if (state.command === 'add') {
     if (!state.packName) {
       state.packName = arg;

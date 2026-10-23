@@ -162,5 +162,115 @@ describe('CLI Prompt Command (Prompt Ledger Integrity)', () => {
       assert.strictEqual(code ?? exitCode, 0);
       assert.ok(logs.some((l) => l.includes('Prompt Ledger Clean')));
     });
+
+    test('prune option deletes clean ledger and exits 0', () => {
+      const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+      fs.mkdirSync(ledgerDir, { recursive: true });
+      const ledgerFile = path.join(ledgerDir, 'pending.md');
+      fs.writeFileSync(ledgerFile, '# Active Ledger\n- [x] All done\n', 'utf-8');
+
+      const logs: string[] = [];
+      let exitCode: number | null = null;
+
+      const code = handlePromptCommand(
+        { command: 'prompt', targetDir: null, prune: true, force: false, noGit: false, dryRun: false, silent: false, terminal: null },
+        {
+          out: (m) => logs.push(m),
+          err: (m) => logs.push(m),
+          exit: (c) => { exitCode = c; return c; },
+          cwd: tmpDir
+        }
+      );
+
+      assert.strictEqual(code ?? exitCode, 0);
+      assert.ok(logs.some((l) => l.includes('Completed prompt ledger successfully deleted')));
+      assert.strictEqual(fs.existsSync(ledgerFile), false);
+    });
+
+    test('prune option refuses to delete ledger with pending items and exits 1', () => {
+      const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+      fs.mkdirSync(ledgerDir, { recursive: true });
+      const ledgerFile = path.join(ledgerDir, 'pending.md');
+      fs.writeFileSync(ledgerFile, '# Active Ledger\n- [ ] Still to do\n', 'utf-8');
+
+      const logs: string[] = [];
+      let exitCode: number | null = null;
+
+      const code = handlePromptCommand(
+        { command: 'prompt', targetDir: null, prune: true, force: false, noGit: false, dryRun: false, silent: false, terminal: null },
+        {
+          out: (m) => logs.push(m),
+          err: (m) => logs.push(m),
+          exit: (c) => { exitCode = c; return c; },
+          cwd: tmpDir
+        }
+      );
+
+      assert.strictEqual(code ?? exitCode, 1);
+      assert.ok(logs.some((l) => l.includes('Cannot delete ledger')));
+      assert.strictEqual(fs.existsSync(ledgerFile), true);
+    });
+
+    test('prune option exits 1 when no ledger exists to prune', () => {
+      const logs: string[] = [];
+      let exitCode: number | null = null;
+
+      const code = handlePromptCommand(
+        { command: 'prompt', targetDir: null, prune: true, force: false, noGit: false, dryRun: false, silent: false, terminal: null },
+        {
+          out: (m) => logs.push(m),
+          err: (m) => logs.push(m),
+          exit: (c) => { exitCode = c; return c; },
+          cwd: tmpDir
+        }
+      );
+
+      assert.strictEqual(code ?? exitCode, 1);
+      assert.ok(logs.some((l) => l.includes('No prompt ledger found')));
+    });
+
+    test('prune option respects silent flag on success', () => {
+      const ledgerDir = path.join(tmpDir, '.agents', 'ledger');
+      fs.mkdirSync(ledgerDir, { recursive: true });
+      const ledgerFile = path.join(ledgerDir, 'pending.md');
+      fs.writeFileSync(ledgerFile, '# Active Ledger\n- [x] All done\n', 'utf-8');
+
+      const logs: string[] = [];
+      let exitCode: number | null = null;
+
+      const code = handlePromptCommand(
+        { command: 'prompt', targetDir: null, prune: true, force: false, noGit: false, dryRun: false, silent: true, terminal: null },
+        {
+          out: (m) => logs.push(m),
+          err: (m) => logs.push(m),
+          exit: (c) => { exitCode = c; return c; },
+          cwd: tmpDir
+        }
+      );
+
+      assert.strictEqual(code ?? exitCode, 0);
+      assert.strictEqual(logs.length, 0);
+      assert.strictEqual(fs.existsSync(ledgerFile), false);
+    });
+  });
+
+  describe('parseArgs prune recognition', () => {
+    test('parses prompt prune subcommand', () => {
+      const parsed = parseArgs(['prompt', 'prune']);
+      assert.strictEqual(parsed.command, 'prompt');
+      assert.strictEqual(parsed.prune, true);
+    });
+
+    test('parses prompt clean alias', () => {
+      const parsed = parseArgs(['prompt', 'clean']);
+      assert.strictEqual(parsed.command, 'prompt');
+      assert.strictEqual(parsed.prune, true);
+    });
+
+    test('parses prompt --prune flag', () => {
+      const parsed = parseArgs(['prompt', '--prune']);
+      assert.strictEqual(parsed.command, 'prompt');
+      assert.strictEqual(parsed.prune, true);
+    });
   });
 });

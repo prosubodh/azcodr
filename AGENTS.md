@@ -14,7 +14,7 @@ Azcodr provides executable governance checks: boundary & cycle detection, fail-c
 8. **Append decisions.** Record architecture decisions in `memory.md`; git is the archive of everything else.
 9. **No dead code.** Delete it or wire it up.
 10. **Say when unsure.** Degraded or ambiguous input is unverified; say so rather than guess.
-11. **Zero unattended requests.** Every user request must be logged and tracked until resolved with concrete evidence (tests, output, or explicit answer).
+11. **Zero unattended requests.** Every user request must be logged and tracked until resolved with concrete evidence (tests, output, or explicit answer). Once all items in the ledger are verified and resolved, delete the completed ledger.
 
 ## Commands
 
