@@ -33,6 +33,8 @@ export { runValidation, parseArgs, main, createReporter, walkMarkdown, readTextO
 export { validate } from './validate.js';
 export { createSilentReporter } from './validator/io.js';
 export { scaffold, validateTarget, copyTemplate, ensureSymlink, ensureSymlinkOrPointer, isSameCaseInsensitiveFile, makeScriptsExecutable, initGit, installPrePushHook, isInsideGitWorkTree, runGit, assertInside, isProtectedTarget, getTemplateDir, purgeAzcodrTests, TEMPLATE_ITEMS, ScaffoldError, ERROR_CODES } from './scaffold.js';
+export { bootstrapWorkspace, SUPPORTED_LANGUAGES, TOPOLOGY_ALIASES } from './topology.js';
+export type { BootstrapOptions, BootstrapResult, SupportedLanguage } from './topology.js';
 export type { ScaffoldOptions, ScaffoldResult, ValidateTargetOptions, CopyTemplateOptions, EnsureSymlinkOptions, InitGitOptions, InstallHookOptions, InstallHookResult, ScaffoldErrorShape, ScaffoldErrorCode } from './scaffold.js';
 /**
  * Prompt Ledger & Zero-Unattended-Prompt Invariant enforcement.

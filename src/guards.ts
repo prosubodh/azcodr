@@ -62,7 +62,7 @@ export function normalizeForComparison(p: string): string {
 
 function readHomeDir(): string {
   try {
-    return os.homedir();
+    return process.env.HOME || os.homedir();
   } catch {
     return '';
   }

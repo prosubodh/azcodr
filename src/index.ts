@@ -136,6 +136,17 @@ export {
   ERROR_CODES
 } from './scaffold.js';
 
+export {
+  bootstrapWorkspace,
+  SUPPORTED_LANGUAGES,
+  TOPOLOGY_ALIASES
+} from './topology.js';
+export type {
+  BootstrapOptions,
+  BootstrapResult,
+  SupportedLanguage
+} from './topology.js';
+
 export type {
   ScaffoldOptions,
   ScaffoldResult,
