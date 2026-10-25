@@ -72,6 +72,13 @@ export default [
 ];
 `;
 
+export const OXLINT_CONFIG = `{
+  "rules": {
+    "no-unused-vars": "error"
+  }
+}
+`;
+
 export const RUFF_CONFIG = `# Deterministic fitness functions (azcodr clean_code.md section 5).
 # Install the pinned tool, then prove the gate: ruff check .
 [lint]

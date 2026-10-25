@@ -13,9 +13,14 @@ const root = path.resolve(selfDir, "../../../..");
 
 async function getBootstrapModule() {
   const candidates = [
+    process.env.AZCODR_BOOTSTRAP_MODULE,
     path.join(root, "lib", "index.js"),
-    path.join(root, "src", "index.ts")
-  ];
+    path.join(root, "src", "index.ts"),
+    path.resolve(selfDir, "../../../lib/index.js"),
+    path.resolve(selfDir, "../../../../node_modules/@azcodr/azcodr/lib/index.js"),
+    path.resolve(selfDir, "../../../../node_modules/azcodr/lib/index.js")
+  ].filter(Boolean);
+
   for (const c of candidates) {
     if (fs.existsSync(c)) {
       try {
@@ -23,6 +28,14 @@ async function getBootstrapModule() {
       } catch {}
     }
   }
+
+  try {
+    return await import("@azcodr/azcodr");
+  } catch {}
+  try {
+    return await import("azcodr");
+  } catch {}
+
   throw new Error("Unable to resolve azcodr bootstrap module.");
 }
 

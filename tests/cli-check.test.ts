@@ -1,4 +1,6 @@
 import assert from 'node:assert/strict';
+import fs from 'node:fs';
+import os from 'node:os';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
 import { execFileSync } from 'node:child_process';
@@ -115,6 +117,28 @@ describe('CLI Check & Validate Command (Track 1)', () => {
       });
       await runCli(['check', 'docs'], io);
       assert.strictEqual(io.exitCode, 0);
+    });
+
+    test('exits 0 without checking boundaries when src directory has no analysable JS/TS files', async () => {
+      let boundariesCalled = false;
+      const fakeDir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-check-polyglot-'));
+      try {
+        fs.mkdirSync(path.join(fakeDir, 'src'), { recursive: true });
+        fs.writeFileSync(path.join(fakeDir, 'src', 'main.rs'), 'fn main() {}', 'utf-8');
+        const io = createCheckMockIo({
+          cwd: fakeDir,
+          validate: async () => ({ errors: 0, warnings: 0 })
+        }) as any;
+        io.boundaries = async () => {
+          boundariesCalled = true;
+          return 0;
+        };
+        await runCli(['check'], io);
+        assert.strictEqual(boundariesCalled, false);
+        assert.strictEqual(io.exitCode, 0);
+      } finally {
+        fs.rmSync(fakeDir, { recursive: true, force: true });
+      }
     });
 
     test('delegates to boundaries when target has src directory', async () => {

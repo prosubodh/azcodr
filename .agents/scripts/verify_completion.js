@@ -9,6 +9,8 @@ import path from 'node:path';
 import process from 'node:process';
 import { spawnSync } from 'node:child_process';
 
+const npmCmd = process.platform === 'win32' ? 'npm.cmd' : 'npm';
+
 function loadPackageJson() {
   const pkgPath = path.resolve(process.cwd(), 'package.json');
   if (!fs.existsSync(pkgPath)) return null;
@@ -21,9 +23,8 @@ function loadPackageJson() {
 
 function runNpmScript(name, label) {
   console.error(label);
-  const result = spawnSync('npm', ['run', name, '--silent'], {
-    stdio: 'inherit',
-    shell: true
+  const result = spawnSync(npmCmd, ['run', name, '--silent'], {
+    stdio: 'inherit'
   });
   return result.status === 0;
 }
@@ -53,14 +54,22 @@ function main() {
     ranAny = true;
     if (!runNpmScript('validate', '🔍 Running architecture validation...')) failed = true;
   }
+
+  let ranCoverage = false;
   if (typeof scripts['test:coverage'] === 'string') {
     ranAny = true;
-    if (!verifyCoverageGate()) failed = true;
+    if (!verifyCoverageGate()) {
+      failed = true;
+    } else {
+      ranCoverage = true;
+    }
   }
-  if (typeof scripts.test === 'string') {
+
+  if (!ranCoverage && typeof scripts.test === 'string') {
     ranAny = true;
     if (!runNpmScript('test', '🧪 Running test suite...')) failed = true;
   }
+
   if (typeof scripts.lint === 'string') {
     ranAny = true;
     if (!runNpmScript('lint', '🔎 Running lint...')) failed = true;

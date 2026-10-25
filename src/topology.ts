@@ -6,6 +6,7 @@ import {
   TOKENS_JSON,
   MEMORY_TEMPLATE,
   ESLINT_CONFIG,
+  OXLINT_CONFIG,
   RUFF_CONFIG,
   CLIPPY_CONFIG,
   GOLANGCI_CONFIG,
@@ -96,6 +97,7 @@ function emitToolchain(targetDir: string, lang: string, actions: string[], dryRu
     case 'deno':
     case 'bun':
       writeUnlessExists(path.join(targetDir, 'eslint.config.js'), ESLINT_CONFIG, actions, dryRun);
+      writeUnlessExists(path.join(targetDir, '.oxlintrc.json'), OXLINT_CONFIG, actions, dryRun);
       break;
     case 'python':
       writeUnlessExists(path.join(targetDir, 'ruff.toml'), RUFF_CONFIG, actions, dryRun);

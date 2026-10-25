@@ -4,7 +4,7 @@ import process from 'node:process';
 import { scaffold, getTemplateDir } from './scaffold.js';
 import type { ScaffoldOptions, ScaffoldResult } from './scaffold.js';
 import { validate, createSilentReporter } from './validate.js';
-import { handleBoundariesCommand } from './cli-boundaries.js';
+import { handleBoundariesCommand, findSourceFiles } from './cli-boundaries.js';
 import { handlePromptCommand } from './cli-prompt.js';
 import { handleAddCommand } from './cli-add.js';
 import { printHelp, printVersion } from './cli-help.js';
@@ -98,7 +98,7 @@ async function handleCheckCommand(
   if (result.errors !== 0) return fullIo.exit(1);
 
   const srcDir = path.join(checkDir, 'src');
-  if (fs.existsSync(srcDir)) {
+  if (fs.existsSync(srcDir) && findSourceFiles(srcDir).length > 0) {
     return fullIo.boundariesFn({ ...parsed, targetDir: srcDir }, fullIo);
   }
   return fullIo.exit(0);

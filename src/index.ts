@@ -13,7 +13,10 @@ export type {
   ProjectFacts,
   AppliesWhen,
   Severity,
-  Methodology
+  Methodology,
+  GithubPmConfig,
+  IssueTrackingMode,
+  AdrHostingMode
 } from './harness-config.js';
 
 export type {
@@ -26,6 +29,7 @@ export {
   loadHarnessConfig,
   parseHarnessConfig,
   defaultConfig,
+  defaultGithubPmConfig,
   HarnessConfigError,
   CONFIG_FILE_NAMES,
   CORE_CHECK_IDS,

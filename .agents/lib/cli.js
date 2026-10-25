@@ -1,49 +1,15 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
-import { fileURLToPath } from 'node:url';
 import { scaffold, getTemplateDir } from './scaffold.js';
 import { validate, createSilentReporter } from './validate.js';
-import { handleBoundariesCommand } from './cli-boundaries.js';
+import { handleBoundariesCommand, findSourceFiles } from './cli-boundaries.js';
 import { handlePromptCommand } from './cli-prompt.js';
+import { handleAddCommand } from './cli-add.js';
+import { printHelp, printVersion } from './cli-help.js';
+import { isScriptCommand, handleScriptCommand } from './cli-scripts.js';
 import { parseArgs } from './cli-parse.js';
 import { askQuestion, resolveTargetDir, ensureWritableTarget } from './cli-target.js';
-const pkg = JSON.parse(fs.readFileSync(path.join(path.dirname(fileURLToPath(import.meta.url)), '..', 'package.json'), 'utf-8'));
-export function printHelp(out = console.log) {
-    out(`
-azcodr v${pkg.version}
-Enterprise Multi-Tenant Architecture & Agentic Engineering Starter Template
-
-Usage:
-  npx azcodr [directory] [options]
-  npx azcodr check [directory] [options]
-  npx azcodr boundaries [directory] [options]
-
-Commands:
-  [directory]            Scaffold azcodr template into directory (default: current directory)
-  check [directory]      Validate architecture and governance rules (alias: validate, audit)
-  boundaries [directory] Inspect dependency cycles and layer boundaries (alias: boundary, cycles)
-  prompt [directory]     Check prompt ledger integrity (alias: ledger)
-
-Options:
-  -d, --dry-run   Simulate scaffolding without modifying filesystem
-  -s, --silent    Suppress console output messages
-  -f, --force     Overwrite existing files in target directory without confirmation
-  --no-git        Do not initialize a git repository
-  -v, --version   Display version number
-  -h, --help      Display this help message
-
-Examples:
-  npx azcodr my-project
-  npx azcodr check
-  npx azcodr boundaries ./src
-  npx azcodr check ./existing-repo
-  npx azcodr . --dry-run
-`);
-}
-export function printVersion(out = console.log) {
-    out(pkg.version);
-}
 function defaultStreams(io) {
     return {
         out: io.out ?? console.log,
@@ -62,11 +28,13 @@ function normalizeIo(io) {
         scaffoldFn: io.scaffold ?? scaffold,
         validateFn: io.validate ?? validate,
         boundariesFn: io.boundaries ?? handleBoundariesCommand,
-        promptFn: io.prompt ?? handlePromptCommand
+        promptFn: io.prompt ?? handlePromptCommand,
+        addFn: io.add ?? handleAddCommand,
+        scriptFn: io.script ?? handleScriptCommand
     };
 }
 function outBanner(fullIo) {
-    fullIo.out('\n🚀 azcodr - Enterprise Multi-Tenant Architecture & Agentic Engineering\n');
+    fullIo.out('\n🚀 azcodr - Architecture governance toolkit\n');
 }
 function handleTerminal(parsed, io) {
     const { out, err, exit } = io;
@@ -88,7 +56,7 @@ async function handleCheckCommand(parsed, fullIo) {
     if (result.errors !== 0)
         return fullIo.exit(1);
     const srcDir = path.join(checkDir, 'src');
-    if (fs.existsSync(srcDir)) {
+    if (fs.existsSync(srcDir) && findSourceFiles(srcDir).length > 0) {
         return fullIo.boundariesFn({ ...parsed, targetDir: srcDir }, fullIo);
     }
     return fullIo.exit(0);
@@ -100,12 +68,12 @@ function reportDryRun(result, out) {
     out('\n🎉 Dry run completed. 0 files modified on disk.\n');
 }
 function reportSuccess(result, targetDir, out) {
-    out('  ✅ Progressive disclosure rules copied (docs/rules/)');
-    out('  ✅ Workspace knowledge hub and ADR ledger copied (docs/knowledge/, memory.md)');
-    out('  ✅ Specialized agentic skills copied (.agents/skills/)');
-    out('  ✅ Editor formatting standards initialized (.editorconfig)');
-    out('  ✅ Agent directives and harness symlinks established (AGENTS.md, CLAUDE.md, agents.md, GEMINI.md, .cursorrules, .windsurfrules, .github/copilot-instructions.md)');
-    out('  ✅ Project configuration initialized (package.json)');
+    out('  ✅ AGENTS.md — neutral root agent contract');
+    out('  ✅ memory.md — architecture decision record log');
+    out('  ✅ README.md — project documentation starter');
+    out('  ✅ .gitignore — version control ignore rules');
+    out('  ✅ .editorconfig — editor formatting standards');
+    out('  ✅ LICENSE — project license');
     if (result.gitInitialized) {
         out('  ✅ Git repository initialized');
     }
@@ -115,8 +83,9 @@ function reportSuccess(result, targetDir, out) {
     if (targetDir !== '.' && targetDir !== './') {
         out(`  ${step++}. cd ${targetDir}`);
     }
-    out(`  ${step++}. Open the project in your AI coding assistant (Antigravity, Claude Code, Cursor, OpenHands)`);
-    out(`  ${step++}. Run /lets-build to start the architectural interview and scaffold your application stack!\n`);
+    out(`  ${step++}. Open the project in your AI coding assistant`);
+    out(`  ${step++}. Run /lets-build to start the requirements interview (needs drive tools, not the other way around)`);
+    out(`  ${step++}. Run azcodr add <pack> to install governance capabilities as your needs evolve\n`);
 }
 function runScaffold(resolvedTarget, parsed, io) {
     const { out, err, exit, templateDir, scaffoldFn } = io;
@@ -183,6 +152,12 @@ export async function runCli(rawArgs = process.argv.slice(2), io = {}) {
     if (parsed.command === 'prompt') {
         return fullIo.promptFn(parsed, fullIo);
     }
+    if (parsed.command === 'add') {
+        return fullIo.addFn(parsed, fullIo);
+    }
+    if (isScriptCommand(parsed.command)) {
+        return fullIo.scriptFn(parsed, fullIo);
+    }
     if (!parsed.silent) {
         outBanner(fullIo);
     }
@@ -203,7 +178,7 @@ export async function main() {
         process.exit(1);
     }
 }
-export { askQuestion };
+export { printHelp, printVersion, askQuestion };
 export default {
     runCli,
     main,

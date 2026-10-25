@@ -1,10 +1,12 @@
 import path from 'node:path';
 import fs from 'node:fs';
-import { inspectBoundaries } from './boundaries.js';
+import { inspectBoundaries, findSourceFiles } from './boundaries.js';
 import type { BoundaryReport, BoundaryRule } from './boundaries.js';
 import { loadHarnessConfig } from './harness-config.js';
 import { resolveChecks } from './harness-resolve.js';
 import type { CliParsedOptions } from './cli-parse.js';
+
+export { findSourceFiles };
 
 export interface BoundaryIo {
   out: (msg: string) => void;
