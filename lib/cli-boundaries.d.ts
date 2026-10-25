@@ -1,5 +1,7 @@
+import { findSourceFiles } from './boundaries.js';
 import type { BoundaryReport, BoundaryRule } from './boundaries.js';
 import type { CliParsedOptions } from './cli-parse.js';
+export { findSourceFiles };
 export interface BoundaryIo {
     out: (msg: string) => void;
     err: (msg: string) => void;

@@ -207,8 +207,22 @@ describe('Architecture: validator governance guarantees', () => {
   test('AGENTS.md references only rule files that exist', () => {
     const content = fs.readFileSync(path.join(ROOT, 'AGENTS.md'), 'utf-8');
     const links = [...content.matchAll(/\]\(\.\/docs\/rules\/([^)]+)\)/g)].map((m) => m[1] as string);
+    assert.ok(links.length > 0, 'AGENTS.md must include progressive disclosure links to docs/rules/');
     const broken = links.filter((f) => !fs.existsSync(path.join(ROOT, 'docs', 'rules', f)));
     assert.deepStrictEqual(broken, []);
+  });
+
+  test('all src/ source files stay within the 300-line budget', () => {
+    const srcDir = path.join(ROOT, 'src');
+    const offenders: string[] = [];
+    const files = readAll(srcDir, (f: string) => f.endsWith('.ts'));
+    for (const { path: file, source } of files) {
+      const lineCount = source.split('\n').length;
+      if (lineCount > 300) {
+        offenders.push(`${path.relative(ROOT, file)} (${lineCount} lines > 300)`);
+      }
+    }
+    assert.deepStrictEqual(offenders, [], `src files exceeding 300 lines: ${offenders.join(', ')}`);
   });
 
   test('README does not claim a specific rule count', () => {
@@ -244,7 +258,7 @@ describe('Architecture: rules and ledger hygiene', () => {
     const withoutComments = mem.replace(/<!--[\s\S]*?-->/g, '');
     const ids = [...withoutComments.matchAll(/^#### ADR-(\d+)/gm)].map((m) => Number(m[1]));
     for (const id of ids) {
-      assert.ok(id >= 1 && id <= 40, `ADR-${id} looks like leaked template numbering`);
+      assert.ok(id >= 1 && id <= 41, `ADR-${id} looks like leaked template numbering`);
     }
   });
 

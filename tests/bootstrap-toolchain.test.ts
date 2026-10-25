@@ -46,6 +46,17 @@ describe('bootstrap toolchain: deterministic gate configs per language', () => {
     }
   });
 
+  test('typescript emits an oxlint config alongside eslint', () => {
+    const root = freshRoot();
+    try {
+      mustSucceed(root, 'typescript');
+      const cfg = fs.readFileSync(path.join(root, '.oxlintrc.json'), 'utf-8');
+      assert.match(cfg, /no-unused-vars/);
+    } finally {
+      removeRoot(root);
+    }
+  });
+
   test('python emits ruff gates with complexity and arg limits', () => {
     const root = freshRoot();
     try {

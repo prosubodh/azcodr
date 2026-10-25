@@ -6,9 +6,9 @@
  * default. What a project enforces is declared in `harness.yaml`; what it does
  * not declare is not enforced.
  */
-export type { HarnessConfig, CheckDeclaration, ProjectFacts, AppliesWhen, Severity, Methodology } from './harness-config.js';
+export type { HarnessConfig, CheckDeclaration, ProjectFacts, AppliesWhen, Severity, Methodology, GithubPmConfig, IssueTrackingMode, AdrHostingMode } from './harness-config.js';
 export type { ValidationContext, ValidationResult, Reporter as ValidationReporter } from './validator/types.js';
-export { loadHarnessConfig, parseHarnessConfig, defaultConfig, HarnessConfigError, CONFIG_FILE_NAMES, CORE_CHECK_IDS, OPTIONAL_CHECK_IDS, KNOWN_CHECK_IDS, SUPPORTED_VERSION } from './harness-config.js';
+export { loadHarnessConfig, parseHarnessConfig, defaultConfig, defaultGithubPmConfig, HarnessConfigError, CONFIG_FILE_NAMES, CORE_CHECK_IDS, OPTIONAL_CHECK_IDS, KNOWN_CHECK_IDS, SUPPORTED_VERSION } from './harness-config.js';
 export { resolveChecks, explainCheck, matchGlob, matchesAny } from './harness-resolve.js';
 export type { ResolvedCheck } from './harness-resolve.js';
 export { parseYamlSubset, YamlSubsetError } from './yaml-subset.js';

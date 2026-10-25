@@ -1,6 +1,7 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import process from 'node:process';
+import { fileURLToPath } from 'node:url';
 import { runGit } from './git.js';
 const INITIAL_COMMIT_MESSAGE = 'chore: initial scaffold from azcodr template';
 /**
@@ -95,5 +96,41 @@ export function initGit(targetDir, options = {}) {
         return false;
     }
 }
-export default { isInsideGitWorkTree, initGit };
+export function installPrePushHook(targetDir, options = {}) {
+    const gitDir = path.join(targetDir, '.git');
+    if (!fs.existsSync(gitDir)) {
+        return { installed: false, reason: 'No .git directory found.' };
+    }
+    const hooksDir = path.join(gitDir, 'hooks');
+    const hookFile = path.join(hooksDir, 'pre-push');
+    if (fs.existsSync(hookFile) && !options.force) {
+        const existingContent = fs.readFileSync(hookFile, 'utf-8');
+        if (existingContent.includes('azcodr')) {
+            return { installed: false, reason: 'azcodr pre-push hook already installed.' };
+        }
+        return { installed: false, reason: 'Custom pre-push hook already exists; skipping overwrite.' };
+    }
+    const currentDir = path.dirname(fileURLToPath(import.meta.url));
+    const templatePath = path.resolve(currentDir, '..', 'data', 'pre-push.template');
+    if (!fs.existsSync(templatePath)) {
+        return { installed: false, reason: 'pre-push template not found.' };
+    }
+    const action = 'install: .git/hooks/pre-push (branch protection guard)';
+    if (options.dryRun) {
+        return { installed: true, action };
+    }
+    if (!fs.existsSync(hooksDir)) {
+        fs.mkdirSync(hooksDir, { recursive: true });
+    }
+    const content = fs.readFileSync(templatePath, 'utf-8');
+    fs.writeFileSync(hookFile, content, 'utf-8');
+    try {
+        fs.chmodSync(hookFile, 0o755);
+    }
+    catch {
+        // Windows non-POSIX fallback
+    }
+    return { installed: true, action };
+}
+export default { isInsideGitWorkTree, initGit, installPrePushHook };
 //# sourceMappingURL=repo.js.map

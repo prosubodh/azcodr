@@ -34,6 +34,25 @@ Read `harness.yaml` to see which governance checks this project has opted into. 
 npx azcodr check
 ```
 
+## Rules & Standards Index
+
+When addressing domain-specific tasks, inspect the corresponding governing standard:
+
+| Domain | Governing Standard | Scope |
+|---|---|---|
+| **Clean Code & Refactoring** | [docs/rules/clean_code.md](./docs/rules/clean_code.md) | File limits (<=300 lines), function limits (<=30 lines), SLAP, naming. |
+| **Testing & TDD** | [docs/rules/test_driven_development.md](./docs/rules/test_driven_development.md) | Uncle Bob's 3 laws, nano-cycles (RED-GREEN-REFACTOR), behavioral assertions. |
+| **Architecture & Design** | [docs/rules/design_patterns.md](./docs/rules/design_patterns.md) | GoF patterns (Adapter, Strategy, Repository), Result pattern. |
+| **Security & Compliance** | [docs/rules/security_compliance.md](./docs/rules/security_compliance.md) | OWASP Top 10, SOC 2, secret scanning, input sanitization. |
+| **Agentic Governance** | [docs/rules/agentic_configuration.md](./docs/rules/agentic_configuration.md) | Progressive disclosure, ADR ledger, harness parity, skill inquiry. |
+| **Relentless Questioning** | [docs/rules/relentless_questioning.md](./docs/rules/relentless_questioning.md) | Context-aware interrogation loops, adaptive decision trees. |
+| **Requirements Engineering** | [docs/rules/requirements_engineering.md](./docs/rules/requirements_engineering.md) | User stories vs requirements, INVEST, Gherkin acceptance criteria. |
+| **Product Ownership** | [docs/rules/product_ownership.md](./docs/rules/product_ownership.md) | OKRs, backlog ordering (Kano/MoSCoW/RICE), value validation. |
+| **Project Management** | [docs/rules/project_management.md](./docs/rules/project_management.md) | WIP limits, anti-rubber-stamp, project sovereignty. |
+| **CI/CD & Delivery** | [docs/rules/continuous_delivery.md](./docs/rules/continuous_delivery.md) | Trunk-based delivery, verifiable artifacts, deployment pipelines. |
+| **Error Handling** | [docs/rules/error_handling.md](./docs/rules/error_handling.md) | Stable error shapes, typed Result contracts, RFC 9457 envelopes. |
+| **Type Safety** | [docs/rules/type_safety.md](./docs/rules/type_safety.md) | Zero `any`, strict null checks, structural contracts. |
+
 ## Adding standards
 
 Do not add ad-hoc rules to this file. Requirements drive standards: conduct requirements-first discovery (e.g. `/lets-build`) before introducing governance. As concrete needs emerge during development, install capability packs via `npx azcodr add <pack>` or declare checks in `harness.yaml`.

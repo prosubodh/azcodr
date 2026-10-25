@@ -1,6 +1,22 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseYamlSubset, YamlSubsetError } from './yaml-subset.js';
+import { HarnessConfigError } from './harness-error.js';
+import {
+  type IssueTrackingMode,
+  type AdrHostingMode,
+  type GithubPmConfig,
+  defaultGithubPmConfig,
+  parseGithubPm
+} from './harness-github-pm.js';
+
+export { HarnessConfigError };
+export {
+  type IssueTrackingMode,
+  type AdrHostingMode,
+  type GithubPmConfig,
+  defaultGithubPmConfig
+};
 
 /**
  * Config file names searched, in order, at a workspace root.
@@ -43,17 +59,6 @@ export type Severity = 'error' | 'warn' | 'off';
 
 /** Methodology presets. `none` means the project declared no test discipline. */
 export type Methodology = 'none' | 'tdd' | 'bdd' | 'contract-first' | 'property-based' | 'custom';
-
-/** Issue tracking surface. */
-export type IssueTrackingMode = 'local' | 'github' | 'both';
-/** ADR hosting surface. */
-export type AdrHostingMode = 'repo' | 'discussions' | 'both';
-
-export interface GithubPmConfig {
-  issueTracking: IssueTrackingMode;
-  adrHosting: AdrHostingMode;
-  prGovernance: boolean;
-}
 
 /**
  * Conditional gating applied before a check is considered active.
@@ -123,35 +128,7 @@ export interface HarnessConfig {
   source: string | null;
 }
 
-/**
- * Error raised when a configuration file exists but cannot be used.
- */
-export class HarnessConfigError extends Error {
-  /** 1-based line number of the offending content, or 0 when not line-specific. */
-  public readonly line: number;
-
-  constructor(message: string, line = 0) {
-    super(message);
-    this.name = 'HarnessConfigError';
-    this.line = line;
-  }
-}
-
 const EMPTY_APPLIES: AppliesWhen = { paths: [], exclude: [], languages: [], has: [], changed_only: false };
-
-/**
- * Returns a configuration that declares nothing, so an unconfigured project
- * enables no optional check at all.
- */
-const DEFAULT_GITHUB_PM: GithubPmConfig = {
-  issueTracking: 'github',
-  adrHosting: 'repo',
-  prGovernance: true
-};
-
-export function defaultGithubPmConfig(): GithubPmConfig {
-  return { ...DEFAULT_GITHUB_PM };
-}
 
 export function defaultConfig(): HarnessConfig {
   return {
@@ -159,7 +136,7 @@ export function defaultConfig(): HarnessConfig {
     project: { languages: [], commands: {} },
     methodology: 'none',
     packs: [],
-    github: { ...DEFAULT_GITHUB_PM },
+    github: defaultGithubPmConfig(),
     checks: [],
     source: null
   };
@@ -197,33 +174,6 @@ function asMethodology(value: unknown): Methodology {
   throw new HarnessConfigError(
     `methodology must be one of ${allowed.join(', ')} (received ${JSON.stringify(value)})`
   );
-}
-
-function asIssueTrackingMode(value: unknown): IssueTrackingMode {
-  const allowed: IssueTrackingMode[] = ['local', 'github', 'both'];
-  if (value === undefined) return 'github';
-  if (typeof value === 'string' && (allowed as string[]).includes(value)) return value as IssueTrackingMode;
-  throw new HarnessConfigError(
-    `issueTracking must be one of ${allowed.join(', ')} (received ${JSON.stringify(value)})`
-  );
-}
-
-function asAdrHostingMode(value: unknown): AdrHostingMode {
-  const allowed: AdrHostingMode[] = ['repo', 'discussions', 'both'];
-  if (value === undefined) return 'repo';
-  if (typeof value === 'string' && (allowed as string[]).includes(value)) return value as AdrHostingMode;
-  throw new HarnessConfigError(
-    `adrHosting must be one of ${allowed.join(', ')} (received ${JSON.stringify(value)})`
-  );
-}
-
-function parseGithubPm(raw: unknown): GithubPmConfig {
-  const obj = asRecord(raw, 'github');
-  return {
-    issueTracking: asIssueTrackingMode(obj.issueTracking),
-    adrHosting: asAdrHostingMode(obj.adrHosting),
-    prGovernance: obj.prGovernance !== false
-  };
 }
 
 function parseAppliesWhen(raw: unknown, owner: Record<string, unknown>): AppliesWhen {
@@ -341,4 +291,5 @@ export function loadHarnessConfig(root: string): HarnessConfig {
   }
   return defaultConfig();
 }
+
 export default { loadHarnessConfig, parseHarnessConfig, defaultConfig, HarnessConfigError };

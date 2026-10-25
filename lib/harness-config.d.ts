@@ -1,3 +1,7 @@
+import { HarnessConfigError } from './harness-error.js';
+import { type IssueTrackingMode, type AdrHostingMode, type GithubPmConfig, defaultGithubPmConfig } from './harness-github-pm.js';
+export { HarnessConfigError };
+export { type IssueTrackingMode, type AdrHostingMode, type GithubPmConfig, defaultGithubPmConfig };
 /**
  * Config file names searched, in order, at a workspace root.
  */
@@ -22,15 +26,6 @@ export declare const KNOWN_CHECK_IDS: readonly string[];
 export type Severity = 'error' | 'warn' | 'off';
 /** Methodology presets. `none` means the project declared no test discipline. */
 export type Methodology = 'none' | 'tdd' | 'bdd' | 'contract-first' | 'property-based' | 'custom';
-/** Issue tracking surface. */
-export type IssueTrackingMode = 'local' | 'github' | 'both';
-/** ADR hosting surface. */
-export type AdrHostingMode = 'repo' | 'discussions' | 'both';
-export interface GithubPmConfig {
-    issueTracking: IssueTrackingMode;
-    adrHosting: AdrHostingMode;
-    prGovernance: boolean;
-}
 /**
  * Conditional gating applied before a check is considered active.
  */
@@ -95,15 +90,6 @@ export interface HarnessConfig {
     /** Name of the file this config was loaded from, or null for the default. */
     source: string | null;
 }
-/**
- * Error raised when a configuration file exists but cannot be used.
- */
-export declare class HarnessConfigError extends Error {
-    /** 1-based line number of the offending content, or 0 when not line-specific. */
-    readonly line: number;
-    constructor(message: string, line?: number);
-}
-export declare function defaultGithubPmConfig(): GithubPmConfig;
 export declare function defaultConfig(): HarnessConfig;
 /**
  * Validates an already-parsed document into a typed configuration.

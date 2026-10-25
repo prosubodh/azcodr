@@ -330,6 +330,38 @@ describe('Track 2: Agent Runtime Guard - Envelope Dispatch & CLI Script', () => 
     assert.match(stderr, /Architectural Guard/);
   });
 
+  test('agent_guard.js blocks non-shrinking edits to over-budget files when configured', () => {
+    const fakeFile = path.join(tmpDir, 'long_file.ts');
+    fs.writeFileSync(fakeFile, 'line\n'.repeat(50), 'utf-8');
+
+    let exitCode: number | null = null;
+    let stderr = '';
+    const payload = JSON.stringify({
+      tool_name: 'replace_file_content',
+      tool_input: {
+        filePath: fakeFile,
+        targetContent: 'line\n',
+        replacementContent: 'line\nline2\n'
+      }
+    });
+
+    try {
+      execFileSync(process.execPath, [GUARD_SCRIPT, payload], {
+        encoding: 'utf-8',
+        cwd: tmpDir,
+        stdio: ['ignore', 'pipe', 'pipe'],
+        env: { ...process.env, AZCODR_MAX_FILE_LINES: '40' }
+      });
+      exitCode = 0;
+    } catch (err: any) {
+      exitCode = err.status;
+      stderr = err.stderr;
+    }
+
+    assert.strictEqual(exitCode, 1);
+    assert.match(stderr, /Line budget/);
+  });
+
   test('vendored engine ships inside .agents and matches lib output', () => {
     for (const name of ['agent-guard.js', 'agent-guard-command.js', 'agent-guard-file.js', 'agent-guard-tdd.js']) {
       const vendored = fs.readFileSync(path.join(REPO_ROOT, '.agents', 'lib', name), 'utf-8');

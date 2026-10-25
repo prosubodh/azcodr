@@ -1,6 +1,10 @@
 import fs from 'node:fs';
 import path from 'node:path';
 import { parseYamlSubset } from './yaml-subset.js';
+import { HarnessConfigError } from './harness-error.js';
+import { defaultGithubPmConfig, parseGithubPm } from './harness-github-pm.js';
+export { HarnessConfigError };
+export { defaultGithubPmConfig };
 /**
  * Config file names searched, in order, at a workspace root.
  */
@@ -32,29 +36,14 @@ export const OPTIONAL_CHECK_IDS = [
  * Every check id the resolver can produce a verdict for.
  */
 export const KNOWN_CHECK_IDS = [...CORE_CHECK_IDS, ...OPTIONAL_CHECK_IDS];
-/**
- * Error raised when a configuration file exists but cannot be used.
- */
-export class HarnessConfigError extends Error {
-    /** 1-based line number of the offending content, or 0 when not line-specific. */
-    line;
-    constructor(message, line = 0) {
-        super(message);
-        this.name = 'HarnessConfigError';
-        this.line = line;
-    }
-}
 const EMPTY_APPLIES = { paths: [], exclude: [], languages: [], has: [], changed_only: false };
-/**
- * Returns a configuration that declares nothing, so an unconfigured project
- * enables no optional check at all.
- */
 export function defaultConfig() {
     return {
         version: SUPPORTED_VERSION,
         project: { languages: [], commands: {} },
         methodology: 'none',
         packs: [],
+        github: defaultGithubPmConfig(),
         checks: [],
         source: null
     };
@@ -163,11 +152,13 @@ export function parseHarnessConfig(source) {
     const checksRaw = doc.checks === undefined ? [] : doc.checks;
     if (!Array.isArray(checksRaw))
         throw new HarnessConfigError('checks must be a list');
+    const github = doc.github === undefined ? defaultGithubPmConfig() : parseGithubPm(doc.github);
     return {
         version,
         project: parseProject(doc.project),
         methodology: asMethodology(doc.methodology),
         packs: asStringList(doc.packs, 'packs'),
+        github,
         checks: checksRaw.map(parseCheck),
         source: null
     };

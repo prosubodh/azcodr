@@ -34,7 +34,11 @@ async function getGuardModule() {
       continue;
     }
     try {
-      return await import(pathToFileURL(candidate).href);
+      const module = await import(pathToFileURL(candidate).href);
+      return {
+        module,
+        engineDir: path.dirname(candidate)
+      };
     } catch (err) {
       tried.push(`${candidate} (unreadable: ${err.message})`);
     }
@@ -47,6 +51,56 @@ async function getGuardModule() {
     tried.map((t) => `  - ${t}`).join('\n')
   );
   process.exit(2);
+}
+
+async function loadGuardOptions(engineDir, workspaceRoot) {
+  const options = { workspaceRoot };
+
+  // Environment overrides
+  if (process.env.AZCODR_MAX_FILE_LINES) {
+    const parsed = Number(process.env.AZCODR_MAX_FILE_LINES);
+    if (!Number.isNaN(parsed)) options.maxFileLines = parsed;
+  }
+  if (process.env.AZCODR_TDD === '1' || process.env.AZCODR_TDD === 'true') {
+    options.tdd = { enforceTestFirst: true };
+  }
+  if (process.env.AZCODR_PROTECTED_BRANCHES) {
+    options.protectedBranches = process.env.AZCODR_PROTECTED_BRANCHES.split(',').map((s) => s.trim()).filter(Boolean);
+  }
+
+  // Load from harness.yaml if present
+  try {
+    const configModulePath = path.join(engineDir, 'harness-config.js');
+    const resolveModulePath = path.join(engineDir, 'harness-resolve.js');
+    if (fs.existsSync(configModulePath) && fs.existsSync(resolveModulePath)) {
+      const { loadHarnessConfig } = await import(pathToFileURL(configModulePath).href);
+      const { resolveChecks } = await import(pathToFileURL(resolveModulePath).href);
+      const config = loadHarnessConfig(workspaceRoot);
+      const checks = resolveChecks(config, config.project);
+
+      const maxLinesCheck = checks.get('max-file-lines');
+      if (maxLinesCheck?.enabled && typeof maxLinesCheck.params?.max === 'number' && options.maxFileLines === undefined) {
+        options.maxFileLines = maxLinesCheck.params.max;
+      }
+      if (maxLinesCheck?.applies_when?.exclude && !options.excludeFilePaths) {
+        options.excludeFilePaths = maxLinesCheck.applies_when.exclude;
+      }
+
+      const tddCheck = checks.get('red-before-green');
+      if (tddCheck?.enabled && options.tdd === undefined) {
+        options.tdd = { enforceTestFirst: true };
+      }
+
+      const protectedCheck = checks.get('protected-targets');
+      if (protectedCheck?.enabled && Array.isArray(protectedCheck.params?.branches) && !options.protectedBranches) {
+        options.protectedBranches = protectedCheck.params.branches;
+      }
+    }
+  } catch {
+    // Fail-open for optional project policy discovery; core safety invariants remain active.
+  }
+
+  return options;
 }
 
 async function readStdin(timeoutMs = 1500) {
@@ -76,10 +130,9 @@ async function main() {
     process.exit(0);
   }
 
-  const { inspectPreTool } = await getGuardModule();
-  const decision = inspectPreTool(rawInput, {
-    workspaceRoot: process.cwd()
-  });
+  const { module: guardModule, engineDir } = await getGuardModule();
+  const options = await loadGuardOptions(engineDir, process.cwd());
+  const decision = guardModule.inspectPreTool(rawInput, options);
 
   if (!decision.allowed) {
     console.error(`🚨 Architectural Guard: ${decision.reason}`);
