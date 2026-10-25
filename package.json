@@ -61,6 +61,7 @@
     "lint": "oxlint",
     "typecheck": "tsc --noEmit",
     "validate": "node bin/azcodr.js check",
+    "ci:docker": "docker build --build-arg NODE_VERSION=22 -t azcodr-ci:22 .",
     "prepublishOnly": "npm run build && npm run lint && npm run test:coverage && npm run validate"
   },
   "devDependencies": {
