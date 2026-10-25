@@ -4,6 +4,7 @@ import { CONFIG_FILE_NAMES } from './harness-config.js';
 import type { Methodology } from './harness-config.js';
 import { installPrePushHook } from './repo.js';
 import { installWorkflowTemplate } from './workflow.js';
+import { installGithubPmBundle } from './github-pm.js';
 
 export interface PackCheckDefinition {
   id: string;
@@ -79,6 +80,10 @@ const CANONICAL_PACKS: Record<string, CapabilityPack> = {
   'publish-workflow': {
     name: 'publish-workflow',
     description: 'Automated GitHub Actions release & publishing workflow with provenance attestations'
+  },
+  'github-pm': {
+    name: 'github-pm',
+    description: 'GitHub project management bundle: issue templates, PR template, CODEOWNERS, Dependabot, release notes, Discussions guide'
   }
 };
 
@@ -99,7 +104,11 @@ const PACK_ALIASES: Record<string, string> = {
   'ci-workflow': 'ci',
   publish: 'publish-workflow',
   'publish-action': 'publish-workflow',
-  'release-workflow': 'publish-workflow'
+  'release-workflow': 'publish-workflow',
+  'github': 'github-pm',
+  'pm': 'github-pm',
+  'project-management': 'github-pm',
+  'github-project-management': 'github-pm'
 };
 
 export const KNOWN_PACK_NAMES: readonly string[] = Object.keys(CANONICAL_PACKS);
@@ -218,6 +227,9 @@ function executePackSideEffects(
   } else if (packName === 'publish-workflow') {
     const wfResult = installWorkflowTemplate(targetDir, 'publish', { dryRun: options.dryRun, force: options.force });
     if (wfResult.action) actions.push(wfResult.action);
+  } else if (packName === 'github-pm') {
+    const bundleResult = installGithubPmBundle(targetDir, { dryRun: options.dryRun, force: options.force });
+    actions.push(...bundleResult.actions);
   }
   return actions;
 }

@@ -22,6 +22,15 @@ export declare const KNOWN_CHECK_IDS: readonly string[];
 export type Severity = 'error' | 'warn' | 'off';
 /** Methodology presets. `none` means the project declared no test discipline. */
 export type Methodology = 'none' | 'tdd' | 'bdd' | 'contract-first' | 'property-based' | 'custom';
+/** Issue tracking surface. */
+export type IssueTrackingMode = 'local' | 'github' | 'both';
+/** ADR hosting surface. */
+export type AdrHostingMode = 'repo' | 'discussions' | 'both';
+export interface GithubPmConfig {
+    issueTracking: IssueTrackingMode;
+    adrHosting: AdrHostingMode;
+    prGovernance: boolean;
+}
 /**
  * Conditional gating applied before a check is considered active.
  */
@@ -79,6 +88,8 @@ export interface HarnessConfig {
     methodology: Methodology;
     /** Installed pack identifiers. */
     packs: string[];
+    /** GitHub project management settings (optional). */
+    github?: GithubPmConfig;
     /** Declared checks. */
     checks: CheckDeclaration[];
     /** Name of the file this config was loaded from, or null for the default. */
@@ -92,10 +103,7 @@ export declare class HarnessConfigError extends Error {
     readonly line: number;
     constructor(message: string, line?: number);
 }
-/**
- * Returns a configuration that declares nothing, so an unconfigured project
- * enables no optional check at all.
- */
+export declare function defaultGithubPmConfig(): GithubPmConfig;
 export declare function defaultConfig(): HarnessConfig;
 /**
  * Validates an already-parsed document into a typed configuration.

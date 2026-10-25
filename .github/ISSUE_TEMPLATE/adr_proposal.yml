@@ -1,0 +1,26 @@
+name: ADR Proposal
+description: Propose an architectural decision record
+title: "[adr] "
+labels: ["type:adr"]
+body:
+  - type: textarea
+    id: context
+    attributes:
+      label: Context
+      description: What forces are at play?
+    validations:
+      required: true
+  - type: textarea
+    id: decision
+    attributes:
+      label: Decision
+    validations:
+      required: true
+  - type: textarea
+    id: consequences
+    attributes:
+      label: Consequences
+  - type: input
+    id: governing_rule
+    attributes:
+      label: Governing rule / skill

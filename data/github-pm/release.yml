@@ -1,0 +1,25 @@
+changelog:
+  exclude:
+    labels:
+      - "ignore-for-release"
+  categories:
+    - title: "Breaking Changes"
+      labels:
+        - "breaking"
+    - title: "Features"
+      labels:
+        - "type:feature"
+        - "enhancement"
+    - title: "Bug Fixes"
+      labels:
+        - "type:bug"
+        - "bug"
+    - title: "Documentation"
+      labels:
+        - "docs"
+    - title: "Dependencies"
+      labels:
+        - "dependencies"
+    - title: "Other Changes"
+      labels:
+        - "*"

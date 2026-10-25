@@ -55,6 +55,8 @@ export type { AddIo } from './cli-add.js';
  */
 export { installWorkflowTemplate, WORKFLOW_DESCRIPTORS } from './workflow.js';
 export type { InstallWorkflowOptions, InstallWorkflowResult, WorkflowDescriptor } from './workflow.js';
+export { installGithubPmBundle } from './github-pm.js';
+export type { GithubPmInstallOptions, GithubPmInstallResult } from './github-pm.js';
 /**
  * Multi-provider conversation memory exporter.
  */

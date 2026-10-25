@@ -115,4 +115,22 @@ describe('harness.yaml loading', () => {
     assert.ok(CORE_CHECK_IDS.includes('protected-targets'));
     assert.ok(CORE_CHECK_IDS.includes('dependency-cycles'));
   });
+
+  test('parses github block with defaults when omitted', () => {
+    const cfg = parseHarnessConfig('version: 1\n');
+    assert.strictEqual(cfg.github?.issueTracking, 'github');
+    assert.strictEqual(cfg.github?.adrHosting, 'repo');
+    assert.strictEqual(cfg.github?.prGovernance, true);
+  });
+
+  test('parses github block overrides', () => {
+    const cfg = parseHarnessConfig('version: 1\ngithub:\n  issueTracking: local\n  adrHosting: both\n  prGovernance: false\n');
+    assert.strictEqual(cfg.github?.issueTracking, 'local');
+    assert.strictEqual(cfg.github?.adrHosting, 'both');
+    assert.strictEqual(cfg.github?.prGovernance, false);
+  });
+
+  test('rejects invalid issueTracking value', () => {
+    assert.throws(() => parseHarnessConfig('version: 1\ngithub:\n  issueTracking: bogus\n'), HarnessConfigError);
+  });
 });

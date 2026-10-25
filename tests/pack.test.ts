@@ -34,6 +34,8 @@ describe('Capability pack definitions', () => {
     assert.strictEqual(getPackDefinition('publish').name, 'publish-workflow');
     assert.strictEqual(getPackDefinition('publish-action').name, 'publish-workflow');
     assert.strictEqual(getPackDefinition('release-workflow').name, 'publish-workflow');
+    assert.strictEqual(getPackDefinition('github').name, 'github-pm');
+    assert.strictEqual(getPackDefinition('pm').name, 'github-pm');
   });
 
   test('returns ci and publish-workflow definitions', () => {
@@ -259,6 +261,72 @@ describe('installPack execution', () => {
 
     const ciFile = path.join(tmpDir, '.github', 'workflows', 'ci.yml');
     assert.strictEqual(fs.existsSync(ciFile), false);
+    assert.strictEqual(fs.existsSync(res.configPath), false);
+  });
+});
+
+describe('github-pm pack', () => {
+  let tmpDir: string;
+  beforeEach(() => {
+    tmpDir = fs.mkdtempSync(path.join(os.tmpdir(), 'azcodr-githubpm-'));
+  });
+  afterEach(() => {
+    if (fs.existsSync(tmpDir)) fs.rmSync(tmpDir, { recursive: true, force: true });
+  });
+
+  test('installs github-pm bundle and writes key files', () => {
+    const res = installPack(tmpDir, 'github-pm');
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(res.actions.some((a) => a.includes('.github/ISSUE_TEMPLATE/bug_report.yml')));
+    assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'ISSUE_TEMPLATE', 'bug_report.yml')));
+    assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'pull_request_template.md')));
+    assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'CODEOWNERS')));
+    assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'dependabot.yml')));
+    assert.ok(fs.existsSync(path.join(tmpDir, '.github', 'release.yml')));
+    assert.ok(fs.existsSync(path.join(tmpDir, 'docs', 'github-project-management.md')));
+
+    const cfg = parseHarnessConfig(fs.readFileSync(res.configPath, 'utf-8'));
+    assert.ok(cfg.packs.includes('github-pm'));
+  });
+
+  test('normalizes aliases to github-pm', () => {
+    assert.strictEqual(getPackDefinition('github').name, 'github-pm');
+    assert.strictEqual(getPackDefinition('pm').name, 'github-pm');
+    assert.strictEqual(getPackDefinition('project-management').name, 'github-pm');
+  });
+
+  test('is idempotent on second install', () => {
+    installPack(tmpDir, 'github-pm');
+    const second = installPack(tmpDir, 'github-pm');
+    assert.strictEqual(second.alreadyInstalled, true);
+  });
+
+  test('skips existing files unless force', () => {
+    const codeowners = path.join(tmpDir, '.github', 'CODEOWNERS');
+    fs.mkdirSync(path.dirname(codeowners), { recursive: true });
+    const custom = '# custom owners\n* @me\n';
+    fs.writeFileSync(codeowners, custom, 'utf-8');
+
+    installPack(tmpDir, 'github-pm');
+    assert.strictEqual(fs.readFileSync(codeowners, 'utf-8'), custom);
+  });
+
+  test('overwrites with force', () => {
+    const codeowners = path.join(tmpDir, '.github', 'CODEOWNERS');
+    fs.mkdirSync(path.dirname(codeowners), { recursive: true });
+    fs.writeFileSync(codeowners, '# custom\n', 'utf-8');
+
+    const res = installPack(tmpDir, 'github-pm', { force: true });
+    assert.ok(res.actions.some((a) => a.includes('CODEOWNERS')));
+    const content = fs.readFileSync(codeowners, 'utf-8');
+    assert.ok(content.includes('@owner'));
+  });
+
+  test('dry-run does not write files', () => {
+    const res = installPack(tmpDir, 'github-pm', { dryRun: true });
+    assert.strictEqual(res.alreadyInstalled, false);
+    assert.ok(res.actions.some((a) => a.includes('bug_report.yml')));
+    assert.strictEqual(fs.existsSync(path.join(tmpDir, '.github', 'CODEOWNERS')), false);
     assert.strictEqual(fs.existsSync(res.configPath), false);
   });
 });
