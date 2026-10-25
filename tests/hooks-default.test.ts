@@ -1,6 +1,7 @@
 /**
- * Default-off hooks regression test.
- * Hooks are disabled by default; projects opt in via harness.yaml.
+ * Default-on hooks regression test.
+ * Hooks are enabled by default so governance rules are actually enforced;
+ * projects may opt out via harness.yaml.
  */
 import assert from 'node:assert/strict';
 import fs from 'node:fs';
@@ -16,13 +17,13 @@ function loadHooks(fileName: string) {
   return JSON.parse(fs.readFileSync(path.join(ROOT, '.agents', fileName), 'utf-8'));
 }
 
-describe('shipped hooks are default-off', () => {
+describe('shipped hooks are default-on', () => {
   for (const fileName of ['hooks.json', 'hooks.json.example']) {
-    test(`${fileName} disables all hooks by default`, () => {
+    test(`${fileName} enables all hooks by default`, () => {
       const hooks = loadHooks(fileName);
       for (const group of EXPECTED_HOOK_GROUPS) {
         assert.ok(hooks[group], `${fileName} must define ${group}`);
-        assert.strictEqual(hooks[group].enabled, false, `${fileName}: ${group} defaults to disabled`);
+        assert.strictEqual(hooks[group].enabled, true, `${fileName}: ${group} defaults to enabled`);
       }
     });
   }

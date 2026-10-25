@@ -44,6 +44,17 @@ export type Severity = 'error' | 'warn' | 'off';
 /** Methodology presets. `none` means the project declared no test discipline. */
 export type Methodology = 'none' | 'tdd' | 'bdd' | 'contract-first' | 'property-based' | 'custom';
 
+/** Issue tracking surface. */
+export type IssueTrackingMode = 'local' | 'github' | 'both';
+/** ADR hosting surface. */
+export type AdrHostingMode = 'repo' | 'discussions' | 'both';
+
+export interface GithubPmConfig {
+  issueTracking: IssueTrackingMode;
+  adrHosting: AdrHostingMode;
+  prGovernance: boolean;
+}
+
 /**
  * Conditional gating applied before a check is considered active.
  */
@@ -104,6 +115,8 @@ export interface HarnessConfig {
   methodology: Methodology;
   /** Installed pack identifiers. */
   packs: string[];
+  /** GitHub project management settings (optional). */
+  github?: GithubPmConfig;
   /** Declared checks. */
   checks: CheckDeclaration[];
   /** Name of the file this config was loaded from, or null for the default. */
@@ -130,12 +143,23 @@ const EMPTY_APPLIES: AppliesWhen = { paths: [], exclude: [], languages: [], has:
  * Returns a configuration that declares nothing, so an unconfigured project
  * enables no optional check at all.
  */
+const DEFAULT_GITHUB_PM: GithubPmConfig = {
+  issueTracking: 'github',
+  adrHosting: 'repo',
+  prGovernance: true
+};
+
+export function defaultGithubPmConfig(): GithubPmConfig {
+  return { ...DEFAULT_GITHUB_PM };
+}
+
 export function defaultConfig(): HarnessConfig {
   return {
     version: SUPPORTED_VERSION,
     project: { languages: [], commands: {} },
     methodology: 'none',
     packs: [],
+    github: { ...DEFAULT_GITHUB_PM },
     checks: [],
     source: null
   };
@@ -173,6 +197,33 @@ function asMethodology(value: unknown): Methodology {
   throw new HarnessConfigError(
     `methodology must be one of ${allowed.join(', ')} (received ${JSON.stringify(value)})`
   );
+}
+
+function asIssueTrackingMode(value: unknown): IssueTrackingMode {
+  const allowed: IssueTrackingMode[] = ['local', 'github', 'both'];
+  if (value === undefined) return 'github';
+  if (typeof value === 'string' && (allowed as string[]).includes(value)) return value as IssueTrackingMode;
+  throw new HarnessConfigError(
+    `issueTracking must be one of ${allowed.join(', ')} (received ${JSON.stringify(value)})`
+  );
+}
+
+function asAdrHostingMode(value: unknown): AdrHostingMode {
+  const allowed: AdrHostingMode[] = ['repo', 'discussions', 'both'];
+  if (value === undefined) return 'repo';
+  if (typeof value === 'string' && (allowed as string[]).includes(value)) return value as AdrHostingMode;
+  throw new HarnessConfigError(
+    `adrHosting must be one of ${allowed.join(', ')} (received ${JSON.stringify(value)})`
+  );
+}
+
+function parseGithubPm(raw: unknown): GithubPmConfig {
+  const obj = asRecord(raw, 'github');
+  return {
+    issueTracking: asIssueTrackingMode(obj.issueTracking),
+    adrHosting: asAdrHostingMode(obj.adrHosting),
+    prGovernance: obj.prGovernance !== false
+  };
 }
 
 function parseAppliesWhen(raw: unknown, owner: Record<string, unknown>): AppliesWhen {
@@ -252,11 +303,13 @@ export function parseHarnessConfig(source: string): HarnessConfig {
   const checksRaw = doc.checks === undefined ? [] : doc.checks;
   if (!Array.isArray(checksRaw)) throw new HarnessConfigError('checks must be a list');
 
+  const github = doc.github === undefined ? defaultGithubPmConfig() : parseGithubPm(doc.github);
   return {
     version,
     project: parseProject(doc.project),
     methodology: asMethodology(doc.methodology),
     packs: asStringList(doc.packs, 'packs'),
+    github,
     checks: checksRaw.map(parseCheck),
     source: null
   };

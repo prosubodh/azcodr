@@ -1,0 +1,8 @@
+blank_issues_enabled: true
+contact_links:
+  - name: Documentation
+    url: https://github.com/prosubodh/azcodr#readme
+    about: Read the docs before filing
+  - name: Security vulnerability
+    url: https://github.com/prosubodh/azcodr/security/advisories/new
+    about: Report security issues privately

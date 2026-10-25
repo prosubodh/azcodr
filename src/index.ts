@@ -209,6 +209,9 @@ export type {
   WorkflowDescriptor
 } from './workflow.js';
 
+export { installGithubPmBundle } from './github-pm.js';
+export type { GithubPmInstallOptions, GithubPmInstallResult } from './github-pm.js';
+
 /**
  * Multi-provider conversation memory exporter.
  */

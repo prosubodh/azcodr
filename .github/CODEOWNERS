@@ -1,0 +1,10 @@
+# Default owners for everything in the repo.
+# Replace @owner with your GitHub handle or team.
+*       @owner
+
+# Governance and architecture files require maintainer review.
+/AGENTS.md          @owner
+/memory.md           @owner
+/harness.yaml        @owner
+/docs/rules/         @owner
+/src/                @owner

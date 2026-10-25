@@ -1,6 +1,6 @@
 {
   "safety-guard": {
-    "enabled": false,
+    "enabled": true,
     "PreToolUse": [
       {
         "matcher": "run_command",
@@ -15,7 +15,7 @@
     ]
   },
   "architectural-guard": {
-    "enabled": false,
+    "enabled": true,
     "PreToolUse": [
       {
         "matcher": "*",
@@ -30,7 +30,7 @@
     ]
   },
   "post-tool-lint": {
-    "enabled": false,
+    "enabled": true,
     "PostToolUse": [
       {
         "type": "command",
@@ -40,7 +40,7 @@
     ]
   },
   "stop-verifier": {
-    "enabled": false,
+    "enabled": true,
     "Stop": [
       {
         "type": "command",
