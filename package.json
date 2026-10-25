@@ -1,6 +1,6 @@
 {
   "name": "azcodr",
-  "version": "2.12.0",
+  "version": "2.13.0",
   "description": "Architecture governance toolkit: zero-dependency boundary & cycle detection, fail-closed validation, and declarative configuration via harness.yaml",
   "type": "module",
   "bin": {
