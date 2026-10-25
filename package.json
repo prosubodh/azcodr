@@ -64,7 +64,7 @@
     "prepublishOnly": "npm run build && npm run lint && npm run test:coverage && npm run validate"
   },
   "devDependencies": {
-    "@types/node": "22.13.10",
+    "@types/node": "26.6.5",
     "@vitest/coverage-istanbul": "5.0.5",
     "@vitest/coverage-v8": "5.0.5",
     "typescript": "5.7.3",
