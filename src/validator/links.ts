@@ -66,10 +66,18 @@ function recordLinkTarget(link: DiscoveredLink, ctx: ValidationContext): void {
   ctx.linkCount += 1;
   const resolved = path.normalize(path.join(link.dir, normalized.target));
   if (!fs.existsSync(resolved)) {
+    let realFilePath = link.filePath;
+    try {
+      realFilePath = fs.realpathSync(link.filePath);
+    } catch {}
+    const isRootAgentContract =
+      path.resolve(realFilePath) === path.resolve(ctx.workspaceRoot, 'AGENTS.md') ||
+      (path.dirname(path.resolve(link.filePath)) === path.resolve(ctx.workspaceRoot) &&
+        path.basename(link.filePath).toLowerCase() === 'agents.md');
     const isUninstalledRule =
       !fs.existsSync(path.join(ctx.workspaceRoot, 'docs', 'rules')) &&
       (normalized.target.startsWith('./docs/rules/') || normalized.target.startsWith('docs/rules/')) &&
-      path.resolve(link.filePath) === path.resolve(ctx.workspaceRoot, 'AGENTS.md');
+      isRootAgentContract;
     if (isUninstalledRule) {
       return;
     }

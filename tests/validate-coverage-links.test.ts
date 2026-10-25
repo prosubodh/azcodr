@@ -140,4 +140,17 @@ describe('coverage: workspace with no rules or skills directories', () => {
     assert.match(joined, /SKIP No memory\.md/);
     assert.strictEqual(result.errors, 0);
   });
+
+  test('tolerates uninstalled docs/rules links in both AGENTS.md and agents.md when docs/rules is absent', () => {
+    fs.writeFileSync(
+      path.join(root, 'AGENTS.md'),
+      '# A\n\n| Clean Code | [clean_code.md](./docs/rules/clean_code.md) |\n'
+    );
+    fs.writeFileSync(
+      path.join(root, 'agents.md'),
+      '# a\n\n| Clean Code | [clean_code.md](./docs/rules/clean_code.md) |\n'
+    );
+    const { joined, result } = collect(root);
+    assert.strictEqual(result.errors, 0, `uninstalled rules should not fail: ${joined}`);
+  });
 });
